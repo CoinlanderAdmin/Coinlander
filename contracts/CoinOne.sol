@@ -6,10 +6,11 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "./interfaces/iSeekers.sol";
+import "./interfaces/iKeepersVault.sol";
 
 // @TODO investigate EIP-712 for external method calls 
 
-contract CoinOne is ERC1155, Ownable, ReentrancyGuard {
+contract CoinOneNoRevStrings is ERC1155, Ownable, ReentrancyGuard {
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 //                                                                                              //
@@ -19,15 +20,6 @@ contract CoinOne is ERC1155, Ownable, ReentrancyGuard {
     // Coin IDs
     uint256 public constant ONECOIN = 0;
     uint256 public constant SHARD = 1;
-    uint256 public constant FRAGMENT1 = 2;
-    uint256 public constant FRAGMENT2 = 3;
-    uint256 public constant FRAGMENT3 = 4;
-    uint256 public constant FRAGMENT4 = 5;
-    uint256 public constant FRAGMENT5 = 6;
-    uint256 public constant FRAGMENT6 = 7;
-    uint256 public constant FRAGMENT7 = 8;
-    uint256 public constant FRAGMENT8 = 9;
-    uint256 public constant KEY = 10;
 
     // COINLANDER PARAMETERS
     address public COINLANDER;
@@ -62,20 +54,6 @@ contract CoinOne is ERC1155, Ownable, ReentrancyGuard {
     uint256 constant INCRSHARDREWARD = 11; // 1.1 Eth/Shard
     uint256 constant INCRBASIS = 10; //  
 
-    // FRAGMENT PARAMETERS
-    uint16 public constant MAXFRAGMENTS = 11111;
-    uint256[] private fragments; // Dynamic array of all fragment ids
-
-    // Max supply of each type 
-    uint16 constant numT1 = 3;
-    uint16 constant numT2 = 10;
-    uint16 constant numT3 = 10;
-    uint16 constant numT4 = 50;
-    uint16 constant numT5 = 100;
-    uint16 constant numT6 = 111;
-    uint16 constant numT7 = 222;
-    uint16 constant numT8 = MAXFRAGMENTS - numT1 - numT2 - numT3 - numT4 - numT5 - numT6 - numT7;
-
     // BALANCES AND ECONOMIC PARAMETERS 
     // Refund structure, tracks both Eth withdraw value and earned Shard 
 
@@ -95,8 +73,8 @@ contract CoinOne is ERC1155, Ownable, ReentrancyGuard {
     }
 
     cloinDeposit[] public cloinDeposits;
-
     iSeekers public seekers;
+    iKeepersVault private _keepersVault;
 
     event Stolen(address indexed by, address indexed from, uint256 bounty);
     event SweetRelease(address winner);
@@ -109,34 +87,7 @@ contract CoinOne is ERC1155, Ownable, ReentrancyGuard {
 
         // Add interface for seekers contract 
         seekers = iSeekers(seekersContract);
-
-        // Initialize the fragments array
-        for  (uint16 i = 0; i < numT1; i++){
-            fragments.push(FRAGMENT1);
-        }
-        for  (uint16 i = 0; i < numT2; i++){
-            fragments.push(FRAGMENT2);
-        }
-        for  (uint16 i = 0; i < numT3; i++){
-            fragments.push(FRAGMENT3);
-        }
-        for  (uint16 i = 0; i < numT4; i++){
-            fragments.push(FRAGMENT4);
-        }
-        for  (uint16 i = 0; i < numT5; i++){
-            fragments.push(FRAGMENT5);
-        }
-        for  (uint16 i = 0; i < numT6; i++){
-            fragments.push(FRAGMENT6);
-        }
-        for  (uint16 i = 0; i < numT7; i++){
-            fragments.push(FRAGMENT7);
-        }
-        for  (uint16 i = 0; i < numT8; i++){
-            fragments.push(FRAGMENT8);
-        }
     }
-
 
 
 
@@ -163,12 +114,8 @@ contract CoinOne is ERC1155, Ownable, ReentrancyGuard {
                 // If One Coin transfer is being attempted, check constraints 
                 if (ids[i] == ONECOIN){
 
-                    if (from == address(0) && balanceOf(COINLANDER, ONECOIN) > 0) {
-                        revert("There can only be one!");
-                    }
-
                     if (from != address(0) && !transferIsSteal) {
-                        revert("The one coin must be seized by force!");
+                        revert();
                     }
                 } 
             }
@@ -195,18 +142,9 @@ contract CoinOne is ERC1155, Ownable, ReentrancyGuard {
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
     function seize() external payable nonReentrant {
-        require(
-            released == false,
-            "The coin has been released and can no longer be stolen."
-        );
-        require(
-            msg.value == seizureStake,
-            "Must claim with exactly seizure stake"
-        );
-        require(
-            msg.sender != COINLANDER, 
-            "You can't steal from yourself!"
-        );
+        require(released == false);
+        require(msg.value == seizureStake);
+        require(msg.sender != COINLANDER);
 
         address previousOwner = COINLANDER;
         address newOwner = msg.sender;
@@ -280,11 +218,13 @@ contract CoinOne is ERC1155, Ownable, ReentrancyGuard {
         // Process rewards and refund for the winner 
         _processPaymentsAndRewards(msg.sender,msg.value);
 
+        _keepersVault.fundPrizePurse{value: prize}();
+
         // @TODO transfer seeker id 1 to winner 
     }
 
     modifier postReleaseOnly() {
-        require(released == true, "Only available after the release");
+        require(released == true);
         _;
     }
     
@@ -308,16 +248,16 @@ contract CoinOne is ERC1155, Ownable, ReentrancyGuard {
     }
 
     function burnShardForScale(uint256 seekerId, uint256 amount) external nonReentrant {
-        require(amount > 0, "You must specify a number of shard to burn");
-        require(balanceOf(msg.sender, SHARD) >= amount, "Gotta have shard to burn");
+        require(amount > 0);
+        require(balanceOf(msg.sender, SHARD) >= amount);
         _burn(msg.sender, SHARD, amount);
         uint256 scales = amount * SCALEPERSHARD;
         seekers.addScales(seekerId, scales);
     }
 
     function stakeShardForCloin(uint256 amount) external nonReentrant {
-        require(amount > 0, "You must specify a number of shard to burn");
-        require(balanceOf(msg.sender, SHARD) >= amount, "Gotta have shard to burn");
+        require(amount > 0);
+        require(balanceOf(msg.sender, SHARD) >= amount);
         _burn(msg.sender, SHARD, amount);
 
         cloinDeposit memory _deposit;
@@ -328,76 +268,19 @@ contract CoinOne is ERC1155, Ownable, ReentrancyGuard {
         cloinDeposits.push(_deposit);
     }
 
-    function burnShardForFragments(uint256 amount) external nonReentrant {
-        require(amount > 0, "You must specify a number of shard to burn");
-        require(released, "Only possible after the Sweet Release");
-        require(balanceOf(msg.sender, SHARD) >= amount, "Gotta have shard to burn");
-        require(seekers.balanceOf(msg.sender) != 0, "Must have a Seeker to claim fragments");
+    function burnShardForFragments(uint256 amount) external postReleaseOnly nonReentrant {
+        require(amount > 0);
+        require(balanceOf(msg.sender, SHARD) >= amount);
+        require(seekers.balanceOf(msg.sender) != 0);
     
         uint256 fragmentReward = amount * FRAGMENTMULTIPLIER; 
         _burn(msg.sender, SHARD, amount);
-
-        for(uint256 i = 0; i < amount; i++){
-            uint256 fragmentType = _getRandom(fragments);
-            _mint(msg.sender, fragmentType, fragmentReward, "0x0");
-            
-        }
+        _keepersVault.mintFragments(msg.sender, fragmentReward);
     }
 
-    function claimKeepersVault() external nonReentrant {
-        require(released, "The key to the vault cannot be assembled until the Sweet Release");
-        require(prize > 0, "The prize has already been claimed");
-        require(seekers.balanceOf(msg.sender) > 0, "Only a Seeker can claim wield the Keepers Key");
-        require(balanceOf(msg.sender, FRAGMENT1) > 0, "Must have a FRAGMENT1");
-        require(balanceOf(msg.sender, FRAGMENT2) > 0, "Must have a FRAGMENT2");
-        require(balanceOf(msg.sender, FRAGMENT3) > 0, "Must have a FRAGMENT3");
-        require(balanceOf(msg.sender, FRAGMENT4) > 0, "Must have a FRAGMENT4");
-        require(balanceOf(msg.sender, FRAGMENT5) > 0, "Must have a FRAGMENT5");
-        require(balanceOf(msg.sender, FRAGMENT6) > 0, "Must have a FRAGMENT6");
-        require(balanceOf(msg.sender, FRAGMENT7) > 0, "Must have a FRAGMENT7");
-        require(balanceOf(msg.sender, FRAGMENT8) > 0, "Must have a FRAGMENT8");
-
-        // Assemble the Key 
-        _burn(msg.sender, FRAGMENT1, 1);
-        _burn(msg.sender, FRAGMENT2, 1);
-        _burn(msg.sender, FRAGMENT3, 1);
-        _burn(msg.sender, FRAGMENT4, 1);
-        _burn(msg.sender, FRAGMENT5, 1);
-        _burn(msg.sender, FRAGMENT6, 1);
-        _burn(msg.sender, FRAGMENT7, 1);
-        _burn(msg.sender, FRAGMENT8, 1);
-        _mint(msg.sender, KEY, 1, "0x0");
-
-        // Unlock the vault
-        payable(msg.sender).transfer(prize);
-        prize = 0;
+    function _initKeepersVault(address keepersVaultAddress) external onlyOwner {
+        _keepersVault = iKeepersVault(keepersVaultAddress);
     }
-
-    function _getRandom(uint256[] storage _arr) private returns (uint256) {
-        uint256 random = _getRandomNumber(_arr);
-        uint256 fragType = _arr[random];
-
-        _arr[random] = _arr[_arr.length - 1]; // Set the idx of taken frag to most common 
-        _arr.pop();
-
-        return fragType;
-    }
-
-	// Thanks Manny - entropy is a bitch
-	function _getRandomNumber(uint256[] storage _arr) private view returns (uint256) {
-		uint256 random = uint256(
-			keccak256(
-				abi.encodePacked(
-					_arr,
-					blockhash(block.number - 1),
-					block.coinbase,
-					block.difficulty,
-					msg.sender
-				)
-			)
-		);
-		return random % _arr.length;
-	}
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 //                                                                                              //
@@ -409,7 +292,7 @@ contract CoinOne is ERC1155, Ownable, ReentrancyGuard {
 
         uint256 withdrawal = pendingWithdrawals[msg.sender]._withdrawValue;
         uint256 shard = pendingWithdrawals[msg.sender]._shardOwed;
-// @TODO clean this up; we shouldn't call a transfer with 0 value
+    // @TODO clean this up; we shouldn't call a transfer with 0 value
         if (withdrawal > 0 || shard > 0) {
             
             pendingWithdrawals[msg.sender]._withdrawValue = 0;
@@ -422,12 +305,12 @@ contract CoinOne is ERC1155, Ownable, ReentrancyGuard {
 
         } 
         else {
-            revert("Nothing to withdraw");
+            revert();
         }
     }
 
     function ownerWithdraw(uint256 amount) external payable onlyOwner{
-        require(amount <= reserve, "Withdawl value cant exceed reserve holdings");
+        require(amount <= reserve);
         payable(msg.sender).transfer(amount);
         reserve -= amount;
     }

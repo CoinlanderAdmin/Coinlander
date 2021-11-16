@@ -5,13 +5,13 @@ async function main() {
 
   const [deployer] = await ethers.getSigners()
   // Deploy the NFT contract
-  const Seekers = await ethers.getContractFactory("SeekersNoRevStrings")
+  const Seekers = await ethers.getContractFactory("Seekers")
   const seekers = await Seekers.deploy()
   await seekers.deployed()
   console.log("Seeker contract address", seekers.address)
 
   // Deploy the Coin contract 
-  const CoinOne = await ethers.getContractFactory("CoinOneNoRevStrings")
+  const CoinOne = await ethers.getContractFactory("CoinOne")
   const coinOne = await CoinOne.deploy(seekers.address)
   await coinOne.deployed()
   console.log("CoinOne address", coinOne.address)

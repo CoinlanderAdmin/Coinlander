@@ -8,7 +8,7 @@ import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "./utils/Counters.sol";
 import "./interfaces/iSeekers.sol";
 
-contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
+contract SeekersNoRevStrings is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
 	// Access control setup
 	bytes32 public constant KEEPERS_ROLE = keccak256("KEEPERS_ROLE"); // Role for Keepers
 	bytes32 public constant GAME_ROLE = keccak256("GAME_ROLE"); // Role for approved Coinlander game contracts
@@ -94,15 +94,9 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
 	//////////////////////////////////////////////////////////////////////////////////////////////////
 
 	function summonSeeker(uint256 summonCount) external payable nonReentrant {
-		require(
-			summonCount > 0 && summonCount <= MAXMINTABLE,
-			"Must mint at least one and less or equal to max");
-		require(
-			msg.value >= currentPrice * summonCount,
-			"sent insufficient Ether");
-		require(
-			(_seekerId.current() + summonCount) <= currentBuyableSeekers,
-			"Not enough Seekers available");
+		require(summonCount > 0 && summonCount <= MAXMINTABLE);
+		require(msg.value >= currentPrice * summonCount);
+		require((_seekerId.current() + summonCount) <= currentBuyableSeekers);
 
 		for (uint256 i = 0; i < summonCount; i++) {
 			_seekerId.increment();
@@ -111,10 +105,7 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
 	}
 
 	function birthSeeker(address to) external onlyGame {
-		require(
-			_internalId.current() < MAXSEEKERS,
-			"Looks like we already minted all the seekers"
-		);
+		require(_internalId.current() < MAXSEEKERS);
 		_internalId.increment();
 		mintSeeker(to, _internalId.current(), true);
 	}
@@ -180,7 +171,7 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
 	//////////////////////////////////////////////////////////////////////////////////////////////////
 
 	function activateFirstMint() external onlyGame {
-		require(firstMintActive == false, "Already active");
+		require(firstMintActive == false);
 		firstMintActive = true;
 		emit firstMintActivated();
 		currentBuyableSeekers += FIRSTMINT;
@@ -188,7 +179,7 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
 	}
 
 	function activateSecondMint() external onlyGame {
-		require(secondMintActive == false, "Already active");
+		require(secondMintActive == false);
 		secondMintActive = true;
 		emit secondMintActivated();
 		currentBuyableSeekers += SECONDMINT;
@@ -196,7 +187,7 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
 	}
 
 	function activateThirdMint() external onlyGame {
-		require(thirdMintActive == false, "Already active");
+		require(thirdMintActive == false);
 		thirdMintActive = true;
 		emit thirdMintActivated();
 		currentBuyableSeekers += THIRDMINT;
@@ -208,7 +199,7 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
 	}
 
 	modifier onlyAfterUncloaking() {
-		require(uncloaking == true, "only possible after uncloaking ceremony");
+		require(uncloaking == true);
 		_;
 	}
 
@@ -221,8 +212,8 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
 	//////////////////////////////////////////////////////////////////////////////////////////////////
 
 	function uncloakSeeker(uint256 id) external onlyAfterUncloaking {
-		require(isSeekerCloaked[id], "Seeker has already been revealed");
-		require(msg.sender == ownerOf(id), "Must own a Seeker to uncloak it");
+		require(isSeekerCloaked[id]);
+		require(msg.sender == ownerOf(id));
 
 		string memory _alignment = _getAlignment();
 
@@ -244,8 +235,8 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
 	}
 
 	function addScales(uint256 id, uint256 scales) external onlyGame {
-		require(ownerOf(id) != address(0), "Seeker must exist to be granted scales");
-		require(scales > 0, "Not adding any scales!");
+		require(ownerOf(id) != address(0));
+		require(scales > 0);
 		// @QUESTION should we explicitly check to make sure that they own the seeker theyre adding scales to?
 		uint256 _scales = attributesBySeekerId[id].scales;
 		if ((_scales + scales) >  MAXPIXELS) {
@@ -257,8 +248,8 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
 	}
 
 	function declareForClan(uint id, address clanAddress) external {
-		require(msg.sender == ownerOf(id), "Must own a Seeker to decalre for a clan");
-		require(clanAddress == address(clanAddress), "Invalid address provided");
+		require(msg.sender == ownerOf(id));
+		require(clanAddress == address(clanAddress));
 		
 		attributesBySeekerId[id].clan = clanAddress;
 		emit seekerDeclaredToClan(id,clanAddress);
@@ -380,17 +371,13 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
 	//////////////////////////////////////////////////////////////////////////////////////////////////
 	modifier onlyGame() {
 		require(
-			hasRole(GAME_ROLE, msg.sender),
-			"Caller must be an approved game contract"
-		);
+			hasRole(GAME_ROLE, msg.sender));
 		_;
 	}
 
 	modifier onlyKeepers() {
 		require(
-			hasRole(KEEPERS_ROLE, msg.sender),
-			"Caller must be an approved Keeper"
-		);
+			hasRole(KEEPERS_ROLE, msg.sender));
 		_;
 	}
 
