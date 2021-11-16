@@ -1,0 +1,2 @@
+Should the airdrop use the existing "withdraws" mapping? 
+Saves us new mapping struct but is maybe a little more convoluted.
