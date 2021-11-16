@@ -28,7 +28,7 @@ contract KeepersVault is iKeepersVault, ERC1155, Ownable, ReentrancyGuard {
 
     // FRAGMENT PARAMETERS
     uint16 public constant MAXFRAGMENTS = 1111;
-    uint256[] private fragments; // Dynamic array of all fragment ids
+    uint16[] private fragments; // Dynamic array of all fragment ids
 
     // Max supply of each type 
     uint16 constant numT1 = 3;
@@ -52,35 +52,35 @@ contract KeepersVault is iKeepersVault, ERC1155, Ownable, ReentrancyGuard {
 
         // Initialize the fragments array
         for  (uint16 i = 0; i < numT1; i++){
-            fragments.push(FRAGMENT1);
+            fragments.push(uint16(FRAGMENT1));
         }
         for  (uint16 i = 0; i < numT2; i++){
-            fragments.push(FRAGMENT2);
+            fragments.push(uint16(FRAGMENT2));
         }
         for  (uint16 i = 0; i < numT3; i++){
-            fragments.push(FRAGMENT3);
+            fragments.push(uint16(FRAGMENT3));
         }
         for  (uint16 i = 0; i < numT4; i++){
-            fragments.push(FRAGMENT4);
+            fragments.push(uint16(FRAGMENT4));
         }
         for  (uint16 i = 0; i < numT5; i++){
-            fragments.push(FRAGMENT5);
+            fragments.push(uint16(FRAGMENT5));
         }
         for  (uint16 i = 0; i < numT6; i++){
-            fragments.push(FRAGMENT6);
+            fragments.push(uint16(FRAGMENT6));
         }
         for  (uint16 i = 0; i < numT7; i++){
-            fragments.push(FRAGMENT7);
+            fragments.push(uint16(FRAGMENT7));
         }
         for  (uint16 i = 0; i < numT8; i++){
-            fragments.push(FRAGMENT8);
+            fragments.push(uint16(FRAGMENT8));
         }
     }
 
     function mintFragments(address _receiver, uint256 amount) external onlyOwner {
         for(uint256 i = 0; i < amount; i++){
-            uint256 fragmentType = _getRandom(fragments);
-            _mint(_receiver, fragmentType, 1, "0x0");
+            uint16 fragmentType = _getRandom(fragments);
+            _mint(_receiver, uint256(fragmentType), 1, "0x0");
             
         }
     }
@@ -117,9 +117,9 @@ contract KeepersVault is iKeepersVault, ERC1155, Ownable, ReentrancyGuard {
         prize += msg.value;
     }
 
-    function _getRandom(uint256[] storage _arr) private returns (uint256) {
-        uint256 random = _getRandomNumber(_arr);
-        uint256 fragType = _arr[random];
+    function _getRandom(uint16[] storage _arr) private returns (uint16) {
+        uint16 random = _getRandomNumber(_arr);
+        uint16 fragType = _arr[random];
 
         _arr[random] = _arr[_arr.length - 1]; 
         _arr.pop();
@@ -128,7 +128,7 @@ contract KeepersVault is iKeepersVault, ERC1155, Ownable, ReentrancyGuard {
     }
 
 	// Thanks Manny - entropy is a bitch
-	function _getRandomNumber(uint256[] storage _arr) private view returns (uint256) {
+	function _getRandomNumber(uint16[] storage _arr) private view returns (uint16) {
 		uint256 random = uint256(
 			keccak256(
 				abi.encodePacked(
@@ -140,6 +140,6 @@ contract KeepersVault is iKeepersVault, ERC1155, Ownable, ReentrancyGuard {
 				)
 			)
 		);
-		return random % _arr.length;
+		return uint16(random % _arr.length);
 	}
 }

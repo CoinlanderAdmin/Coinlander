@@ -10,7 +10,7 @@ import "./interfaces/iKeepersVault.sol";
 
 // @TODO investigate EIP-712 for external method calls 
 
-contract CoinOneNoRevStrings is ERC1155, Ownable, ReentrancyGuard {
+contract CoinOne is ERC1155, Ownable, ReentrancyGuard {
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 //                                                                                              //
@@ -80,13 +80,14 @@ contract CoinOneNoRevStrings is ERC1155, Ownable, ReentrancyGuard {
     event SweetRelease(address winner);
     
     // @TODO we need to figure out what the url schema for metadata looks like and plop that here in the constructor
-    constructor(address seekersContract) ERC1155("https://coinlander.one/api/token/{id}.json") {
+    constructor(address seekersContract, address keepeersVault) ERC1155("https://coinlander.one/api/token/{id}.json") {
         // Create the One Coin and set the deployer as initial COINLANDER
         _mint(msg.sender, ONECOIN, 1, "0x0");
         COINLANDER = msg.sender;
 
         // Add interface for seekers contract 
         seekers = iSeekers(seekersContract);
+        _keepersVault = iKeepersVault(keepeersVault);
     }
 
 
@@ -220,7 +221,7 @@ contract CoinOneNoRevStrings is ERC1155, Ownable, ReentrancyGuard {
 
         _keepersVault.fundPrizePurse{value: prize}();
 
-        // @TODO transfer seeker id 1 to winner 
+        seekers.sendWinnerSeeker(msg.sender);
     }
 
     modifier postReleaseOnly() {
@@ -278,10 +279,6 @@ contract CoinOneNoRevStrings is ERC1155, Ownable, ReentrancyGuard {
         _keepersVault.mintFragments(msg.sender, fragmentReward);
     }
 
-    function _initKeepersVault(address keepersVaultAddress) external onlyOwner {
-        _keepersVault = iKeepersVault(keepersVaultAddress);
-    }
-
 //////////////////////////////////////////////////////////////////////////////////////////////////
 //                                                                                              //
 //                                  MAGIC INTERNET MONEY BUSINESS                               //
@@ -292,12 +289,13 @@ contract CoinOneNoRevStrings is ERC1155, Ownable, ReentrancyGuard {
 
         uint256 withdrawal = pendingWithdrawals[msg.sender]._withdrawValue;
         uint256 shard = pendingWithdrawals[msg.sender]._shardOwed;
-    // @TODO clean this up; we shouldn't call a transfer with 0 value
-        if (withdrawal > 0 || shard > 0) {
+
+        if (withdrawal > 0) {
             
             pendingWithdrawals[msg.sender]._withdrawValue = 0;
             payable(msg.sender).transfer(withdrawal);
-
+        }
+        if (shard > 0) {
             // Seeker reward
             seekers.birthSeeker(msg.sender); 
             // Shard reward 

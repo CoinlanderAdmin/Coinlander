@@ -10,19 +10,20 @@ async function main() {
   await seekers.deployed()
   console.log("Seeker contract address", seekers.address)
 
-  // Deploy the Coin contract 
-  const CoinOne = await ethers.getContractFactory("CoinOne")
-  const coinOne = await CoinOne.deploy(seekers.address)
-  await coinOne.deployed()
-  console.log("CoinOne address", coinOne.address)
-
-  // Deploy the Coin contract 
+  // Deploy the Keepers Vault contract 
   const KeepersVault = await ethers.getContractFactory("KeepersVault")
   const keepersVault = await KeepersVault.deploy(seekers.address)
   await keepersVault.deployed()
   console.log("KeepersVault address", keepersVault.address)
 
-  coinOne._initKeepersVault(keepersVault.address)
+  // Deploy the Coin contract 
+  const CoinOne = await ethers.getContractFactory("CoinOne")
+  const coinOne = await CoinOne.deploy(seekers.address, keepersVault.address)
+  await coinOne.deployed()
+  console.log("CoinOne address", coinOne.address)
+
+
+
 }
 
 main()

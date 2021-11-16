@@ -8,7 +8,7 @@ import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "./utils/Counters.sol";
 import "./interfaces/iSeekers.sol";
 
-contract SeekersNoRevStrings is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
+contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
 	// Access control setup
 	bytes32 public constant KEEPERS_ROLE = keccak256("KEEPERS_ROLE"); // Role for Keepers
 	bytes32 public constant GAME_ROLE = keccak256("GAME_ROLE"); // Role for approved Coinlander game contracts
@@ -196,6 +196,10 @@ contract SeekersNoRevStrings is ERC721Enumerable, iSeekers, AccessControl, Reent
 
 	function performUncloaking() external onlyGame {
 		uncloaking = true;
+	}
+
+	function sendWinnerSeeker(address winner) external onlyGame {
+		_transfer(ownerOf(1), winner, 1);
 	}
 
 	modifier onlyAfterUncloaking() {
