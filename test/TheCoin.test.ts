@@ -1,9 +1,11 @@
 import { ethers } from "hardhat"
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers"
 import { CoinOne__factory, CoinOne } from "../typechain"
-import { Immortals__factory, Immortals } from "../typechain"
+import { Seekers__factory, Seekers } from "../typechain"
+import { KeepersVault__factory, KeepersVault } from "../typechain"
 import { expect } from "chai"
 import { BigNumber, utils } from "ethers"
+
 describe("CoinOne", function () {
   let owner: SignerWithAddress
   let userA: SignerWithAddress
@@ -12,8 +14,12 @@ describe("CoinOne", function () {
   let accounts: SignerWithAddress[]
   let CoinOne: CoinOne__factory
   let coinOne: CoinOne
-  let Immortals: Immortals__factory
-  let immortals: Immortals
+  let Seekers: Seekers__factory
+  let seekers: Seekers
+  let KeepersVault: KeepersVault__factory
+  let keepersVault: KeepersVault
+  let SS: BigNumber
+  let oldSS: BigNumber
 
 
   before(async function () {
@@ -23,20 +29,26 @@ describe("CoinOne", function () {
       owner
     )) as CoinOne__factory
 
-    Immortals = (await ethers.getContractFactory(
-      "Immortals",
+    Seekers = (await ethers.getContractFactory(
+      "Seekers",
       owner
-    )) as Immortals__factory
+    )) as Seekers__factory
+
+    KeepersVault = (await ethers.getContractFactory(
+      "KeepersVault",
+      owner
+    )) as KeepersVault__factory
   })
 
   beforeEach(async function () {
-    immortals = await Immortals.deploy()
-    coinOne = await CoinOne.deploy(immortals.address)
-    await immortals.transferOwnership(coinOne.address)
+    seekers = await Seekers.deploy()
+    keepersVault = await KeepersVault.deploy(seekers.address)
+    coinOne = await CoinOne.deploy(seekers.address, keepersVault.address)
+    await seekers.addGameContract(coinOne.address)
   })
 
   it("can be deployed", async function () {
-    const coinOne = await CoinOne.deploy(immortals.address)
+    const coinOne = await CoinOne.deploy(seekers.address, keepersVault.address)
     await coinOne.deployed()
   })
 
@@ -45,110 +57,122 @@ describe("CoinOne", function () {
       expect(owner.address).to.equal(await coinOne.COINLANDER())
     })
 
-    it("creates a single token ", async () => {
-      expect(await coinOne.totalSupply()).to.equal(1)
-    })
-
-    it("assigns the token to the creator", async () => {
-      expect(await coinOne.balanceOf(owner.address)).to.equal(1)
+    it("creates a single token and assigns it to deployer", async () => {
+      expect(await coinOne.balanceOf(owner.address, 0)).to.equal(1)
     })
   })
 
   describe("before stealing", () => {
-    let SS: BigNumber
     beforeEach(async function () {
       SS = await coinOne.seizureStake()
-      await coinOne.connect(userA).steal({ value: SS })
+      await coinOne.connect(userA).seize({ value: SS })
     })
 
     it("does not allow the owner to steal", async () => {
       SS = await coinOne.seizureStake()
-      await expect(coinOne.connect(userA).steal({ value: SS })).to.be.revertedWith(
-        "You can't steal from yourself!")
+      await expect(coinOne.connect(userA).seize({ value: SS })).to.be.revertedWith("")
     })
 
     it("requires the value is exactly the SS", async () => {
       SS = await coinOne.seizureStake()
-      await expect(coinOne.connect(userB).steal({ value: SS.sub(1) })).to.be.revertedWith(
-        "Must claim with exactly seizure stake")
+      await expect(coinOne.connect(userB).seize({ value: SS.sub(1) })).to.be.revertedWith("")
     })
   })
   
-  describe("once holding", () => {
-    let SS: BigNumber
+  describe("once holding the One Coin", () => {
+    
     beforeEach(async function () {
       SS = await coinOne.seizureStake()
-      await coinOne.connect(userA).steal({ value: SS })
+      await coinOne.connect(userA).seize({ value: SS })
     })
 
     it("does not let the holder send the One Coin", async () => {
-      await expect(coinOne.connect(userA).transfer(userB.address, 1)).to.be.revertedWith(
-        "The one coin cannot be transferred except by stealing until it is released.")
+      await expect(coinOne.connect(userA).safeTransferFrom(userA.address,userB.address, 0, 1, ethers.utils.hexValue(0))).to.be.revertedWith("")
     })
 
-    it("sets the deposit according to the seizure price less platform take", async () => {
-      let reserveA = await coinOne.reserve()
-      await expect((await coinOne.deposit())).to.equal(SS.sub(reserveA))
-      SS = await coinOne.seizureStake()
-      await coinOne.connect(userB).steal({ value: SS })
-      let reserveB = (await coinOne.reserve()).sub(reserveA)
-      await expect((await coinOne.deposit())).to.equal(SS.sub(reserveB))
-    })
-  })
-
-  describe("after stealing", () => {
-    let SS: BigNumber
-    beforeEach(async function () {
-      SS = await coinOne.seizureStake()
-      await coinOne.connect(userA).steal({ value: SS })
-    })
-
-    it("CoinOne belongs to the stealer", async () => {
+    it("Coinlander belongs to the stealer", async () => {
       expect(
-        await (await coinOne.balanceOf(userA.address)).toNumber()
+        await (await coinOne.balanceOf(userA.address, 0)).toNumber()
       ).to.equal(1)
+    })
+
+    it("stealer is the COINLANDER", async () => {
       expect(await coinOne.COINLANDER()).to.equal(userA.address)
     })
+  })
+  
 
-    it("the SS has increased", async () => {
-      const mss = await coinOne.seizureStake()
-      expect(mss.gt(SS)).to.be.true
+  describe("after the coin is seized", () => {
+    beforeEach(async function () {
+      SS = await coinOne.seizureStake()
+      await coinOne.connect(userA).seize({ value: SS })
+      oldSS = SS
+      SS = await coinOne.seizureStake()
+      await coinOne.connect(userB).seize({ value: SS })
+    })
+
+    it("sets the withdraw ammt according to the seizure price less platform take", async () => {
+      let w = await coinOne.getPendingWithdrawl(userA.address)
+      console.log("pending withdrawl:", w)
+      let takeRate = await coinOne.PERCENTRESERVES()
+      console.log("take rate:", takeRate)
+      let take = oldSS.mul(takeRate).div(10000)
+      console.log("test calc'd take", take)
+      await expect(w).to.equal(oldSS.sub(take))
+    })
+
+    it("sets the shard reward according to seizure price", async () => {
+      SS = await coinOne.seizureStake()
+      await coinOne.connect(userB).seize({ value: SS })
+      let s = await coinOne.getPendingShardReward(userA.address)
+      expect(s).to.equal(1)
+    })
+
+    it("the seizure stake has increased according to the increase rate", async () => {
+      let r = (await coinOne.PERCENTRATEINCREASE()).div(10000)
+      let i = oldSS.add(oldSS.mul(r)) 
+      expect(SS).to.equal(i)
     })
   })
 
   describe("upon withdrawDeposit", () => {
-    let SS: BigNumber
     beforeEach(async function () {
       SS = await coinOne.seizureStake()
-      await coinOne.connect(userA).steal({ value: SS })
+      await coinOne.connect(userA).seize({ value: SS })
+      oldSS = SS
       SS = await coinOne.seizureStake()
-      await coinOne.connect(userB).steal({ value: SS })
+      await coinOne.connect(userB).seize({ value: SS })
     })
 
     it("reverts if there isn't anything to withdraw", async () => {
-      await expect(coinOne.connect(userB).withdrawDeposit()).to.be.revertedWith(
-        "Nothing to withdraw")
+      await expect(coinOne.connect(userB).claimRefundAndShard()).to.be.revertedWith("")
     })
 
     it("pays the user their deposit", async () => {
       let beforeBalance = await userA.getBalance()
-      await coinOne.connect(userA).withdrawDeposit()
+      let refund = await coinOne.getPendingWithdrawl(userA.address)
+      await coinOne.connect(userA).claimRefundAndShard()
       let afterBalance = await userA.getBalance()
-      expect(afterBalance.gt(beforeBalance)).to.be.true
+      expect(afterBalance).to.equal(beforeBalance.sub(refund))
     })
 
-    it("mints an Immortal for them", async () => {
-      await coinOne.connect(userA).withdrawDeposit()
-      expect(await (await immortals.balanceOf(userA.address)).toNumber()
+    it ("mints a shard for them", async () => {
+      let beforeBalance = await coinOne.balanceOf(userA.address,1)
+      expect(beforeBalance).to.equal(0)
+      await coinOne.connect(userA).claimRefundAndShard()
+      let afterBalance = await coinOne.balanceOf(userA.address,1)
+      expect(afterBalance).to.equal(1)
+    })
+
+    it("mints a Seeker for them", async () => {
+      await coinOne.connect(userA).claimRefundAndShard()
+      expect(await (await seekers.balanceOf(userA.address)).toNumber()
       ).to.equal(1)
     })
 
     it("does not let them withdraw again", async ()=> {
-      await coinOne.connect(userA).withdrawDeposit()
-      await expect(coinOne.connect(userB).withdrawDeposit()).to.be.revertedWith(
-        "Nothing to withdraw")
+      await coinOne.connect(userA).claimRefundAndShard()
+      await expect(coinOne.connect(userA).claimRefundAndShard()).to.be.revertedWith("")
     })
   })
-
-  
 })
