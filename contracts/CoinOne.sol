@@ -7,7 +7,7 @@ import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "./interfaces/iSeekers.sol";
 import "./interfaces/iKeepersVault.sol";
-import "hardhat/console.sol";
+// import "hardhat/console.sol";
 
 // @TODO investigate EIP-712 for external method calls 
 
@@ -44,6 +44,7 @@ contract CoinOne is ERC1155, Ownable, ReentrancyGuard {
     
     // ECONOMIC STATE VARS 
     uint256 public seizureStake = 5 * 10**16; // First price for Coinlander 0.05Eth
+    uint256 private previousSeizureStake = 0; 
     uint256 public prize = 0; // Prize pool balance
     uint256 private reserve = 0; // Treasury balance 
 
@@ -62,6 +63,7 @@ contract CoinOne is ERC1155, Ownable, ReentrancyGuard {
     struct withdrawParams {
         uint256 _withdrawValue;
         uint256 _shardOwed;
+        uint256 _seekersOwed;
     } 
 
     mapping(address => withdrawParams) public pendingWithdrawals;
@@ -155,7 +157,7 @@ contract CoinOne is ERC1155, Ownable, ReentrancyGuard {
         _stealTransfer(previousOwner, newOwner);
 
         // Establish rewards and refunds 
-        _processPaymentsAndRewards(previousOwner, msg.value);
+        _processPaymentsAndRewards(previousOwner, previousSeizureStake);
 
         // Trigger game events if price is worthy 
         _processGameEvents();
@@ -166,24 +168,24 @@ contract CoinOne is ERC1155, Ownable, ReentrancyGuard {
             
             // Set aside funds for treasury and prize pool
             uint256 _take = (value * PERCENTRESERVES) / PERCENTBASIS;
-            console.log("take is %s",_take);
             uint256 _prize = (_take * PERCENTPRIZE) / PERCENTBASIS;
-            console.log("prize is %s",_prize);
             reserve += (_take - _prize);
             prize += _prize; 
 
-            uint256 deposit = seizureStake - _take;
-            console.log("deposit is %s", deposit);
+            uint256 deposit = value - _take;
             pendingWithdrawals[previousOwner]._withdrawValue += deposit;
 
-            uint256 shardReward = _calculateShardReward(seizureStake);
+            uint256 shardReward = _calculateShardReward(previousSeizureStake);
             pendingWithdrawals[previousOwner]._shardOwed += shardReward;
+
+            pendingWithdrawals[previousOwner]._seekersOwed += 1;
 
             // Handle all cases that aren't the last 
             if (!released) {
-
+                // Store current seizure as previous
+                previousSeizureStake = seizureStake;
                 // Determine what it will cost to seize next time
-                seizureStake = value + ((value * PERCENTRATEINCREASE) / PERCENTBASIS);
+                seizureStake = seizureStake + ((seizureStake * PERCENTRATEINCREASE) / PERCENTBASIS);
             }
     }
 
@@ -287,39 +289,43 @@ contract CoinOne is ERC1155, Ownable, ReentrancyGuard {
 //                                                                                              //
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
-    function claimRefundAndShard() external nonReentrant {
+    // Method for claiming all owed rewards and payments: ether refunds, shards and seekers 
+    function claimAll() external nonReentrant {
 
         uint256 withdrawal = pendingWithdrawals[msg.sender]._withdrawValue;
-        console.log("withdrawal %s", withdrawal);
         uint256 shard = pendingWithdrawals[msg.sender]._shardOwed;
-        console.log("shard %s", shard);
-        
+        uint256 seeks = pendingWithdrawals[msg.sender]._seekersOwed;
+
         if (withdrawal > 0) {
-            
             pendingWithdrawals[msg.sender]._withdrawValue = 0;
             payable(msg.sender).transfer(withdrawal);
         }
-        if (shard > 0) {
-            // Seeker reward
-            seekers.birthSeeker(msg.sender); 
-            // Shard reward 
-            _mint(msg.sender, SHARD, shard, "0x0");
 
+        if (shard > 0) {
+            pendingWithdrawals[msg.sender]._shardOwed = 0;
+            _mint(msg.sender, SHARD, shard, "0x0");
         } 
+
+        if (seeks > 0){
+            pendingWithdrawals[msg.sender]._seekersOwed = 0;
+            for (uint256 i = 0; i < seeks; i++){
+                seekers.birthSeeker(msg.sender);
+            }
+        }
         else {
             revert();
         }
     }
 
-    function ownerWithdraw(uint256 amount) external payable onlyOwner{
-        require(amount <= reserve);
+    function ownerWithdraw() external payable onlyOwner{
+        require(reserve > 0);
+        uint256 amount = reserve;
+        reserve = 0;
         payable(msg.sender).transfer(amount);
-        reserve -= amount;
     }
 
     function _calculateShardReward(uint256 _value) private pure returns (uint256) {
         uint256 reward = BASESHARDREWARD;
-        // 1 additional shard for each 0.5Eth
         reward += (_value/10**18) * INCRBASIS / INCRSHARDREWARD;
         return reward;  
     }
@@ -330,5 +336,9 @@ contract CoinOne is ERC1155, Ownable, ReentrancyGuard {
 
     function getPendingShardReward(address _user) external view returns (uint256) {
         return pendingWithdrawals[_user]._shardOwed;
+    }
+
+    function getPendingSeekerReward(address _user) external view returns (uint256) {
+        return pendingWithdrawals[_user]._seekersOwed;
     }
 }

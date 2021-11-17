@@ -5,6 +5,7 @@ import { Seekers__factory, Seekers } from "../typechain"
 import { KeepersVault__factory, KeepersVault } from "../typechain"
 import { expect } from "chai"
 import { BigNumber, utils } from "ethers"
+import { timeStamp } from "console"
 
 describe("CoinOne", function () {
   let owner: SignerWithAddress
@@ -37,7 +38,7 @@ describe("CoinOne", function () {
     KeepersVault = (await ethers.getContractFactory(
       "KeepersVault",
       owner
-    )) as KeepersVault__factory
+    )) as KeepersVault__factory   
   })
 
   beforeEach(async function () {
@@ -52,7 +53,7 @@ describe("CoinOne", function () {
     await coinOne.deployed()
   })
 
-  describe("constructor", () => {
+  describe("during construction", () => {
     it("sets the creator as the holder", async () => {
       expect(owner.address).to.equal(await coinOne.COINLANDER())
     })
@@ -70,12 +71,12 @@ describe("CoinOne", function () {
 
     it("does not allow the owner to steal", async () => {
       SS = await coinOne.seizureStake()
-      await expect(coinOne.connect(userA).seize({ value: SS })).to.be.revertedWith("")
+      await expect(coinOne.connect(userA).seize({ value: SS })).to.be.reverted
     })
 
     it("requires the value is exactly the SS", async () => {
       SS = await coinOne.seizureStake()
-      await expect(coinOne.connect(userB).seize({ value: SS.sub(1) })).to.be.revertedWith("")
+      await expect(coinOne.connect(userB).seize({ value: SS.sub(1) })).to.be.reverted
     })
   })
   
@@ -87,13 +88,11 @@ describe("CoinOne", function () {
     })
 
     it("does not let the holder send the One Coin", async () => {
-      await expect(coinOne.connect(userA).safeTransferFrom(userA.address,userB.address, 0, 1, ethers.utils.hexValue(0))).to.be.revertedWith("")
+      await expect(coinOne.connect(userA).safeTransferFrom(userA.address,userB.address, 0, 1, "0x00")).to.be.revertedWith("")
     })
 
     it("Coinlander belongs to the stealer", async () => {
-      expect(
-        await (await coinOne.balanceOf(userA.address, 0)).toNumber()
-      ).to.equal(1)
+      await expect((await coinOne.balanceOf(userA.address, 0)).toNumber()).to.equal(1)
     })
 
     it("stealer is the COINLANDER", async () => {
@@ -111,31 +110,35 @@ describe("CoinOne", function () {
       await coinOne.connect(userB).seize({ value: SS })
     })
 
+    it("sets the new holder as COINLANDER", async () => {
+      await (expect(await coinOne.COINLANDER()).to.equal(userB.address))
+    })
+
     it("sets the withdraw ammt according to the seizure price less platform take", async () => {
       let w = await coinOne.getPendingWithdrawl(userA.address)
-      console.log("pending withdrawl:", w)
       let takeRate = await coinOne.PERCENTRESERVES()
-      console.log("take rate:", takeRate)
       let take = oldSS.mul(takeRate).div(10000)
-      console.log("test calc'd take", take)
       await expect(w).to.equal(oldSS.sub(take))
     })
 
     it("sets the shard reward according to seizure price", async () => {
-      SS = await coinOne.seizureStake()
-      await coinOne.connect(userB).seize({ value: SS })
       let s = await coinOne.getPendingShardReward(userA.address)
       expect(s).to.equal(1)
     })
 
     it("the seizure stake has increased according to the increase rate", async () => {
-      let r = (await coinOne.PERCENTRATEINCREASE()).div(10000)
-      let i = oldSS.add(oldSS.mul(r)) 
-      expect(SS).to.equal(i)
+      let r = (await coinOne.PERCENTRATEINCREASE()).mul(oldSS).div(10000)
+      let newSS = oldSS.add(r) 
+      expect(SS).to.equal(newSS)
+    })
+
+    it("sets that a seeker is owed", async () => {
+      let s = await coinOne.getPendingSeekerReward(userA.address)
+      expect(s).to.equal(1)
     })
   })
 
-  describe("upon withdrawDeposit", () => {
+  describe("upon claimAll", () => {
     beforeEach(async function () {
       SS = await coinOne.seizureStake()
       await coinOne.connect(userA).seize({ value: SS })
@@ -145,34 +148,157 @@ describe("CoinOne", function () {
     })
 
     it("reverts if there isn't anything to withdraw", async () => {
-      await expect(coinOne.connect(userB).claimRefundAndShard()).to.be.revertedWith("")
+      await expect(coinOne.connect(userB).claimAll()).to.be.reverted
     })
 
     it("pays the user their deposit", async () => {
       let beforeBalance = await userA.getBalance()
       let refund = await coinOne.getPendingWithdrawl(userA.address)
-      await coinOne.connect(userA).claimRefundAndShard()
+      await coinOne.connect(userA).claimAll()
       let afterBalance = await userA.getBalance()
-      expect(afterBalance).to.equal(beforeBalance.sub(refund))
+      expect(refund).to.be.gt(0)
+      expect(afterBalance).to.be.gt(beforeBalance)
     })
 
     it ("mints a shard for them", async () => {
       let beforeBalance = await coinOne.balanceOf(userA.address,1)
       expect(beforeBalance).to.equal(0)
-      await coinOne.connect(userA).claimRefundAndShard()
+      await coinOne.connect(userA).claimAll()
       let afterBalance = await coinOne.balanceOf(userA.address,1)
       expect(afterBalance).to.equal(1)
     })
 
     it("mints a Seeker for them", async () => {
-      await coinOne.connect(userA).claimRefundAndShard()
+      await coinOne.connect(userA).claimAll()
       expect(await (await seekers.balanceOf(userA.address)).toNumber()
       ).to.equal(1)
     })
 
     it("does not let them withdraw again", async ()=> {
-      await coinOne.connect(userA).claimRefundAndShard()
-      await expect(coinOne.connect(userA).claimRefundAndShard()).to.be.revertedWith("")
+      await coinOne.connect(userA).claimAll()
+      await expect(coinOne.connect(userA).claimAll()).to.be.reverted
+    })
+  })
+
+  describe("upon ownerWithdraw", () => {
+    beforeEach(async function () {
+      SS = await coinOne.seizureStake()
+      await coinOne.connect(userA).seize({ value: SS })
+      oldSS = SS
+      SS = await coinOne.seizureStake()
+      await coinOne.connect(userB).seize({ value: SS })
+    })
+
+    it("allows the owner to withdraw the reserve balance", async ()=> {
+      let beforeBalance = await owner.getBalance()
+      await coinOne.ownerWithdraw()
+      let afterBalance = await owner.getBalance()
+      expect(afterBalance).to.be.gt(beforeBalance)
+    })
+
+    it("does not allow a non-owner to withdraw the reserve balance", async ()=> {
+      await expect(coinOne.connect(userA).ownerWithdraw()).to.be.reverted
+    })
+
+    it("does not allow the owner to withdraw more than the reserve", async ()=> {
+      await coinOne.ownerWithdraw()
+      await expect(coinOne.ownerWithdraw()).to.be.reverted
+    })
+  })
+
+  describe("upon burnShardForScale", () => {
+    beforeEach(async function () {
+      SS = await coinOne.seizureStake()
+      await coinOne.connect(userA).seize({ value: SS })
+      SS = await coinOne.seizureStake()
+      await coinOne.connect(userB).seize({ value: SS })
+      await coinOne.connect(userA).claimAll()
+    })
+
+    it("requires that the user holds a shard", async ()=> {
+      await expect(coinOne.connect(userB).burnShardForScale(1,1)).to.be.reverted
+    })
+
+    it("requires that the user specifies a non-zero shard amount", async ()=> {
+      await expect(coinOne.connect(userA).burnShardForScale(1,0)).to.be.reverted
+    })
+
+    it("requires that the user specifies a valid seeker id", async ()=> {
+      await expect(coinOne.connect(userA).burnShardForScale(0,1)).to.be.reverted
+    })
+
+    it("requires that the user holds the amount of shard they're trying to burn", async ()=> {
+      await expect(coinOne.connect(userA).burnShardForScale(1,2)).to.be.reverted
+    })
+
+    it("successfully burns shard", async ()=> {
+      await coinOne.connect(userA).burnShardForScale(1,1)
+      expect(await coinOne.balanceOf(userA.address,1)).to.equal(0)
+    })
+  })
+
+  describe("upon stakeShardForCloin", () => {
+    beforeEach(async function () {
+      SS = await coinOne.seizureStake()
+      await coinOne.connect(userA).seize({ value: SS })
+      SS = await coinOne.seizureStake()
+      await coinOne.connect(userB).seize({ value: SS })
+      await coinOne.connect(userA).claimAll()
+    })
+
+    it("requires that the user holds a shard", async ()=> {
+      await expect(coinOne.connect(userB).stakeShardForCloin(1)).to.be.reverted
+    })
+
+    it("requires that the user specifies a non-zero shard amount", async ()=> {
+      await expect(coinOne.connect(userA).stakeShardForCloin(0)).to.be.reverted
+    })
+
+    it("requires that the user holds the amount of shard they're trying to stake", async ()=> {
+      await expect(coinOne.connect(userA).stakeShardForCloin(2)).to.be.reverted
+    })
+
+    it("successfully burns shard", async ()=> {
+      await coinOne.connect(userA).stakeShardForCloin(1)
+      expect(await coinOne.balanceOf(userA.address,1)).to.equal(0)
+    })
+
+    it("records the deposit successfully", async ()=> {
+      await coinOne.connect(userA).stakeShardForCloin(1)
+      let deposit = await coinOne.cloinDeposits(0)
+      expect(deposit.depositor).to.equal(userA.address)
+      expect(deposit.amount).to.equal(1)
+      expect(deposit.timestamp).to.not.equal(0)
+    })
+  })
+
+  describe("upon airdropShardPostRelease", () => {
+    beforeEach(async function () {
+      SS = await coinOne.seizureStake()
+      await coinOne.connect(userA).seize({ value: SS })
+      SS = await coinOne.seizureStake()
+      await coinOne.connect(userB).seize({ value: SS })
+      SS = await coinOne.seizureStake()
+      await coinOne.connect(userA).seize({ value: SS })
+      SS = await coinOne.seizureStake()
+      await coinOne.connect(userC).seize({ value: SS })
+      await coinOne.connect(userA).claimAll()
+      await coinOne.connect(userB).claimAll()
+    })
+
+    it("does not allow a non-owner to call this method", async ()=> {
+      await expect(coinOne.connect(userA).airdropShardPostRelease()).to.be.reverted
+    })
+
+    it("allows the owner to call this method", async ()=> {
+      await expect(coinOne.connect(owner).airdropShardPostRelease())
+    })
+
+    it("generates mints according to the number of seekers owned", async ()=> {
+      await coinOne.connect(owner).airdropShardPostRelease()
+      await expect(await coinOne.getPendingShardReward(userA.address)).to.equal(2)
+      await expect(await coinOne.getPendingShardReward(userB.address)).to.equal(1)
+      await expect(await coinOne.getPendingShardReward(userC.address)).to.equal(0)
     })
   })
 })

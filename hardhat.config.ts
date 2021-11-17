@@ -9,6 +9,9 @@ const config: HardhatUserConfig = {
     networks: {
         localhost  : {
         }
+    },
+    mocha: {
+        timeout: 150000
     }
 }
 
