@@ -281,30 +281,25 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
   }
 
   function _getAP(uint256 id) internal view returns (uint256[4] memory) {
-    uint256 minAP = 70; // Min possible sum of all attribute points
-    uint256 maxAP = 85; // Max possible sum of all attribute points
-    uint256 minSingle = 17; // Min possible single value
-    uint256 maxSingle = 25; // Max possible single value
-    uint256 sumAP = minAP;
+    uint256 minSingle = 17; 
+    uint256 maxSingle = 23; 
 
+    // Those born from the Coin are deterministically stronger 
     if (attributesBySeekerId[id].bornFromCoin) {
-        // Those born from the coin are deterministically stronger
-        sumAP = minAP + _getRandomNumber(maxAP - (minAP + COINAPOFFSET));
-        minSingle = 20; // Buff the minimum stat value
-    } else {
-        sumAP = minAP + _getRandomNumber(maxAP - minAP);
-    }
+        minSingle = 20; 
+        maxSingle = 25; 
+    } 
 
     // Determine 4 random attribute points
     uint256 range = maxSingle - minSingle;
-    uint256 ap1 = minSingle + _getRandomNumber(range);
-    uint256 ap2 = minSingle + _getRandomNumber(range);
-    uint256 ap3 = minSingle + _getRandomNumber(range);
-    uint256 ap4 = sumAP - ap1 - ap2 - ap3;
+    uint256 ap1 = minSingle + _getRandomNumber(range,0);
+    uint256 ap2 = minSingle + _getRandomNumber(range,ap1);
+    uint256 ap3 = minSingle + _getRandomNumber(range,ap2);
+    uint256 ap4 = minSingle + _getRandomNumber(range,ap3);
 
     // Shuffle them
     uint256[4] memory aps = [ap1, ap2, ap3, ap4];
-    for (uint256 i =0; i < aps.length; i++) {
+    for (uint256 i = 0; i < aps.length; i++) {
         uint256 n = i + uint256(keccak256(abi.encodePacked(block.timestamp))) % (aps.length -i);
         uint256 temp = aps[n];
         aps[n] = aps[i];
@@ -347,11 +342,12 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
   // Thanks Manny - entropy is a bitch
-  function _getRandomNumber(uint256 mod) private view returns (uint256) {
+  function _getRandomNumber(uint256 mod, uint256 r) private view returns (uint256) {
     uint256 random = uint256(
       keccak256(
         abi.encodePacked(
           mod,
+          r,
           blockhash(block.number - 1),
           block.coinbase,
           block.difficulty,
@@ -364,7 +360,7 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
   }
 
   function _pluck(uint256 mod, string[] memory sourceArray) internal view returns (string memory) {
-    uint256 rand = _getRandomNumber(mod);
+    uint256 rand = _getRandomNumber(mod,0);
     string memory output = sourceArray[rand % sourceArray.length];
     return output;
   }
@@ -393,8 +389,6 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
   function addKeeper(address newKeeper) public onlyKeepers {
     grantRole(KEEPERS_ROLE, newKeeper);
   }
-
-  // @TODO add remove role methods
 
   function supportsInterface(bytes4 interfaceId)
     public
