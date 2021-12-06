@@ -31,14 +31,14 @@ contract KeepersVault is iKeepersVault, ERC1155, Ownable, ReentrancyGuard {
     uint16[] private fragments; // Dynamic array of all fragment ids
 
     // Max supply of each type 
-    uint16 constant numT1 = 3;
-    uint16 constant numT2 = 10;
-    uint16 constant numT3 = 10;
-    uint16 constant numT4 = 50;
-    uint16 constant numT5 = 100;
-    uint16 constant numT6 = 111;
-    uint16 constant numT7 = 222;
-    uint16 constant numT8 = MAXFRAGMENTS - numT1 - numT2 - numT3 - numT4 - numT5 - numT6 - numT7;
+    uint16 public constant numT1 = 3;
+    uint16 public constant numT2 = 10;
+    uint16 public constant numT3 = 10;
+    uint16 public constant numT4 = 50;
+    uint16 public constant numT5 = 100;
+    uint16 public constant numT6 = 111;
+    uint16 public constant numT7 = 222;
+    uint16 public constant numT8 = MAXFRAGMENTS - numT1 - numT2 - numT3 - numT4 - numT5 - numT6 - numT7;
 
     iSeekers public seekers;
     uint256 public prize = 0; 
@@ -78,6 +78,7 @@ contract KeepersVault is iKeepersVault, ERC1155, Ownable, ReentrancyGuard {
     }
 
     function mintFragments(address _receiver, uint256 amount) external onlyOwner {
+        require(fragments.length >= amount);
         for(uint256 i = 0; i < amount; i++){
             uint16 fragmentType = _getRandom(fragments);
             _mint(_receiver, uint256(fragmentType), 1, "0x0");

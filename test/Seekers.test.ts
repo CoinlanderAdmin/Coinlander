@@ -3,6 +3,9 @@ import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers"
 import { Seekers__factory, Seekers } from "../typechain"
 import { expect } from "chai"
 import { BigNumber, utils } from "ethers"
+import { stringify } from "querystring"
+import "hardhat-gas-reporter"
+
 
 describe("Seekers", function () {
   let owner: SignerWithAddress
@@ -12,6 +15,7 @@ describe("Seekers", function () {
   let accounts: SignerWithAddress[]
   let Seekers: Seekers__factory
   let seekers: Seekers
+
   before(async function () {
     ;[owner, userA, userB, userC, ...accounts] = await ethers.getSigners()
     Seekers = (await ethers.getContractFactory(
@@ -60,6 +64,33 @@ describe("Seekers", function () {
     it("creates a Game Contract role and it can be assigned", async () => {
       await seekers.addGameContract(owner.address)
       expect(await seekers.hasRole(await (seekers.GAME_ROLE()), owner.address)).to.be.true
+    })
+  })
+
+  describe("upon setting and returning base uri", () => {
+    let id: BigNumber
+    beforeEach(async function () {
+      seekers = await Seekers.deploy()
+      await seekers.addGameContract(owner.address) // to simulate OneCoin contract
+      await seekers.birthSeeker(userA.address) 
+      id = await seekers.tokenOfOwnerByIndex(userA.address,0)
+    })
+    
+    it("sets the baseURI to the contracts preset value", async () => {
+      let expectedURI = "https://coinlander.one/seekers/" + String(id)
+      let returnedURI = await seekers.tokenURI(id)
+      expect(returnedURI).to.equal(expectedURI)
+    })
+
+    it("allows a keeper to change the base URI", async () => {
+      await seekers.setBaseURI("testString")
+      let expectedURI = "testString" + String(id)
+      let returnedURI = await seekers.tokenURI(id)
+      expect(returnedURI).to.equal(expectedURI)
+    })
+
+    it("does not allow a non-keeper to change the base URI", async () => {
+      await expect(seekers.connect(userA).setBaseURI("testString")).to.be.reverted
     })
   })
 
@@ -279,7 +310,6 @@ describe("Seekers", function () {
       await seekers.performUncloaking()
       await seekers.connect(userA).uncloakSeeker(id)
       let APs = await seekers.getApById(id)
-      console.log(APs)
       expect(APs[0]).to.be.gt(0)
       expect(APs[1]).to.be.gt(0)
       expect(APs[2]).to.be.gt(0)
@@ -290,7 +320,6 @@ describe("Seekers", function () {
       await seekers.performUncloaking()
       await seekers.connect(userA).uncloakSeeker(id)
       let alignment = await seekers.getAlignmentById(id)
-      console.log(alignment)
       expect(alignment).to.not.equal("")
     })
 
@@ -348,7 +377,5 @@ describe("Seekers", function () {
       await seekers.addScales(id,(maxScales + 1))
       expect(await seekers.getScaleCountById(id)).to.equal(maxScales)
     })
-
-
   })
 })

@@ -267,11 +267,11 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
   //                                                                                              //
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
-  function _baseURI() internal view virtual override returns (string memory) {
+  function _baseURI() internal view override returns (string memory) {
     return _baseTokenURI;
   }
 
-  function setBaseURI(string memory baseTokenURI) public virtual onlyKeepers {
+  function setBaseURI(string memory baseTokenURI) public onlyKeepers {
     _baseTokenURI = baseTokenURI;
   }
 
@@ -292,7 +292,7 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
 
     // Determine 4 random attribute points
     uint256 range = maxSingle - minSingle;
-    uint256 ap1 = minSingle + _getRandomNumber(range,0);
+    uint256 ap1 = minSingle + _getRandomNumber(range,id);
     uint256 ap2 = minSingle + _getRandomNumber(range,ap1);
     uint256 ap3 = minSingle + _getRandomNumber(range,ap2);
     uint256 ap4 = minSingle + _getRandomNumber(range,ap3);

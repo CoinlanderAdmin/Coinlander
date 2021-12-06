@@ -37,6 +37,7 @@ contract CoinOne is ERC1155, Ownable, ReentrancyGuard {
     uint256 public constant SWEETRELEASE = 883; 
 
     // ECONOMIC CONSTANTS  
+    // @TODO these don't need to be public, the contract source will be available  
     uint256 public constant PERCENTRATEINCREASE = 100; // 1% increase for each successive seizure 
     uint256 public constant PERCENTRESERVES = 75; // 0.75% goes to treasury 
     uint256 public constant PERCENTPRIZE = 4000; // 40.00% of revenue goes to prize pool     
@@ -233,6 +234,9 @@ contract CoinOne is ERC1155, Ownable, ReentrancyGuard {
         _;
     }
     
+    function getSeizureCount() external view returns(uint256) {
+        return seizureCount.current();
+    }
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -242,6 +246,7 @@ contract CoinOne is ERC1155, Ownable, ReentrancyGuard {
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
     // This is gas expensive, so only the Keepers can call it and pay the associated gas costs
+    // @TODO this needs to be re-worked. We'll run out of gas as it is now 
     function airdropShardPostRelease() external onlyOwner {
         address[] memory allSeekerHolders = seekers.allSeekerOwners();
         for (uint256 i = 0; i < allSeekerHolders.length; i++) {
