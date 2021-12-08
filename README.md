@@ -2,31 +2,26 @@
 
 The Coinlander Project is a community of creative collectors conspiring to conquer crypto’s quintessential question: what will be the most valuable token of all time? 
 
-We are on a quest to bring that token into the world. 
-Our method? Play. 
+**YOU ARE A SEEKER**
 
-We believe that human collaborative creativity, unlocked in its purest form through social and economic technology, can be the most potent value-generating engine the world has ever known. We aim to prove it by writing **The Epic of $COINLANDER**, together.
+Blessed by the Keepers high atop Mount Gargantua, you have but one one quest: to seize the COINLANDER-- A sacred artifact of insurmountable value, woven from the very chains of the Genesis Block, a spellbound relic that obeys five laws:
 
-The story is told by The Bard, who has told this tale a thousand times, over a thousand bottles.
+**THERE CAN ONLY BE ONE**
 
-He sings of an artifact of immense value. The legend, as he tells it, is that the artifact was found in the world’s oldest mine, the source of the genesis block, but it has since been lost to time...
+Only one Coinlander exists. Only one Coinlander will ever exist.
 
-He sings of an ancient guild, the Keepers, who appear to have rediscovered the artifact, trapped under a cryptographic spell, a spell they work in secret to break.
+**IT CAN ONLY BE SEIZED BY FORCE**
 
-The artifact is called **$COINLANDER**, and it obeys Three Laws:
+The Coinlander can only be had by seizing it from its current holder by force. And rest assured… others seek the power of the Coinlander for themselves.
 
-__*“There can be only ONE.”*__
+**AS IT IS SEIZED IT SHALL GROW**
 
-Only one Coinlander exists. Only one Coinlander will ever exist. It is written; it is programmed in.
+Each time the Coinlander is seized it grows in size, value, and power.
 
-__*“It cannot be HEDL.”*__
+**THOSE WHO HAVE HELD SHALL BE REWARDED**
 
-The Coinlander can only be had by seizing it from its current holder, by force.
+The Keeper’s blessings are bequeathed upon the Seekers who have held the coin. By taking the pilgrimage back to the Keeper’s Shrine the Keepers shall re-forge the powerless scraps of Coinlander that shed as it was taken from you… so that you may seize again
 
-__*“It only goes UP.”*__
+**ONLY ONE SHALL HOLD IT**
 
-To seize the Coinlander, one must be willing to sacrifice more than anyone has before. 
-
-*The legend tells of a day when the spell is broken, 
-when the $COINLANDER becomes free to possess,
-a day known only as The Sweet Release...*
+There shall come a day when the Coinlander can no longer grow; upon this fated moment the Coinlander shall be bequeathed to its last and final holder.
