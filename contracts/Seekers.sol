@@ -23,6 +23,7 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
   uint256 public currentBuyableSeekers = 0;
   uint256 public currentPrice = 0;
   uint256 private reserve = 0; // Contracts treasury balance
+  // @Todo need to actually implement an owners mint
   uint256 private constant KEEPERSEEKERS = 10; // Number of Seekers that Keepers can mint for themselves
   uint256 public constant MAXMINTABLE = 10; // Max seekers that can be purchased in one tx
   uint16 public constant MAXPIXELS = 1024; // 32x32 pixel grid
@@ -235,14 +236,13 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
         _APs[3], // Gamma
         attributesBySeekerId[id].scales,
         attributesBySeekerId[id].clan
-    ); // Dont change the number of scales
+      ); 
     attributesBySeekerId[id] = revealedAttributes;
   }
 
   function addScales(uint256 id, uint256 scales) external onlyGame {
     require(ownerOf(id) != address(0));
     require(scales > 0);
-    // @QUESTION should we explicitly check to make sure that they own the seeker theyre adding scales to?
     uint256 _scales = attributesBySeekerId[id].scales;
     if ((_scales + scales) >  MAXPIXELS) {
         attributesBySeekerId[id].scales = MAXPIXELS;
@@ -281,14 +281,14 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
   }
 
   function _getAP(uint256 id) internal view returns (uint256[4] memory) {
-    uint256 minSingle = 17; 
-    uint256 maxSingle = 23; 
+    uint256 minSingle = 17;
+    uint256 maxSingle = 23;
 
     // Those born from the Coin are deterministically stronger 
     if (attributesBySeekerId[id].bornFromCoin) {
         minSingle = 20; 
         maxSingle = 25; 
-    } 
+    }
 
     // Determine 4 random attribute points
     uint256 range = maxSingle - minSingle;
@@ -323,7 +323,8 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
         attributesBySeekerId[id].alpha,
         attributesBySeekerId[id].beta,
         attributesBySeekerId[id].gamma,
-        attributesBySeekerId[id].delta];
+        attributesBySeekerId[id].delta
+        ];
     return _aps;
   }
 

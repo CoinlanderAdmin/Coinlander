@@ -37,10 +37,9 @@ contract CoinOne is ERC1155, Ownable, ReentrancyGuard {
     uint256 public constant SWEETRELEASE = 883; 
 
     // ECONOMIC CONSTANTS  
-    // @TODO these don't need to be public, the contract source will be available  
-    uint256 public constant PERCENTRATEINCREASE = 100; // 1% increase for each successive seizure 
-    uint256 public constant PERCENTRESERVES = 75; // 0.75% goes to treasury 
-    uint256 public constant PERCENTPRIZE = 4000; // 40.00% of revenue goes to prize pool     
+    uint256 constant PERCENTRATEINCREASE = 100; // 1% increase for each successive seizure 
+    uint256 constant PERCENTRESERVES = 75; // 0.75% goes to treasury 
+    uint256 constant PERCENTPRIZE = 4000; // 40.00% of revenue goes to prize pool     
     uint256 constant PERCENTBASIS = 10000;
     
     // ECONOMIC STATE VARS 
@@ -60,7 +59,6 @@ contract CoinOne is ERC1155, Ownable, ReentrancyGuard {
     // BALANCES AND ECONOMIC PARAMETERS 
     // Refund structure, tracks both Eth withdraw value and earned Shard 
 
-    //@todo check gas needed vs 2 distinct mappings 
     struct withdrawParams {
         uint256 _withdrawValue;
         uint256 _shardOwed;

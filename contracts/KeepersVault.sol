@@ -110,8 +110,8 @@ contract KeepersVault is iKeepersVault, ERC1155, Ownable, ReentrancyGuard {
         _mint(msg.sender, KEY, 1, "0x0");
 
         // Unlock the vault
+        payable(msg.sender).transfer(prize); 
         prize = 0;
-        payable(msg.sender).transfer(prize);
     }
     
     function fundPrizePurse() payable public {
