@@ -30,15 +30,15 @@ contract CoinOne is ERC1155, Ownable, ReentrancyGuard {
     Counters.Counter private seizureCount; 
 
     // GAME CONSTANTS
-    uint256 public constant FIRSTSEEKERMINTTHRESH = 233;
-    uint256 public constant SECONDSEEKERMINTTHRESH = 534;
-    uint256 public constant THIRDSEEKERMINTTHRESH = 644;
+    uint256 public constant FIRSTSEEKERMINTTHRESH = 290;
+    uint256 public constant SECONDSEEKERMINTTHRESH = 666;
+    uint256 public constant THIRDSEEKERMINTTHRESH = 784;
     uint256 public constant UNCLOAKINGTHRESH = 464;
     uint256 public constant SWEETRELEASE = 883; 
 
     // ECONOMIC CONSTANTS  
-    uint256 constant PERCENTRATEINCREASE = 100; // 1% increase for each successive seizure 
-    uint256 constant PERCENTRESERVES = 75; // 0.75% goes to treasury 
+    uint256 constant PERCENTRATEINCREASE = 80; // 1% increase for each successive seizure 
+    uint256 constant PERCENTRESERVES = 50; // 0.50% goes to treasury 
     uint256 constant PERCENTPRIZE = 4000; // 40.00% of revenue goes to prize pool     
     uint256 constant PERCENTBASIS = 10000;
     
@@ -50,10 +50,10 @@ contract CoinOne is ERC1155, Ownable, ReentrancyGuard {
 
     // SHARD CONSTANTS
     uint256 constant SEEKERSHARDDROP = 1; // One shard to each Seeker holder 
-    uint256 constant SCALEPERSHARD = 1; // One scale per Shard 
+    uint256 constant SCALEPERSHARD = 8; // Eight scales per Shard 
     uint256 constant FRAGMENTMULTIPLIER = 1; // One fragment per Shard 
-    uint256 constant BASESHARDREWARD = 1; // 10 Shard guaranteed per seizure
-    uint256 constant INCRSHARDREWARD = 11; // 1.1 Eth/Shard
+    uint256 constant BASESHARDREWARD = 1; // 1 Shard guaranteed per seizure
+    uint256 constant INCRSHARDREWARD = 30; // 3 Eth/Shard
     uint256 constant INCRBASIS = 10; //  
 
     // BALANCES AND ECONOMIC PARAMETERS 
