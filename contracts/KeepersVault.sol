@@ -31,14 +31,14 @@ contract KeepersVault is iKeepersVault, ERC1155, Ownable, ReentrancyGuard {
     uint16[] private fragments; // Dynamic array of all fragment ids
 
     // Max supply of each type 
-    uint16 constant numT1 = 3;
-    uint16 constant numT2 = 10;
-    uint16 constant numT3 = 10;
-    uint16 constant numT4 = 50;
-    uint16 constant numT5 = 100;
-    uint16 constant numT6 = 111;
-    uint16 constant numT7 = 222;
-    uint16 constant numT8 = MAXFRAGMENTS - numT1 - numT2 - numT3 - numT4 - numT5 - numT6 - numT7;
+    uint16 public constant numT1 = 3;
+    uint16 public constant numT2 = 10;
+    uint16 public constant numT3 = 10;
+    uint16 public constant numT4 = 50;
+    uint16 public constant numT5 = 100;
+    uint16 public constant numT6 = 111;
+    uint16 public constant numT7 = 222;
+    uint16 public constant numT8 = MAXFRAGMENTS - numT1 - numT2 - numT3 - numT4 - numT5 - numT6 - numT7;
 
     iSeekers public seekers;
     uint256 public prize = 0; 
@@ -78,24 +78,25 @@ contract KeepersVault is iKeepersVault, ERC1155, Ownable, ReentrancyGuard {
     }
 
     function mintFragments(address _receiver, uint256 amount) external onlyOwner {
+        require(fragments.length >= amount);
         for(uint256 i = 0; i < amount; i++){
-            uint16 fragmentType = _getRandom(fragments);
+            uint256 fragmentType = _getRandom(fragments);
             _mint(_receiver, uint256(fragmentType), 1, "0x0");
             
         }
     }
 
     function claimKeepersVault() external nonReentrant {
-        require(prize > 0);
-        require(seekers.balanceOf(msg.sender) > 0);
-        require(balanceOf(msg.sender, FRAGMENT1) > 0);
-        require(balanceOf(msg.sender, FRAGMENT2) > 0);
-        require(balanceOf(msg.sender, FRAGMENT3) > 0);
-        require(balanceOf(msg.sender, FRAGMENT4) > 0);
-        require(balanceOf(msg.sender, FRAGMENT5) > 0);
-        require(balanceOf(msg.sender, FRAGMENT6) > 0);
-        require(balanceOf(msg.sender, FRAGMENT7) > 0);
-        require(balanceOf(msg.sender, FRAGMENT8) > 0);
+        require(prize > 0, "There must be something to claim");
+        require(seekers.balanceOf(msg.sender) > 0, "Must have a seeker to open the vault");
+        require(balanceOf(msg.sender, FRAGMENT1) > 0, "Must have a frag1");
+        require(balanceOf(msg.sender, FRAGMENT2) > 0, "Must have a frag2");
+        require(balanceOf(msg.sender, FRAGMENT3) > 0, "Must have a frag3");
+        require(balanceOf(msg.sender, FRAGMENT4) > 0, "Must have a frag4");
+        require(balanceOf(msg.sender, FRAGMENT5) > 0, "Must have a frag5");
+        require(balanceOf(msg.sender, FRAGMENT6) > 0, "Must have a frag6");
+        require(balanceOf(msg.sender, FRAGMENT7) > 0, "Must have a frag7");
+        require(balanceOf(msg.sender, FRAGMENT8) > 0, "Must have a frag8");
 
         // Assemble the Key 
         _burn(msg.sender, FRAGMENT1, 1);
@@ -109,7 +110,7 @@ contract KeepersVault is iKeepersVault, ERC1155, Ownable, ReentrancyGuard {
         _mint(msg.sender, KEY, 1, "0x0");
 
         // Unlock the vault
-        payable(msg.sender).transfer(prize);
+        payable(msg.sender).transfer(prize); 
         prize = 0;
     }
     
@@ -117,18 +118,18 @@ contract KeepersVault is iKeepersVault, ERC1155, Ownable, ReentrancyGuard {
         prize += msg.value;
     }
 
-    function _getRandom(uint16[] storage _arr) private returns (uint16) {
-        uint16 random = _getRandomNumber(_arr);
-        uint16 fragType = _arr[random];
+    function _getRandom(uint16[] storage _arr) private returns (uint256) {
+        uint256 random = _getRandomNumber(_arr);
+        uint256 fragType = uint256(_arr[random]);
 
         _arr[random] = _arr[_arr.length - 1]; 
         _arr.pop();
-
+ 
         return fragType;
     }
 
 	// Thanks Manny - entropy is a bitch
-	function _getRandomNumber(uint16[] storage _arr) private view returns (uint16) {
+	function _getRandomNumber(uint16[] storage _arr) private view returns (uint256) {
 		uint256 random = uint256(
 			keccak256(
 				abi.encodePacked(
@@ -140,6 +141,6 @@ contract KeepersVault is iKeepersVault, ERC1155, Ownable, ReentrancyGuard {
 				)
 			)
 		);
-		return uint16(random % _arr.length);
+		return (random % _arr.length);
 	}
 }

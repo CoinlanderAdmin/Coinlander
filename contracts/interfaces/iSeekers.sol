@@ -14,10 +14,11 @@ interface iSeekers is IERC721Enumerable {
     event thirdMintActivated();
     event uncloakingAvailable();
     event seekerDeclaredToClan(uint256 indexed seekerId, address indexed clan);
+    event seekerBornFromCoin(uint256 id, address owner);
 
 
     function summonSeeker(uint256 summonCount) external payable;
-    function birthSeeker(address to) external;
+    function birthSeeker(address to) external returns (uint256);
     function getSeekerCount() external view returns (uint256);
     function allSeekerOwners() external view returns (address[] memory);
     function activateFirstMint() external;

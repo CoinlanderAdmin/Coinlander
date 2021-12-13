@@ -7,6 +7,7 @@ import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "./interfaces/iSeekers.sol";
 import "./interfaces/iKeepersVault.sol";
+// import "hardhat/console.sol";
 
 // @TODO investigate EIP-712 for external method calls 
 
@@ -36,13 +37,14 @@ contract CoinOne is ERC1155, Ownable, ReentrancyGuard {
     uint256 public constant SWEETRELEASE = 883; 
 
     // ECONOMIC CONSTANTS  
-    uint256 public constant PERCENTRATEINCREASE = 100; // 1% increase for each successive seizure 
+    uint256 constant PERCENTRATEINCREASE = 100; // 1% increase for each successive seizure 
     uint256 constant PERCENTRESERVES = 75; // 0.75% goes to treasury 
-    uint256 public constant PERCENTPRIZE = 4000; // 40.00% of revenue goes to prize pool     
+    uint256 constant PERCENTPRIZE = 4000; // 40.00% of revenue goes to prize pool     
     uint256 constant PERCENTBASIS = 10000;
     
     // ECONOMIC STATE VARS 
     uint256 public seizureStake = 5 * 10**16; // First price for Coinlander 0.05Eth
+    uint256 private previousSeizureStake = 0; 
     uint256 public prize = 0; // Prize pool balance
     uint256 private reserve = 0; // Treasury balance 
 
@@ -57,11 +59,10 @@ contract CoinOne is ERC1155, Ownable, ReentrancyGuard {
     // BALANCES AND ECONOMIC PARAMETERS 
     // Refund structure, tracks both Eth withdraw value and earned Shard 
 
-    //@todo check gas needed vs 2 distinct mappings 
     struct withdrawParams {
         uint256 _withdrawValue;
         uint256 _shardOwed;
-        // uint256 _holdTime;
+        uint256 _seekersOwed;
     } 
 
     mapping(address => withdrawParams) public pendingWithdrawals;
@@ -74,7 +75,7 @@ contract CoinOne is ERC1155, Ownable, ReentrancyGuard {
 
     cloinDeposit[] public cloinDeposits;
     iSeekers public seekers;
-    iKeepersVault private _keepersVault;
+    iKeepersVault private keepersVault;
 
     event Stolen(address indexed by, address indexed from, uint256 bounty);
     event SweetRelease(address winner);
@@ -87,7 +88,7 @@ contract CoinOne is ERC1155, Ownable, ReentrancyGuard {
 
         // Add interface for seekers contract 
         seekers = iSeekers(seekersContract);
-        _keepersVault = iKeepersVault(keepeersVault);
+        keepersVault = iKeepersVault(keepeersVault);
     }
 
 
@@ -108,13 +109,10 @@ contract CoinOne is ERC1155, Ownable, ReentrancyGuard {
     ) internal virtual override {
         // No constraints post release 
         if (!released) {
-
             // Check the id arry for One Coin 
             for (uint i=0; i < ids.length; i++){
-
                 // If One Coin transfer is being attempted, check constraints 
                 if (ids[i] == ONECOIN){
-
                     if (from != address(0) && !transferIsSteal) {
                         revert();
                     }
@@ -158,7 +156,7 @@ contract CoinOne is ERC1155, Ownable, ReentrancyGuard {
         _stealTransfer(previousOwner, newOwner);
 
         // Establish rewards and refunds 
-        _processPaymentsAndRewards(previousOwner, msg.value);
+        _processPaymentsAndRewards(previousOwner, previousSeizureStake);
 
         // Trigger game events if price is worthy 
         _processGameEvents();
@@ -169,21 +167,24 @@ contract CoinOne is ERC1155, Ownable, ReentrancyGuard {
             
             // Set aside funds for treasury and prize pool
             uint256 _take = (value * PERCENTRESERVES) / PERCENTBASIS;
-            uint256 _prize = (value * PERCENTPRIZE) / PERCENTBASIS;
+            uint256 _prize = (_take * PERCENTPRIZE) / PERCENTBASIS;
             reserve += (_take - _prize);
             prize += _prize; 
 
-            uint256 deposit = seizureStake - _take;
+            uint256 deposit = value - _take;
             pendingWithdrawals[previousOwner]._withdrawValue += deposit;
 
-            uint256 shardReward = _calculateShardReward(seizureStake);
+            uint256 shardReward = _calculateShardReward(previousSeizureStake);
             pendingWithdrawals[previousOwner]._shardOwed += shardReward;
+
+            pendingWithdrawals[previousOwner]._seekersOwed += 1;
 
             // Handle all cases that aren't the last 
             if (!released) {
-
+                // Store current seizure as previous
+                previousSeizureStake = seizureStake;
                 // Determine what it will cost to seize next time
-                seizureStake = value + ((value * PERCENTRATEINCREASE) / PERCENTBASIS);
+                seizureStake = seizureStake + ((seizureStake * PERCENTRATEINCREASE) / PERCENTBASIS);
             }
     }
 
@@ -219,8 +220,10 @@ contract CoinOne is ERC1155, Ownable, ReentrancyGuard {
         // Process rewards and refund for the winner 
         _processPaymentsAndRewards(msg.sender,msg.value);
 
-        _keepersVault.fundPrizePurse{value: prize}();
+        // Send prize purse to keepers vault
+        keepersVault.fundPrizePurse{value: prize}();
 
+        // Send winning Seeker to winner  
         seekers.sendWinnerSeeker(msg.sender);
     }
 
@@ -229,6 +232,9 @@ contract CoinOne is ERC1155, Ownable, ReentrancyGuard {
         _;
     }
     
+    function getSeizureCount() external view returns(uint256) {
+        return seizureCount.current();
+    }
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -238,6 +244,7 @@ contract CoinOne is ERC1155, Ownable, ReentrancyGuard {
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
     // This is gas expensive, so only the Keepers can call it and pay the associated gas costs
+    // @TODO this needs to be re-worked. We'll run out of gas as it is now 
     function airdropShardPostRelease() external onlyOwner {
         address[] memory allSeekerHolders = seekers.allSeekerOwners();
         for (uint256 i = 0; i < allSeekerHolders.length; i++) {
@@ -276,7 +283,7 @@ contract CoinOne is ERC1155, Ownable, ReentrancyGuard {
     
         uint256 fragmentReward = amount * FRAGMENTMULTIPLIER; 
         _burn(msg.sender, SHARD, amount);
-        _keepersVault.mintFragments(msg.sender, fragmentReward);
+        keepersVault.mintFragments(msg.sender, fragmentReward);
     }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -285,38 +292,56 @@ contract CoinOne is ERC1155, Ownable, ReentrancyGuard {
 //                                                                                              //
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
-    function claimRefundAndShard() external nonReentrant {
+    // Method for claiming all owed rewards and payments: ether refunds, shards and seekers 
+    function claimAll() external nonReentrant {
 
         uint256 withdrawal = pendingWithdrawals[msg.sender]._withdrawValue;
         uint256 shard = pendingWithdrawals[msg.sender]._shardOwed;
+        uint256 seeks = pendingWithdrawals[msg.sender]._seekersOwed;
 
         if (withdrawal > 0) {
-            
             pendingWithdrawals[msg.sender]._withdrawValue = 0;
             payable(msg.sender).transfer(withdrawal);
         }
-        if (shard > 0) {
-            // Seeker reward
-            seekers.birthSeeker(msg.sender); 
-            // Shard reward 
-            _mint(msg.sender, SHARD, shard, "0x0");
 
+        if (shard > 0) {
+            pendingWithdrawals[msg.sender]._shardOwed = 0;
+            _mint(msg.sender, SHARD, shard, "0x0");
         } 
+
+        if (seeks > 0){
+            pendingWithdrawals[msg.sender]._seekersOwed = 0;
+            for (uint256 i = 0; i < seeks; i++){
+                seekers.birthSeeker(msg.sender);
+            }
+        }
         else {
             revert();
         }
     }
 
-    function ownerWithdraw(uint256 amount) external payable onlyOwner{
-        require(amount <= reserve);
+    function ownerWithdraw() external payable onlyOwner{
+        require(reserve > 0);
+        uint256 amount = reserve;
+        reserve = 0;
         payable(msg.sender).transfer(amount);
-        reserve -= amount;
     }
 
     function _calculateShardReward(uint256 _value) private pure returns (uint256) {
         uint256 reward = BASESHARDREWARD;
-        // 1 additional shard for each 0.5Eth
         reward += (_value/10**18) * INCRBASIS / INCRSHARDREWARD;
         return reward;  
+    }
+
+    function getPendingWithdrawl(address _user) external view returns (uint256) {
+        return pendingWithdrawals[_user]._withdrawValue;
+    }
+
+    function getPendingShardReward(address _user) external view returns (uint256) {
+        return pendingWithdrawals[_user]._shardOwed;
+    }
+
+    function getPendingSeekerReward(address _user) external view returns (uint256) {
+        return pendingWithdrawals[_user]._seekersOwed;
     }
 }
