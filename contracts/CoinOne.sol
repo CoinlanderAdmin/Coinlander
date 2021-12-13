@@ -37,7 +37,7 @@ contract CoinOne is ERC1155, Ownable, ReentrancyGuard {
     uint256 public constant SWEETRELEASE = 883; 
 
     // ECONOMIC CONSTANTS  
-    uint256 constant PERCENTRATEINCREASE = 80; // 1% increase for each successive seizure 
+    uint256 constant PERCENTRATEINCREASE = 80; // 0.8% increase for each successive seizure 
     uint256 constant PERCENTRESERVES = 50; // 0.50% goes to treasury 
     uint256 constant PERCENTPRIZE = 4000; // 40.00% of revenue goes to prize pool     
     uint256 constant PERCENTBASIS = 10000;
