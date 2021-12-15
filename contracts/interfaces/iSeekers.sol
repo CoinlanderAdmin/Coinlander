@@ -19,6 +19,7 @@ interface iSeekers is IERC721Enumerable {
 
     function summonSeeker(uint256 summonCount) external payable;
     function birthSeeker(address to) external returns (uint256);
+    function keepersSummonSeeker(uint256 summonCount) external;
     function getSeekerCount() external view returns (uint256);
     function allSeekerOwners() external view returns (address[] memory);
     function activateFirstMint() external;
@@ -28,6 +29,7 @@ interface iSeekers is IERC721Enumerable {
     function sendWinnerSeeker(address winner) external;
     function uncloakSeeker(uint256 id) external;
     function addScales(uint256 id, uint256 scales) external;
+    function seizureMintIncrement() external;
 
     /**
     * @dev Externally callable methods for seeing Seeker attributes

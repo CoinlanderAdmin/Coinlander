@@ -9,6 +9,10 @@ const config: HardhatUserConfig = {
     solidity: "0.8.8",
     networks: {
         localhost  : {
+            allowUnlimitedContractSize: true,
+        },
+        hardhat  : {
+            allowUnlimitedContractSize: true,
         }
     },
     mocha: {
