@@ -28,13 +28,13 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
 
   // Seeker release schedule
   // Activation for each will be called externally by the season 1 Coinlander contract
-  uint256 public constant FIRSTMINT = 6117;
+  uint256 public constant FIRSTMINT = 5000;
   bool public firstMintActive = false;
   uint256 public constant FIRSTMINTPRICE = 0.02 ether;
-  uint256 public constant SECONDMINT = 3000;
+  uint256 public constant SECONDMINT = 3333;
   bool public secondMintActive = false;
   uint256 public constant SECONDMINTPRICE = 0.05 ether;
-  uint256 public constant THIRDMINT = 1111;
+  uint256 public constant THIRDMINT = 1635;
   uint256 public constant THIRDMINT_INCR = 5;
   bool public thirdMintActive = false;
   uint256 public constant THIRDMINTPRICE = 0.1 ether;

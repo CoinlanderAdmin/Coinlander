@@ -30,6 +30,7 @@ interface iSeekers is IERC721Enumerable {
     function uncloakSeeker(uint256 id) external;
     function addScales(uint256 id, uint256 scales) external;
     function seizureMintIncrement() external;
+    function ownerWithdraw() external payable;
 
     /**
     * @dev Externally callable methods for seeing Seeker attributes
