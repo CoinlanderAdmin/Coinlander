@@ -5,7 +5,6 @@ pragma solidity ^0.8.8;
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
-import "./utils/Counters.sol";
 import "./interfaces/iSeekers.sol";
 
 contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
@@ -14,17 +13,16 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
   bytes32 public constant GAME_ROLE = keccak256("GAME_ROLE"); // Role for approved Coinlander game contracts
 
   // Counter inits
-  using Counters for Counters.Counter;
-  Counters.Counter private _seekerId; // Sale id tracker
-  Counters.Counter private _internalId; // Internal id tracker
+  uint256 private _summonSeekerId = 0; // Sale id tracker
+  uint256 private _birthSeekerId = 0; // Internal id tracker
 
   uint256 public constant MAXSEEKERS = 11111;
   bool public gameWon = false;
   uint256 public currentBuyableSeekers = 0;
   uint256 public currentPrice = 0;
   uint256 private reserve = 0; // Contracts treasury balance
-  // @Todo need to actually implement an owners mint
-  uint256 private constant KEEPERSEEKERS = 10; // Number of Seekers that Keepers can mint for themselves
+  uint256 private constant KEEPERSEEKERS = 32; // Number of Seekers that Keepers can mint for themselves
+  uint256 private keepersSeekersMinted = 0;
   uint256 public constant MAXMINTABLE = 10; // Max seekers that can be purchased in one tx
   uint16 public constant MAXPIXELS = 1024; // 32x32 pixel grid
 
@@ -37,6 +35,7 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
   bool public secondMintActive = false;
   uint256 public constant SECONDMINTPRICE = 0.05 ether;
   uint256 public constant THIRDMINT = 1111;
+  uint256 public constant THIRDMINT_INCR = 5;
   bool public thirdMintActive = false;
   uint256 public constant THIRDMINTPRICE = 0.1 ether;
 
@@ -83,10 +82,10 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
     _setupRole(KEEPERS_ROLE, msg.sender);
     _setRoleAdmin(KEEPERS_ROLE, DEFAULT_ADMIN_ROLE);
 
-    _seekerId.increment(); // Start indexing seekers at 1 (counter inits to 0)
-    _safeMint(msg.sender, _seekerId.current()); // Set aside id 1 for Season 1 winner
+    _summonSeekerId += 1;
+    _safeMint(msg.sender, _summonSeekerId); // Set aside id 1 for Season 1 winner
 
-    _internalId.setValue(INTERNALIDOFFSET);
+    _birthSeekerId = INTERNALIDOFFSET;
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -97,21 +96,32 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
 
   function summonSeeker(uint256 summonCount) external payable nonReentrant {
     require(summonCount > 0 && summonCount <= MAXMINTABLE);
-    require(msg.value >= currentPrice * summonCount);
-    require((_seekerId.current() + summonCount) <= currentBuyableSeekers);
+    require(msg.value >= (currentPrice * summonCount));
+    require((_summonSeekerId + summonCount) <= currentBuyableSeekers);
 
     for (uint256 i = 0; i < summonCount; i++) {
-        _seekerId.increment();
-        mintSeeker(msg.sender, _seekerId.current(), false);
+        _summonSeekerId += 1;
+        mintSeeker(msg.sender, _summonSeekerId, false);
     }
   }
 
   function birthSeeker(address to) external onlyGame returns (uint256) {
-    require(_internalId.current() < MAXSEEKERS);
-    _internalId.increment();
-    mintSeeker(to, _internalId.current(), true);
-    emit seekerBornFromCoin(_internalId.current(), to);
-    return (_internalId.current());
+    require(_birthSeekerId < MAXSEEKERS);
+    _birthSeekerId += 1;
+    mintSeeker(to, _birthSeekerId, true);
+    emit seekerBornFromCoin(_birthSeekerId, to);
+    return (_birthSeekerId);
+  }
+
+  function keepersSummonSeeker(uint256 summonCount) external nonReentrant onlyKeepers {
+    require ((keepersSeekersMinted + summonCount) <= KEEPERSEEKERS);
+    require((_summonSeekerId + summonCount) <= currentBuyableSeekers);
+    keepersSeekersMinted += summonCount;
+
+    for (uint256 i = 0; i < summonCount; i++) {
+        _summonSeekerId += 1;
+        mintSeeker(msg.sender, _summonSeekerId, false);
+    }
   }
 
   function mintSeeker(address to,	uint256 id,	bool wasSeizure) internal {
@@ -151,12 +161,13 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
   * It will also not de-dup address with multiple tokens. The upshot is that it can be used to know
   * who has which id via array index.
   */
+
   function allSeekerOwners() external view returns (address[] memory) {
-    address[] memory _allTokenOwners = new address[](_internalId.current());
-    for (uint256 i = 0; i < _seekerId.current(); ++i) {
+    address[] memory _allTokenOwners = new address[](_birthSeekerId);
+    for (uint256 i = 0; i < _summonSeekerId; ++i) {
         _allTokenOwners[i] = ownerOf(i + 1);
     }
-    for (uint256 i = INTERNALIDOFFSET; i < _internalId.current(); i++) {
+    for (uint256 i = INTERNALIDOFFSET; i < _birthSeekerId; i++) {
         _allTokenOwners[i] = ownerOf(i + 1);
     }
 
@@ -164,8 +175,8 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
   }
 
   function getSeekerCount() external view returns (uint256) {
-    uint256 seizureSeekers = _internalId.current() - INTERNALIDOFFSET;
-    return _seekerId.current() + seizureSeekers;
+    uint256 seizureSeekers = _birthSeekerId - INTERNALIDOFFSET;
+    return _summonSeekerId + seizureSeekers;
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -194,8 +205,12 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
     require(thirdMintActive == false);
     thirdMintActive = true;
     emit thirdMintActivated();
-    currentBuyableSeekers += THIRDMINT;
+    currentBuyableSeekers += THIRDMINT_INCR;
     currentPrice = THIRDMINTPRICE;
+  }
+
+  function seizureMintIncrement() external onlyGame {
+    currentBuyableSeekers += THIRDMINT_INCR;
   }
 
   function performUncloaking() external onlyGame {
@@ -336,6 +351,10 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
     return attributesBySeekerId[id].clan;
   }
 
+  function getCloakStatusById(uint256 id) external view returns (bool) {
+    return isSeekerCloaked[id];
+  }
+
   //////////////////////////////////////////////////////////////////////////////////////////////////
   //                                                                                              //
   //                                  PSEUDORANDOMNESS MAFS                                       //
@@ -381,6 +400,13 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
     require(
       hasRole(KEEPERS_ROLE, msg.sender));
     _;
+  }
+
+  function ownerWithdraw() external payable onlyKeepers{
+    require(reserve > 0);
+    uint256 amount = reserve;
+    reserve = 0;
+    payable(msg.sender).transfer(amount);
   }
 
   function addGameContract(address gameContract) public onlyKeepers {

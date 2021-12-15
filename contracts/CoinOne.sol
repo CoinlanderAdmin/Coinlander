@@ -204,6 +204,10 @@ contract CoinOne is ERC1155, Ownable, ReentrancyGuard {
             seekers.activateThirdMint();
         }
 
+        if (count > THIRDSEEKERMINTTHRESH) {
+            seekers.seizureMintIncrement();
+        }
+
         if (count == UNCLOAKINGTHRESH) {
             seekers.performUncloaking();
         }
