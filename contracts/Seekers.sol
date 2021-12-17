@@ -174,11 +174,6 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
     return _allTokenOwners;
   }
 
-  function getSeekerCount() external view returns (uint256) {
-    uint256 seizureSeekers = _birthSeekerId - INTERNALIDOFFSET;
-    return _summonSeekerId + seizureSeekers;
-  }
-
   //////////////////////////////////////////////////////////////////////////////////////////////////
   //                                                                                              //
   //                             EXTERNALLY CALLABLE GAME EVENTS                                  //
@@ -220,6 +215,7 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
   function sendWinnerSeeker(address winner) external onlyGame {
     require(gameWon == false);
     gameWon = true;
+    setWinnerSeekerAttributes(1);
     _transfer(ownerOf(1), winner, 1);
   }
 
@@ -353,6 +349,21 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
 
   function getCloakStatusById(uint256 id) external view returns (bool) {
     return isSeekerCloaked[id];
+  }
+
+  function setWinnerSeekerAttributes(uint256 id) internal {
+    isSeekerCloaked[id] = false; // Uncloaks the Seeker permanently
+    Attributes memory winningAttributes = Attributes(
+        true, 
+        "True Neutral",
+        25, // Alpha
+        25, // Beta
+        25, // Detla
+        25, // Gamma
+        MAXPIXELS,
+        attributesBySeekerId[id].clan
+      ); 
+    attributesBySeekerId[id] = winningAttributes;
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////

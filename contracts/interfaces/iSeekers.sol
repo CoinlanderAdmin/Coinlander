@@ -20,7 +20,6 @@ interface iSeekers is IERC721Enumerable {
     function summonSeeker(uint256 summonCount) external payable;
     function birthSeeker(address to) external returns (uint256);
     function keepersSummonSeeker(uint256 summonCount) external;
-    function getSeekerCount() external view returns (uint256);
     function allSeekerOwners() external view returns (address[] memory);
     function activateFirstMint() external;
     function activateSecondMint() external;
