@@ -6,7 +6,8 @@
     "scripts": {
         "test": "TS_NODE_TRANSPILE_ONLY=1 hardhat test",
         "dev": "next dev",
-        "deploy": "npx hardhat run --network localhost scripts/deploy.ts"
+        "deploy": "npx hardhat run --network localhost scripts/deploy.ts",
+        "node": "npx hardhat node"
     },
     "author": "",
     "license": "ISC",

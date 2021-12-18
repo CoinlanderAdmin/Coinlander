@@ -1,7 +1,27 @@
-node_modules
+# dependencies
+/node_modules
+/.pnp
+.pnp.js
+
+# hardhat build
 artifacts
 cache
 typechain
-.next
-.env.local
+artifacts/local.json
+
+# next.js
+/.next/
+/out/
+
+# local env files
 .env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# IDE
+.idea/*
+
+# Ds Store
+.DS_Store

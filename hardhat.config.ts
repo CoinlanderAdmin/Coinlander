@@ -13,7 +13,8 @@ const config: HardhatUserConfig = {
         },
         hardhat  : {
             allowUnlimitedContractSize: true,
-        }
+            chainId: 31337,
+        },
     },
     mocha: {
         timeout: 150000

@@ -1,4 +1,7 @@
-import { run, ethers } from "hardhat"
+import {ethers} from "hardhat"
+import ErrnoException = NodeJS.ErrnoException;
+import * as fs from "fs";
+
 
 async function main() {
 
@@ -22,8 +25,30 @@ async function main() {
   await coinOne.deployed()
   console.log("CoinOne address", coinOne.address)
 
+  // Deploy the Nft Marketplace contract
+  const ERC721Marketplace = await ethers.getContractFactory("ERC721Marketplace")
+  const erc721Marketplace = await ERC721Marketplace.deploy()
+  await erc721Marketplace.deployed()
+  console.log("ERC721Marketplace address", erc721Marketplace.address)
 
+  // Deploy the Sft Marketplace contract
+  const ERC1155Marketplace = await ethers.getContractFactory("ERC1155Marketplace")
+  const erc1155Marketplace = await ERC1155Marketplace.deploy()
+  await erc1155Marketplace.deployed()
+  console.log("ERC1155Marketplace address", erc1155Marketplace.address)
 
+  // Build local json file. Used to store contract data
+  const data = {
+    contracts: {
+      "seeker": seekers.address,
+      "vault": keepersVault.address,
+      "coin": coinOne.address,
+      "nft-marketplace": erc721Marketplace.address,
+      "sft-marketplace": erc1155Marketplace.address,
+    }
+  }
+  const json = JSON.stringify(data, null, 2)
+  fs.writeFileSync('artifacts/local.json', json, "utf8")
 }
 
 main()

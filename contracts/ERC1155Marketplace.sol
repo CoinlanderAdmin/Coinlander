@@ -9,7 +9,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 /// @title An Auction Contract for bidding and selling single and batched NFTs, based on Avo Labs impl
 /// @author Avo Labs GmbH, @stevieraykatz
 /// @notice This contract can be used for auctioning NFTs from ERC721 contracts 
-contract NFTAuction is Ownable {
+contract ERC1155Marketplace is Ownable {
     mapping(address => mapping(uint256 => Auction)) public nftContractAuctions;
     mapping(address => uint256) failedTransferCredits;
     //Each Auction is unique to each NFT (contract + id pairing).
