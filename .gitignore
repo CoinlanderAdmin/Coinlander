@@ -7,7 +7,6 @@
 artifacts
 cache
 typechain
-artifacts/local.json
 
 # next.js
 /.next/

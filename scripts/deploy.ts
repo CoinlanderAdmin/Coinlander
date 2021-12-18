@@ -48,7 +48,7 @@ async function main() {
     }
   }
   const json = JSON.stringify(data, null, 2)
-  fs.writeFileSync('artifacts/local.json', json, "utf8")
+  fs.writeFileSync('artifacts/addresses.json', json, "utf8")
 }
 
 main()
