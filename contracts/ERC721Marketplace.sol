@@ -547,9 +547,7 @@ contract ERC721Marketplace is Ownable {
         uint128 _minPrice,
         uint128 _buyNowPrice,
         uint32 _auctionBidPeriod, //this is the time that the auction lasts until another bid occurs
-        uint32 _bidIncreasePercentage,
-        address _feeRecipient,
-        uint32 _feePercentage
+        uint32 _bidIncreasePercentage
     )
         external
         isAuctionNotStartedByOwner(_nftContractAddress, _tokenId)
@@ -565,8 +563,8 @@ contract ERC721Marketplace is Ownable {
             _tokenId,
             _minPrice,
             _buyNowPrice,
-            _feeRecipient,
-            _feePercentage
+            defaultFeeCollector,
+            defaultFeePercentage
         );
     }
 

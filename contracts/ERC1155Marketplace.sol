@@ -1,20 +1,23 @@
 //SPDX-License-Identifier: Unlicense
 pragma solidity ^0.8.8;
 
-import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
-import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
+import "@openzeppelin/contracts/token/ERC1155/IERC1155.sol";
+import "@openzeppelin/contracts/token/ERC1155/IERC1155Receiver.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 
 /// @title An Auction Contract for bidding and selling single and batched NFTs, based on Avo Labs impl
 /// @author Avo Labs GmbH, @stevieraykatz
-/// @notice This contract can be used for auctioning NFTs from ERC721 contracts 
+/// @notice This contract can be used for auctioning NFTs from ERC1155 contracts 
 contract ERC1155Marketplace is Ownable {
-    mapping(address => mapping(uint256 => Auction)) public nftContractAuctions;
+
+    // Token contract -> token id -> seller -> Auction
+    mapping(address => mapping(uint256 => mapping(address => Auction))) public nftContractAuctions;
     mapping(address => uint256) failedTransferCredits;
-    //Each Auction is unique to each NFT (contract + id pairing).
+    //Each Auction is unique to each token batch (contract + id + seller).
     struct Auction {
         //map token ID to
+        uint256 tokenQty;
         uint32 bidIncreasePercentage;
         uint32 auctionBidPeriod; //Increments the length of time the auction is open in which a new bid can be made after each bid.
         uint64 auctionEnd;
@@ -22,7 +25,6 @@ contract ERC1155Marketplace is Ownable {
         uint128 buyNowPrice;
         uint128 nftHighestBid;
         address nftHighestBidder;
-        address nftSeller;
         address whitelistedBuyer; //The seller can specify a whitelisted address for a sale (this is effectively a direct sale).
         address nftRecipient; //The bidder can specify a recipient for the NFT if their bid is successful.
         address feeRecipient;
@@ -47,27 +49,24 @@ contract ERC1155Marketplace is Ownable {
         address nftContractAddress,
         uint256 tokenId,
         address nftSeller,
+        uint256 tokenQuantity,
         uint128 minPrice,
-        uint128 buyNowPrice,
-        uint32 auctionBidPeriod,
-        uint32 bidIncreasePercentage,
-        address feeRecipient,
-        uint32 feePercentage
+        uint128 buyNowPrice
     );
 
     event SaleCreated(
         address nftContractAddress,
         uint256 tokenId,
         address nftSeller,
+        uint256 tokenQuantity,
         uint128 buyNowPrice,
-        address whitelistedBuyer,
-        address feeRecipient,
-        uint32 feePercentage
+        address whitelistedBuyer
     );
 
     event BidMade(
         address nftContractAddress,
         uint256 tokenId,
+        address nftSeller,
         address bidder,
         uint256 ethAmount
     );
@@ -75,6 +74,7 @@ contract ERC1155Marketplace is Ownable {
     event AuctionPeriodUpdated(
         address nftContractAddress,
         uint256 tokenId,
+        address nftSeller,
         uint64 auctionEndPeriod
     );
 
@@ -82,6 +82,7 @@ contract ERC1155Marketplace is Ownable {
         address nftContractAddress,
         uint256 tokenId,
         address nftSeller,
+        uint256 tokenQuantity,
         uint128 nftHighestBid,
         address nftHighestBidder,
         address nftRecipient
@@ -90,61 +91,68 @@ contract ERC1155Marketplace is Ownable {
     event AuctionSettled(
         address nftContractAddress,
         uint256 tokenId,
+        address nftSeller,
         address auctionSettler
     );
 
     event AuctionWithdrawn(
         address nftContractAddress,
         uint256 tokenId,
-        address nftOwner
+        address nftSeller
     );
 
     event BidWithdrawn(
         address nftContractAddress,
         uint256 tokenId,
+        address nftSeller,
         address highestBidder
     );
 
     event WhitelistedBuyerUpdated(
         address nftContractAddress,
         uint256 tokenId,
+        address nftSeller,
         address newWhitelistedBuyer
     );
 
     event MinimumPriceUpdated(
         address nftContractAddress,
         uint256 tokenId,
+        address nftSeller,
         uint256 newMinPrice
     );
 
     event BuyNowPriceUpdated(
         address nftContractAddress,
         uint256 tokenId,
+        address nftSeller,
         uint128 newBuyNowPrice
     );
-    event HighestBidTaken(address nftContractAddress, uint256 tokenId);
+    event HighestBidTaken(
+        address nftContractAddress, 
+        uint256 tokenId,
+        address nftSeller
+    );
 
     /**********************************/
     /*╔═════════════════════════════╗
       ║          MODIFIERS          ║
       ╚═════════════════════════════╝*/
 
-    modifier isAuctionNotStartedByOwner(address _nftContractAddress, uint256 _tokenId) {
+    modifier isAuctionNotStartedByOwner(address _nftContractAddress, uint256 _tokenId, address _nftSeller) {
         require(
-            nftContractAuctions[_nftContractAddress][_tokenId].nftSeller != msg.sender,
+            nftContractAuctions[_nftContractAddress][_tokenId][_nftSeller].tokenQty != 0,
             "Auction already started by owner");
 
-        if (nftContractAuctions[_nftContractAddress][_tokenId].nftSeller != address(0)) {
-            require(msg.sender == IERC721(_nftContractAddress).ownerOf(_tokenId),
+        require(IERC1155(_nftContractAddress).balanceOf(msg.sender, _tokenId) > 0,
                 "Sender doesn't own NFT");
 
-            _resetAuction(_nftContractAddress, _tokenId);
-        }
+            _resetAuction(_nftContractAddress, _tokenId, _nftSeller);
         _;
     }
 
-    modifier auctionOngoing(address _nftContractAddress, uint256 _tokenId) {
-        require(_isAuctionOngoing(_nftContractAddress, _tokenId),
+    modifier auctionOngoing(address _nftContractAddress, uint256 _tokenId, address _nftSeller) {
+        require(_isAuctionOngoing(_nftContractAddress, _tokenId, _nftSeller),
             "Auction has ended");
         _;
     }
@@ -164,14 +172,14 @@ contract ERC1155Marketplace is Ownable {
         _;  
     }
 
-    modifier notNftSeller(address _nftContractAddress, uint256 _tokenId) {
-        require(msg.sender != nftContractAuctions[_nftContractAddress][_tokenId].nftSeller,
-            "Owner cannot bid on own NFT");
+    modifier notNftSeller(address _nftSeller) {
+        require(msg.sender != _nftSeller,
+            "Owner cannot bid on own Auction");
         _;
     }
 
-    modifier onlyNftSeller(address _nftContractAddress, uint256 _tokenId) {
-        require(msg.sender == nftContractAuctions[_nftContractAddress][_tokenId].nftSeller,
+    modifier onlyNftSeller(address _nftSeller) {
+        require(msg.sender == _nftSeller,
             "Only nft seller");
         _;
     }
@@ -180,22 +188,22 @@ contract ERC1155Marketplace is Ownable {
      * The bid amount was either equal the buyNowPrice or it must be higher than the previous
      * bid by the specified bid increase percentage.
      */
-    modifier bidAmountMeetsBidRequirements(address _nftContractAddress,uint256 _tokenId) {
-        require(_doesBidMeetBidRequirements(_nftContractAddress, _tokenId),
+    modifier bidAmountMeetsBidRequirements(address _nftContractAddress,uint256 _tokenId, address _nftSeller) {
+        require(_doesBidMeetBidRequirements(_nftContractAddress, _tokenId, _nftSeller),
             "Not enough funds to bid on NFT");
         _;
     }
 
     // check if the highest bidder can purchase this NFT.
-    modifier onlyApplicableBuyer(address _nftContractAddress, uint256 _tokenId) {
-        require(!_isWhitelistedSale(_nftContractAddress, _tokenId) ||
-                nftContractAuctions[_nftContractAddress][_tokenId].whitelistedBuyer == msg.sender,
+    modifier onlyApplicableBuyer(address _nftContractAddress, uint256 _tokenId, address _nftSeller) {
+        require(!_isWhitelistedSale(_nftContractAddress, _tokenId, _nftSeller) ||
+                nftContractAuctions[_nftContractAddress][_tokenId][_nftSeller].whitelistedBuyer == msg.sender,
             "Only the whitelisted buyer");
         _;
     }
 
-    modifier minimumBidNotMade(address _nftContractAddress, uint256 _tokenId) {
-        require(!_isMinimumBidMade(_nftContractAddress, _tokenId),
+    modifier minimumBidNotMade(address _nftContractAddress, uint256 _tokenId, address _nftSeller) {
+        require(!_isMinimumBidMade(_nftContractAddress, _tokenId, _nftSeller),
             "The auction has a valid bid made");
         _;
     }
@@ -205,9 +213,9 @@ contract ERC1155Marketplace is Ownable {
         _;
     }
 
-    modifier isAuctionOver(address _nftContractAddress, uint256 _tokenId) {
+    modifier isAuctionOver(address _nftContractAddress, uint256 _tokenId, address _nftSeller) {
         require(
-            !_isAuctionOngoing(_nftContractAddress, _tokenId),
+            !_isAuctionOngoing(_nftContractAddress, _tokenId, _nftSeller),
             "Auction is not yet over"
         );
         _;
@@ -231,9 +239,16 @@ contract ERC1155Marketplace is Ownable {
         _;
     }
 
-    modifier isNotASale(address _nftContractAddress, uint256 _tokenId) {
-        require(!_isASale(_nftContractAddress, _tokenId),
+    modifier isNotASale(address _nftContractAddress, uint256 _tokenId, address _nftSeller) {
+        require(!_isASale(_nftContractAddress, _tokenId, _nftSeller),
             "Not applicable for a sale");
+        _;
+    }
+
+    modifier sellerHasTokenBalance(address _nftContractAddress, uint256 _tokenId, address _nftSeller, uint256 _tokenQty) {
+        require(
+            IERC1155(_nftContractAddress).balanceOf(msg.sender, _tokenId) > _tokenQty,
+            "Lister doesnt have enough tokens");
         _;
     }
 
@@ -249,9 +264,10 @@ contract ERC1155Marketplace is Ownable {
     /*╔══════════════════════════════╗
       ║    AUCTION CHECK FUNCTIONS   ║
       ╚══════════════════════════════╝*/
-    function _isAuctionOngoing(address _nftContractAddress, uint256 _tokenId)
+
+    function _isAuctionOngoing(address _nftContractAddress, uint256 _tokenId, address _nftSeller)
         internal view returns (bool) {
-        uint64 auctionEndTimestamp = nftContractAuctions[_nftContractAddress][_tokenId].auctionEnd;
+        uint64 auctionEndTimestamp = nftContractAuctions[_nftContractAddress][_tokenId][_nftSeller].auctionEnd;
         //if the auctionEnd is set to 0, the auction is technically on-going, however
         //the minimum bid price (minPrice) has not yet been met.
         return (auctionEndTimestamp == 0 || block.timestamp < auctionEndTimestamp);
@@ -262,30 +278,30 @@ contract ERC1155Marketplace is Ownable {
      * to ensure that if an auction is created after an early bid, the auction
      * begins appropriately or is settled if the buy now price is met.
      */
-    function _isABidMade(address _nftContractAddress, uint256 _tokenId) internal view returns (bool) {
-        return (nftContractAuctions[_nftContractAddress][_tokenId].nftHighestBid > 0);
+    function _isABidMade(address _nftContractAddress, uint256 _tokenId, address _nftSeller) internal view returns (bool) {
+        return (nftContractAuctions[_nftContractAddress][_tokenId][_nftSeller].nftHighestBid > 0);
     }
 
     /*
      *if the minPrice is set by the seller, check that the highest bid meets or exceeds that price.
      */
-    function _isMinimumBidMade(address _nftContractAddress, uint256 _tokenId) 
+    function _isMinimumBidMade(address _nftContractAddress, uint256 _tokenId, address _nftSeller) 
         internal view returns (bool) {
 
-        uint128 minPrice = nftContractAuctions[_nftContractAddress][_tokenId].minPrice;
+        uint128 minPrice = nftContractAuctions[_nftContractAddress][_tokenId][_nftSeller].minPrice;
         return minPrice > 0 &&
-            (nftContractAuctions[_nftContractAddress][_tokenId].nftHighestBid >= minPrice);
+            (nftContractAuctions[_nftContractAddress][_tokenId][_nftSeller].nftHighestBid >= minPrice);
     }
 
     /*
      * If the buy now price is set by the seller, check that the highest bid meets that price.
      */
-    function _isBuyNowPriceMet(address _nftContractAddress, uint256 _tokenId)
+    function _isBuyNowPriceMet(address _nftContractAddress, uint256 _tokenId, address _nftSeller)
         internal view returns (bool) {
 
-        uint128 buyNowPrice = nftContractAuctions[_nftContractAddress][_tokenId].buyNowPrice;
+        uint128 buyNowPrice = nftContractAuctions[_nftContractAddress][_tokenId][_nftSeller].buyNowPrice;
         return buyNowPrice > 0 &&
-            nftContractAuctions[_nftContractAddress][_tokenId].nftHighestBid >= buyNowPrice;
+            nftContractAuctions[_nftContractAddress][_tokenId][_nftSeller].nftHighestBid >= buyNowPrice;
     }
 
     /*
@@ -293,10 +309,10 @@ contract ERC1155Marketplace is Ownable {
      * In the case of a sale: the bid needs to meet the buyNowPrice.
      * In the case of an auction: the bid needs to be a % higher than the previous bid.
      */
-    function _doesBidMeetBidRequirements(address _nftContractAddress, uint256 _tokenId) 
+    function _doesBidMeetBidRequirements(address _nftContractAddress, uint256 _tokenId, address _nftSeller) 
         internal view returns (bool) {
 
-        uint128 buyNowPrice = nftContractAuctions[_nftContractAddress][_tokenId].buyNowPrice;
+        uint128 buyNowPrice = nftContractAuctions[_nftContractAddress][_tokenId][_nftSeller].buyNowPrice;
 
         //if buyNowPrice is met, ignore increase percentage
         if (buyNowPrice > 0 && (msg.value >= buyNowPrice)) {
@@ -304,8 +320,9 @@ contract ERC1155Marketplace is Ownable {
         }
 
         //if the NFT is up for auction, the bid needs to be a % higher than the previous bid
-        uint256 bidIncreaseAmount = (nftContractAuctions[_nftContractAddress][_tokenId].nftHighestBid *
-            (10000 + _getBidIncreasePercentage(_nftContractAddress, _tokenId))) /
+        uint256 bidIncreaseAmount = (nftContractAuctions[_nftContractAddress][_tokenId][_nftSeller]
+            .nftHighestBid *
+            (10000 + _getBidIncreasePercentage(_nftContractAddress, _tokenId, _nftSeller))) /
             10000;
         return (msg.value >= bidIncreaseAmount);
     }
@@ -314,15 +331,15 @@ contract ERC1155Marketplace is Ownable {
      * An NFT is up for sale if the buyNowPrice is set, but the minPrice is not set.
      * Therefore the only way to conclude the NFT sale is to meet the buyNowPrice.
      */
-    function _isASale(address _nftContractAddress, uint256 _tokenId)
+    function _isASale(address _nftContractAddress, uint256 _tokenId, address _nftSeller)
         internal view returns (bool) {
-        return (nftContractAuctions[_nftContractAddress][_tokenId].buyNowPrice > 0 &&
-            nftContractAuctions[_nftContractAddress][_tokenId].minPrice == 0);
+        return (nftContractAuctions[_nftContractAddress][_tokenId][_nftSeller].buyNowPrice > 0 &&
+            nftContractAuctions[_nftContractAddress][_tokenId][_nftSeller].minPrice == 0);
     }
 
-    function _isWhitelistedSale(address _nftContractAddress, uint256 _tokenId) 
+    function _isWhitelistedSale(address _nftContractAddress, uint256 _tokenId, address _nftSeller) 
         internal view returns (bool) {
-        return (nftContractAuctions[_nftContractAddress][_tokenId]
+        return (nftContractAuctions[_nftContractAddress][_tokenId][_nftSeller]
             .whitelistedBuyer != address(0));
     }
 
@@ -333,20 +350,22 @@ contract ERC1155Marketplace is Ownable {
      */
     function _isHighestBidderAllowedToPurchaseNFT(
         address _nftContractAddress,
-        uint256 _tokenId
+        uint256 _tokenId,
+        address _nftSeller
     ) internal view returns (bool) {
         return
-            (!_isWhitelistedSale(_nftContractAddress, _tokenId)) ||
-            _isHighestBidderWhitelisted(_nftContractAddress, _tokenId);
+            (!_isWhitelistedSale(_nftContractAddress, _tokenId, _nftSeller)) ||
+            _isHighestBidderWhitelisted(_nftContractAddress, _tokenId, _nftSeller);
     }
 
     function _isHighestBidderWhitelisted(
         address _nftContractAddress,
-        uint256 _tokenId
+        uint256 _tokenId,
+        address _nftSeller
     ) internal view returns (bool) {
-        return (nftContractAuctions[_nftContractAddress][_tokenId]
+        return (nftContractAuctions[_nftContractAddress][_tokenId][_nftSeller]
             .nftHighestBidder ==
-            nftContractAuctions[_nftContractAddress][_tokenId]
+            nftContractAuctions[_nftContractAddress][_tokenId][_nftSeller]
                 .whitelistedBuyer);
     }
 
@@ -374,11 +393,11 @@ contract ERC1155Marketplace is Ownable {
 
     function _getBidIncreasePercentage(
         address _nftContractAddress,
-        uint256 _tokenId
+        uint256 _tokenId,
+        address _nftSeller
     ) internal view returns (uint32) {
-        uint32 bidIncreasePercentage = nftContractAuctions[_nftContractAddress][
-            _tokenId
-        ].bidIncreasePercentage;
+        uint32 bidIncreasePercentage = nftContractAuctions[_nftContractAddress][_tokenId]
+            [_nftSeller].bidIncreasePercentage;
 
         if (bidIncreasePercentage == 0) {
             return defaultBidIncreasePercentage;
@@ -387,14 +406,13 @@ contract ERC1155Marketplace is Ownable {
         }
     }
 
-    function _getAuctionBidPeriod(address _nftContractAddress, uint256 _tokenId)
+    function _getAuctionBidPeriod(address _nftContractAddress, uint256 _tokenId, address _nftSeller)
         internal
         view
         returns (uint32)
     {
-        uint32 auctionBidPeriod = nftContractAuctions[_nftContractAddress][
-            _tokenId
-        ].auctionBidPeriod;
+        uint32 auctionBidPeriod = nftContractAuctions[_nftContractAddress][_tokenId]
+            [_nftSeller].auctionBidPeriod;
 
         if (auctionBidPeriod == 0) {
             return defaultAuctionBidPeriod;
@@ -406,18 +424,17 @@ contract ERC1155Marketplace is Ownable {
     /*
      * The default value for the NFT recipient is the highest bidder
      */
-    function _getNftRecipient(address _nftContractAddress, uint256 _tokenId)
+    function _getNftRecipient(address _nftContractAddress, uint256 _tokenId, address _nftSeller)
         internal
         view
         returns (address)
     {
-        address nftRecipient = nftContractAuctions[_nftContractAddress][
-            _tokenId
-        ].nftRecipient;
+        address nftRecipient = nftContractAuctions[_nftContractAddress][_tokenId]
+            [_nftSeller].nftRecipient;
 
         if (nftRecipient == address(0)) {
             return
-                nftContractAuctions[_nftContractAddress][_tokenId]
+                nftContractAuctions[_nftContractAddress][_tokenId][_nftSeller]
                     .nftHighestBidder;
         } else {
             return nftRecipient;
@@ -427,28 +444,25 @@ contract ERC1155Marketplace is Ownable {
     /*╔══════════════════════════════╗
       ║  TRANSFER NFTS TO CONTRACT   ║
       ╚══════════════════════════════╝*/
+
     function _transferNftToAuctionContract(
         address _nftContractAddress,
-        uint256 _tokenId
+        uint256 _tokenId,
+        address _nftSeller
     ) internal {
-        address _nftSeller = nftContractAuctions[_nftContractAddress][_tokenId]
-            .nftSeller;
-        if (IERC721(_nftContractAddress).ownerOf(_tokenId) == _nftSeller) {
-            IERC721(_nftContractAddress).transferFrom(
-                _nftSeller,
-                address(this),
-                _tokenId
-            );
-            require(
-                IERC721(_nftContractAddress).ownerOf(_tokenId) == address(this),
-                "nft transfer failed"
-            );
-        } else {
-            require(
-                IERC721(_nftContractAddress).ownerOf(_tokenId) == address(this),
-                "Seller doesn't own NFT"
-            );
-        }
+        uint256 _tokenQty = nftContractAuctions[_nftContractAddress][_tokenId][_nftSeller].tokenQty;
+        uint256 _contractBeforeBalance = IERC1155(_nftContractAddress).balanceOf(address(this), _tokenId);
+        require(IERC1155(_nftContractAddress).balanceOf(_nftSeller, _tokenId) >= _tokenQty, 
+            "seller doesn't own enough tokens");
+        IERC1155(_nftContractAddress).safeTransferFrom(
+            _nftSeller,
+            address(this),
+            _tokenId,
+            _tokenQty,
+            "0x0"
+        );
+        require(IERC1155(_nftContractAddress).balanceOf(address(this), _tokenId) > _contractBeforeBalance,
+            "nft transfer failed");
     }
 
     /*╔══════════════════════════════╗
@@ -457,6 +471,7 @@ contract ERC1155Marketplace is Ownable {
 
     /**
      * Setup parameters applicable to all auctions and whitelised sales:
+     * -> token quantity: _tokenQty
      * -> minimum price : _minPrice
      * -> buy now price : _buyNowPrice
      * -> the nft seller: msg.sender
@@ -465,6 +480,8 @@ contract ERC1155Marketplace is Ownable {
     function _setupAuction(
         address _nftContractAddress,
         uint256 _tokenId,
+        address _nftSeller,
+        uint256 _tokenQty,
         uint128 _minPrice,
         uint128 _buyNowPrice,
         address _feeRecipient,
@@ -474,30 +491,32 @@ contract ERC1155Marketplace is Ownable {
         minPriceDoesNotExceedLimit(_buyNowPrice, _minPrice)
         isFeePercentagesLessThanMaximum(_feePercentage)
     {
-
-        nftContractAuctions[_nftContractAddress][_tokenId]
+        nftContractAuctions[_nftContractAddress][_tokenId][_nftSeller]
+            .tokenQty = _tokenQty;
+        nftContractAuctions[_nftContractAddress][_tokenId][_nftSeller]
             .feeRecipient = _feeRecipient;
-        nftContractAuctions[_nftContractAddress][_tokenId]
+        nftContractAuctions[_nftContractAddress][_tokenId][_nftSeller]
             .feePercentage = _feePercentage;
-        nftContractAuctions[_nftContractAddress][_tokenId]
+        nftContractAuctions[_nftContractAddress][_tokenId][_nftSeller]
             .buyNowPrice = _buyNowPrice;
-        nftContractAuctions[_nftContractAddress][_tokenId].minPrice = _minPrice;
-        nftContractAuctions[_nftContractAddress][_tokenId].nftSeller = msg
-            .sender;
+        nftContractAuctions[_nftContractAddress][_tokenId][_nftSeller].minPrice = _minPrice;
     }
 
     function _createNewNftAuction(
         address _nftContractAddress,
         uint256 _tokenId,
+        address _nftSeller,
+        uint256 _tokenQty,
         uint128 _minPrice,
         uint128 _buyNowPrice,
         address _feeRecipient,
         uint32 _feePercentage
     ) internal {
-        // Sending the NFT to this contract
         _setupAuction(
             _nftContractAddress,
             _tokenId,
+            _nftSeller, 
+            _tokenQty,
             _minPrice,
             _buyNowPrice,
             _feeRecipient,
@@ -506,67 +525,39 @@ contract ERC1155Marketplace is Ownable {
         emit NftAuctionCreated(
             _nftContractAddress,
             _tokenId,
-            msg.sender,
+            _nftSeller,
+            _tokenQty,
             _minPrice,
-            _buyNowPrice,
-            _getAuctionBidPeriod(_nftContractAddress, _tokenId),
-            _getBidIncreasePercentage(_nftContractAddress, _tokenId),
-            _feeRecipient,
-            _feePercentage
+            _buyNowPrice
         );
-        _updateOngoingAuction(_nftContractAddress, _tokenId);
-    }
-
-    /**
-     * Create an auction that uses the default bid increase percentage
-     * & the default auction bid period.
-     */
-    function createDefaultNftAuction(
-        address _nftContractAddress,
-        uint256 _tokenId,
-        uint128 _minPrice,
-        uint128 _buyNowPrice
-        )
-        external
-        isAuctionNotStartedByOwner(_nftContractAddress, _tokenId)
-        priceGreaterThanZero(_minPrice)
-    {
-        _createNewNftAuction(
-            _nftContractAddress,
-            _tokenId,
-            _minPrice,
-            _buyNowPrice,
-            defaultFeeCollector,
-            defaultFeePercentage
-        );
+        _updateOngoingAuction(_nftContractAddress, _tokenId, _nftSeller);
     }
 
     function createNewNftAuction(
         address _nftContractAddress,
         uint256 _tokenId,
+        uint256 _tokenQty,
         uint128 _minPrice,
-        uint128 _buyNowPrice,
-        uint32 _auctionBidPeriod, //this is the time that the auction lasts until another bid occurs
-        uint32 _bidIncreasePercentage,
-        address _feeRecipient,
-        uint32 _feePercentage
+        uint128 _buyNowPrice
     )
         external
-        isAuctionNotStartedByOwner(_nftContractAddress, _tokenId)
+        isAuctionNotStartedByOwner(_nftContractAddress, _tokenId, msg.sender)
         priceGreaterThanZero(_minPrice)
-        increasePercentageAboveMinimum(_bidIncreasePercentage)
+        sellerHasTokenBalance(_nftContractAddress, _tokenId, msg.sender, _tokenQty)
     {
-        nftContractAuctions[_nftContractAddress][_tokenId]
-            .auctionBidPeriod = _auctionBidPeriod;
-        nftContractAuctions[_nftContractAddress][_tokenId]
-            .bidIncreasePercentage = _bidIncreasePercentage;
+        nftContractAuctions[_nftContractAddress][_tokenId][msg.sender]
+            .auctionBidPeriod = defaultAuctionBidPeriod;
+        nftContractAuctions[_nftContractAddress][_tokenId][msg.sender]
+            .bidIncreasePercentage = defaultBidIncreasePercentage;
         _createNewNftAuction(
             _nftContractAddress,
             _tokenId,
+            msg.sender,
+            _tokenQty,
             _minPrice,
             _buyNowPrice,
-            _feeRecipient,
-            _feePercentage
+            defaultFeeCollector,
+            defaultFeePercentage
         );
     }
 
@@ -583,6 +574,8 @@ contract ERC1155Marketplace is Ownable {
     function _setupSale(
         address _nftContractAddress,
         uint256 _tokenId,
+        address _nftSeller,
+        uint256 _tokenQty,
         uint128 _buyNowPrice,
         address _whitelistedBuyer,
         address _feeRecipient,
@@ -592,34 +585,37 @@ contract ERC1155Marketplace is Ownable {
 
         isFeePercentagesLessThanMaximum(_feePercentage)
     {
-        nftContractAuctions[_nftContractAddress][_tokenId]
+        nftContractAuctions[_nftContractAddress][_tokenId][_nftSeller]
             .feeRecipient = _feeRecipient;
-        nftContractAuctions[_nftContractAddress][_tokenId]
+        nftContractAuctions[_nftContractAddress][_tokenId][_nftSeller]
             .feePercentage = _feePercentage;
-        nftContractAuctions[_nftContractAddress][_tokenId]
+        nftContractAuctions[_nftContractAddress][_tokenId][_nftSeller]
             .buyNowPrice = _buyNowPrice;
-        nftContractAuctions[_nftContractAddress][_tokenId]
+        nftContractAuctions[_nftContractAddress][_tokenId][_nftSeller]
             .whitelistedBuyer = _whitelistedBuyer;
-        nftContractAuctions[_nftContractAddress][_tokenId].nftSeller = msg
-            .sender;
+        nftContractAuctions[_nftContractAddress][_tokenId][_nftSeller]
+            .tokenQty = _tokenQty;
     }
 
     function createSale(
         address _nftContractAddress,
         uint256 _tokenId,
+        uint256 _tokenQty,
         uint128 _buyNowPrice,
         address _whitelistedBuyer,
         address _feeRecipient,
         uint32 _feePercentage
     )
         external
-        isAuctionNotStartedByOwner(_nftContractAddress, _tokenId)
+        isAuctionNotStartedByOwner(_nftContractAddress, _tokenId, msg.sender)
         priceGreaterThanZero(_buyNowPrice)
     {
         //min price = 0
         _setupSale(
             _nftContractAddress,
             _tokenId,
+            msg.sender,
+            _tokenQty,
             _buyNowPrice,
             _whitelistedBuyer,
             _feeRecipient,
@@ -630,30 +626,21 @@ contract ERC1155Marketplace is Ownable {
             _nftContractAddress,
             _tokenId,
             msg.sender,
+            _tokenQty,
             _buyNowPrice,
-            _whitelistedBuyer,
-            _feeRecipient,
-            _feePercentage
+            _whitelistedBuyer
         );
-        //check if buyNowPrice is meet and conclude sale, otherwise reverse the early bid
-        if (_isABidMade(_nftContractAddress, _tokenId)) {
-            if (
-                //we only revert the underbid if the seller specifies a different
-                //whitelisted buyer to the highest bidder
-                _isHighestBidderAllowedToPurchaseNFT(
-                    _nftContractAddress,
-                    _tokenId
-                )
-            ) {
-                if (_isBuyNowPriceMet(_nftContractAddress, _tokenId)) {
-                    _transferNftToAuctionContract(
-                        _nftContractAddress,
-                        _tokenId
-                    );
-                    _transferNftAndPaySeller(_nftContractAddress, _tokenId);
+        //check if buyNowPrice is met and conclude sale, otherwise reverse an early bid
+        if (_isABidMade(_nftContractAddress, _tokenId, msg.sender)) {
+            //we only revert the underbid if the seller specifies a different
+            //whitelisted buyer to the highest bidder
+            if (_isHighestBidderAllowedToPurchaseNFT(_nftContractAddress, _tokenId,msg.sender)) {
+                if (_isBuyNowPriceMet(_nftContractAddress, _tokenId, msg.sender)) {
+                    _transferNftToAuctionContract(_nftContractAddress, _tokenId, msg.sender);
+                    _transferNftAndPaySeller(_nftContractAddress, _tokenId, msg.sender);
                 }
             } else {
-                _reverseAndResetPreviousBid(_nftContractAddress, _tokenId);
+                _reverseAndResetPreviousBid(_nftContractAddress, _tokenId, msg.sender);
             }
         }
     }
@@ -668,44 +655,47 @@ contract ERC1155Marketplace is Ownable {
      * of an NFT.                                                      *
      ********************************************************************/
 
-    function _makeBid(address _nftContractAddress, uint256 _tokenId) internal
-        notNftSeller(_nftContractAddress, _tokenId)
+    function _makeBid(address _nftContractAddress, uint256 _tokenId, address _nftSeller) internal
+        notNftSeller(_nftSeller)
         paymentAccepted()
         bidAmountMeetsBidRequirements(
             _nftContractAddress,
-            _tokenId
+            _tokenId,
+            _nftSeller
         )
     {
         _reversePreviousBidAndUpdateHighestBid(
             _nftContractAddress,
-            _tokenId
+            _tokenId,
+            _nftSeller
         );
         emit BidMade(
             _nftContractAddress,
             _tokenId,
+            _nftSeller,
             msg.sender,
             msg.value
         );
-        _updateOngoingAuction(_nftContractAddress, _tokenId);
+        _updateOngoingAuction(_nftContractAddress, _tokenId, _nftSeller);
     }
 
-    function makeBid(address _nftContractAddress, uint256 _tokenId) external payable
-        auctionOngoing(_nftContractAddress, _tokenId)
-        onlyApplicableBuyer(_nftContractAddress, _tokenId)
+    function makeBid(address _nftContractAddress, uint256 _tokenId, address _nftSeller) external payable
+        auctionOngoing(_nftContractAddress, _tokenId, _nftSeller)
+        onlyApplicableBuyer(_nftContractAddress, _tokenId, _nftSeller)
     {
-        _makeBid(_nftContractAddress, _tokenId);
+        _makeBid(_nftContractAddress, _tokenId, _nftSeller);
     }
 
-    function makeCustomBid(address _nftContractAddress, uint256 _tokenId, address _nftRecipient)
+    function makeCustomBid(address _nftContractAddress, uint256 _tokenId, address _nftSeller, address _nftRecipient)
         external
         payable
-        auctionOngoing(_nftContractAddress, _tokenId)
+        auctionOngoing(_nftContractAddress, _tokenId, _nftSeller)
         notZeroAddress(_nftRecipient)
-        onlyApplicableBuyer(_nftContractAddress, _tokenId)
+        onlyApplicableBuyer(_nftContractAddress, _tokenId, _nftSeller)
     {
-        nftContractAuctions[_nftContractAddress][_tokenId]
+        nftContractAuctions[_nftContractAddress][_tokenId][_nftSeller]
             .nftRecipient = _nftRecipient;
-        _makeBid(_nftContractAddress, _tokenId);
+        _makeBid(_nftContractAddress, _tokenId, _nftSeller);
     }
 
     /*╔══════════════════════════════╗
@@ -716,25 +706,25 @@ contract ERC1155Marketplace is Ownable {
      * Settle an auction or sale if the buyNowPrice is met or set  *
      *  auction period to begin if the minimum price has been met. *
      ***************************************************************/
-    function _updateOngoingAuction(address _nftContractAddress, uint256 _tokenId) internal {
-        if (_isBuyNowPriceMet(_nftContractAddress, _tokenId)) {
-            _transferNftToAuctionContract(_nftContractAddress, _tokenId);
-            _transferNftAndPaySeller(_nftContractAddress, _tokenId);
+    function _updateOngoingAuction(address _nftContractAddress, uint256 _tokenId, address _nftSeller) internal {
+        if (_isBuyNowPriceMet(_nftContractAddress, _tokenId, _nftSeller)) {
+            _transferNftToAuctionContract(_nftContractAddress, _tokenId, _nftSeller);
+            _transferNftAndPaySeller(_nftContractAddress, _tokenId, _nftSeller);
             return;
         }
         //min price not set, nft not up for auction yet
-        if (_isMinimumBidMade(_nftContractAddress, _tokenId)) {
-            _transferNftToAuctionContract(_nftContractAddress, _tokenId);
-            _updateAuctionEnd(_nftContractAddress, _tokenId);
+        if (_isMinimumBidMade(_nftContractAddress, _tokenId, _nftSeller)) {
+            _transferNftToAuctionContract(_nftContractAddress, _tokenId, _nftSeller);
+            _updateAuctionEnd(_nftContractAddress, _tokenId, _nftSeller);
         }
     }
 
-    function _updateAuctionEnd(address _nftContractAddress, uint256 _tokenId) internal {
+    function _updateAuctionEnd(address _nftContractAddress, uint256 _tokenId, address _nftSeller) internal {
         //the auction end is always set to now + the bid period
-        nftContractAuctions[_nftContractAddress][_tokenId].auctionEnd =
-            _getAuctionBidPeriod(_nftContractAddress, _tokenId) + uint64(block.timestamp);
-        emit AuctionPeriodUpdated(_nftContractAddress, _tokenId,
-            nftContractAuctions[_nftContractAddress][_tokenId].auctionEnd
+        nftContractAuctions[_nftContractAddress][_tokenId][_nftSeller].auctionEnd =
+            _getAuctionBidPeriod(_nftContractAddress, _tokenId, _nftSeller) + uint64(block.timestamp);
+        emit AuctionPeriodUpdated(_nftContractAddress, _tokenId, _nftSeller,
+            nftContractAuctions[_nftContractAddress][_tokenId][_nftSeller].auctionEnd
         );
     }
 
@@ -746,19 +736,17 @@ contract ERC1155Marketplace is Ownable {
      * Reset all auction related parameters for an NFT.
      * This effectively removes an NFT as an item up for auction
      */
-    function _resetAuction(address _nftContractAddress, uint256 _tokenId)
+    function _resetAuction(address _nftContractAddress, uint256 _tokenId, address _nftSeller)
         internal
     {
-        nftContractAuctions[_nftContractAddress][_tokenId].minPrice = 0;
-        nftContractAuctions[_nftContractAddress][_tokenId].buyNowPrice = 0;
-        nftContractAuctions[_nftContractAddress][_tokenId].auctionEnd = 0;
-        nftContractAuctions[_nftContractAddress][_tokenId].auctionBidPeriod = 0;
-        nftContractAuctions[_nftContractAddress][_tokenId]
+        nftContractAuctions[_nftContractAddress][_tokenId][_nftSeller].tokenQty = 0;
+        nftContractAuctions[_nftContractAddress][_tokenId][_nftSeller].minPrice = 0;
+        nftContractAuctions[_nftContractAddress][_tokenId][_nftSeller].buyNowPrice = 0;
+        nftContractAuctions[_nftContractAddress][_tokenId][_nftSeller].auctionEnd = 0;
+        nftContractAuctions[_nftContractAddress][_tokenId][_nftSeller].auctionBidPeriod = 0;
+        nftContractAuctions[_nftContractAddress][_tokenId][_nftSeller]
             .bidIncreasePercentage = 0;
-        nftContractAuctions[_nftContractAddress][_tokenId].nftSeller = address(
-            0
-        );
-        nftContractAuctions[_nftContractAddress][_tokenId]
+        nftContractAuctions[_nftContractAddress][_tokenId][_nftSeller]
             .whitelistedBuyer = address(0);
     }
 
@@ -766,13 +754,13 @@ contract ERC1155Marketplace is Ownable {
      * Reset all bid related parameters for an NFT.
      * This effectively sets an NFT as having no active bids
      */
-    function _resetBids(address _nftContractAddress, uint256 _tokenId)
+    function _resetBids(address _nftContractAddress, uint256 _tokenId, address _nftSeller)
         internal
     {
-        nftContractAuctions[_nftContractAddress][_tokenId]
+        nftContractAuctions[_nftContractAddress][_tokenId][_nftSeller]
             .nftHighestBidder = address(0);
-        nftContractAuctions[_nftContractAddress][_tokenId].nftHighestBid = 0;
-        nftContractAuctions[_nftContractAddress][_tokenId]
+        nftContractAuctions[_nftContractAddress][_tokenId][_nftSeller].nftHighestBid = 0;
+        nftContractAuctions[_nftContractAddress][_tokenId][_nftSeller]
             .nftRecipient = address(0);
     }
 
@@ -785,42 +773,40 @@ contract ERC1155Marketplace is Ownable {
      ******************************************************************/
     function _updateHighestBid(
         address _nftContractAddress,
-        uint256 _tokenId
+        uint256 _tokenId,
+        address _nftSeller
     ) internal {
-        nftContractAuctions[_nftContractAddress][_tokenId]
+        nftContractAuctions[_nftContractAddress][_tokenId][_nftSeller]
                 .nftHighestBid = uint128(msg.value);
-        nftContractAuctions[_nftContractAddress][_tokenId]
+        nftContractAuctions[_nftContractAddress][_tokenId][_nftSeller]
             .nftHighestBidder = msg.sender;
     }
 
     function _reverseAndResetPreviousBid(
         address _nftContractAddress,
-        uint256 _tokenId
+        uint256 _tokenId,
+        address _nftSeller
     ) internal {
-        address nftHighestBidder = nftContractAuctions[_nftContractAddress][
-            _tokenId
-        ].nftHighestBidder;
-
-        uint128 nftHighestBid = nftContractAuctions[_nftContractAddress][
-            _tokenId
-        ].nftHighestBid;
-        _resetBids(_nftContractAddress, _tokenId);
+        address nftHighestBidder = nftContractAuctions[_nftContractAddress][_tokenId]
+            [_nftSeller].nftHighestBidder;
+        uint128 nftHighestBid = nftContractAuctions[_nftContractAddress][_tokenId]
+            [_nftSeller].nftHighestBid;
+        _resetBids(_nftContractAddress, _tokenId, _nftSeller);
 
         _payout(nftHighestBidder, nftHighestBid);
     }
 
     function _reversePreviousBidAndUpdateHighestBid(
         address _nftContractAddress,
-        uint256 _tokenId
+        uint256 _tokenId,
+        address _nftSeller
     ) internal {
-        address prevNftHighestBidder = nftContractAuctions[_nftContractAddress][
-            _tokenId
-        ].nftHighestBidder;
+        address prevNftHighestBidder = nftContractAuctions[_nftContractAddress][_tokenId]
+            [_nftSeller].nftHighestBidder;
 
-        uint256 prevNftHighestBid = nftContractAuctions[_nftContractAddress][
-            _tokenId
-        ].nftHighestBid;
-        _updateHighestBid(_nftContractAddress, _tokenId);
+        uint256 prevNftHighestBid = nftContractAuctions[_nftContractAddress][_tokenId]
+            [_nftSeller].nftHighestBid;
+        _updateHighestBid(_nftContractAddress, _tokenId, _nftSeller);
 
         if (prevNftHighestBidder != address(0)) {
             _payout(
@@ -833,20 +819,17 @@ contract ERC1155Marketplace is Ownable {
     /*╔══════════════════════════════╗
       ║  TRANSFER NFT & PAY SELLER   ║
       ╚══════════════════════════════╝*/
+
     function _transferNftAndPaySeller(
         address _nftContractAddress,
-        uint256 _tokenId
+        uint256 _tokenId,
+        address _nftSeller
     ) internal {
-        address _nftSeller = nftContractAuctions[_nftContractAddress][_tokenId]
-            .nftSeller;
-        address _nftHighestBidder = nftContractAuctions[_nftContractAddress][
-            _tokenId
-        ].nftHighestBidder;
-        address _nftRecipient = _getNftRecipient(_nftContractAddress, _tokenId);
-        uint128 _nftHighestBid = nftContractAuctions[_nftContractAddress][
-            _tokenId
-        ].nftHighestBid;
-        _resetBids(_nftContractAddress, _tokenId);
+        address _nftHighestBidder = nftContractAuctions[_nftContractAddress][_tokenId][_nftSeller].nftHighestBidder;
+        address _nftRecipient = _getNftRecipient(_nftContractAddress, _tokenId, _nftSeller);
+        uint128 _nftHighestBid = nftContractAuctions[_nftContractAddress][_tokenId][_nftSeller].nftHighestBid;
+        uint256 _tokenQty = nftContractAuctions[_nftContractAddress][_tokenId][_nftSeller].tokenQty;
+        _resetBids(_nftContractAddress, _tokenId, _nftSeller);
 
         _payFeesAndSeller(
             _nftContractAddress,
@@ -854,17 +837,20 @@ contract ERC1155Marketplace is Ownable {
             _nftSeller,
             _nftHighestBid
         );
-        IERC721(_nftContractAddress).transferFrom(
+        IERC1155(_nftContractAddress).safeTransferFrom(
             address(this),
             _nftRecipient,
-            _tokenId
+            _tokenId,
+            _tokenQty,
+            "0x0"
         );
 
-        _resetAuction(_nftContractAddress, _tokenId);
+        _resetAuction(_nftContractAddress, _tokenId, _nftSeller);
         emit NFTTransferredAndSellerPaid(
             _nftContractAddress,
             _tokenId,
             _nftSeller,
+            _tokenQty,
             _nftHighestBid,
             _nftHighestBidder,
             _nftRecipient
@@ -879,9 +865,9 @@ contract ERC1155Marketplace is Ownable {
     ) internal {
 
         uint256 fee = _getPortionOfBid(_highestBid,
-                nftContractAuctions[_nftContractAddress][_tokenId].feePercentage);
+                nftContractAuctions[_nftContractAddress][_tokenId][_nftSeller].feePercentage);
 
-        _payout(nftContractAuctions[_nftContractAddress][_tokenId].feeRecipient,fee);
+        _payout(nftContractAuctions[_nftContractAddress][_tokenId][_nftSeller].feeRecipient,fee);
         _payout(_nftSeller, (_highestBid - fee));
     }
 
@@ -893,71 +879,69 @@ contract ERC1155Marketplace is Ownable {
         }("");
         // if it failed, update their credit balance so they can pull it later
         if (!success) {
-            failedTransferCredits[_recipient] = failedTransferCredits[_recipient] +_amount;
+            failedTransferCredits[_recipient] = failedTransferCredits[_recipient] + _amount;
         }
     }
 
     /*╔══════════════════════════════╗
       ║      SETTLE & WITHDRAW       ║
       ╚══════════════════════════════╝*/
-    function settleAuction(address _nftContractAddress, uint256 _tokenId)
+
+    function settleAuction(address _nftContractAddress, uint256 _tokenId, address _nftSeller)
         external
-        isAuctionOver(_nftContractAddress, _tokenId)
+        isAuctionOver(_nftContractAddress, _tokenId, _nftSeller)
     {
-        _transferNftAndPaySeller(_nftContractAddress, _tokenId);
-        emit AuctionSettled(_nftContractAddress, _tokenId, msg.sender);
+        _transferNftAndPaySeller(_nftContractAddress, _tokenId, _nftSeller);
+        emit AuctionSettled(_nftContractAddress, _tokenId, _nftSeller, msg.sender);
     }
 
-    function withdrawAuction(address _nftContractAddress, uint256 _tokenId)
+    function withdrawAuction(address _nftContractAddress, uint256 _tokenId, address _nftSeller)
         external
     {
         //only the NFT owner can prematurely close and auction
-        require(
-            IERC721(_nftContractAddress).ownerOf(_tokenId) == msg.sender,
-            "Not NFT owner"
-        );
-        _resetAuction(_nftContractAddress, _tokenId);
-        emit AuctionWithdrawn(_nftContractAddress, _tokenId, msg.sender);
+        require(_nftSeller == msg.sender, "Not Auction owner");
+        _resetAuction(_nftContractAddress, _tokenId, _nftSeller);
+        emit AuctionWithdrawn(_nftContractAddress, _tokenId, _nftSeller);
     }
 
-    function withdrawBid(address _nftContractAddress, uint256 _tokenId)
+    function withdrawBid(address _nftContractAddress, uint256 _tokenId, address _nftSeller)
         external
-        minimumBidNotMade(_nftContractAddress, _tokenId)
+        minimumBidNotMade(_nftContractAddress, _tokenId, _nftSeller)
     {
-        address nftHighestBidder = nftContractAuctions[_nftContractAddress][_tokenId].nftHighestBidder;
-        require(msg.sender == nftHighestBidder, "Cannot withdraw funds");
+        address nftHighestBidder = nftContractAuctions[_nftContractAddress][_tokenId][_nftSeller].nftHighestBidder;
+        require(msg.sender == nftHighestBidder, "Sender not highest bidder");
 
-        uint128 nftHighestBid = nftContractAuctions[_nftContractAddress][_tokenId].nftHighestBid;
-        _resetBids(_nftContractAddress, _tokenId);
+        uint128 nftHighestBid = nftContractAuctions[_nftContractAddress][_tokenId][_nftSeller].nftHighestBid;
+        _resetBids(_nftContractAddress, _tokenId, _nftSeller);
 
         _payout(nftHighestBidder, nftHighestBid);
 
-        emit BidWithdrawn(_nftContractAddress, _tokenId, msg.sender);
+        emit BidWithdrawn(_nftContractAddress, _tokenId, _nftSeller, msg.sender);
     }
 
     /*╔══════════════════════════════╗
       ║       UPDATE AUCTION         ║
       ╚══════════════════════════════╝*/
+
     function updateWhitelistedBuyer(
         address _nftContractAddress,
         uint256 _tokenId,
+        address _nftSeller,
         address _newWhitelistedBuyer
-    ) external onlyNftSeller(_nftContractAddress, _tokenId) {
-        require(_isASale(_nftContractAddress, _tokenId), "Not a sale");
-        nftContractAuctions[_nftContractAddress][_tokenId]
+    ) external onlyNftSeller(_nftSeller) {
+        require(_isASale(_nftContractAddress, _tokenId, _nftSeller), "Not a sale");
+        nftContractAuctions[_nftContractAddress][_tokenId][_nftSeller]
             .whitelistedBuyer = _newWhitelistedBuyer;
         //if an underbid is by a non whitelisted buyer,reverse that bid
-        address nftHighestBidder = nftContractAuctions[_nftContractAddress][
-            _tokenId
-        ].nftHighestBidder;
-        uint128 nftHighestBid = nftContractAuctions[_nftContractAddress][
-            _tokenId
-        ].nftHighestBid;
+        address nftHighestBidder = nftContractAuctions[_nftContractAddress][_tokenId]
+            [_nftSeller].nftHighestBidder;
+        uint128 nftHighestBid = nftContractAuctions[_nftContractAddress][_tokenId]
+            [_nftSeller].nftHighestBid;
         if (nftHighestBid > 0 && !(nftHighestBidder == _newWhitelistedBuyer)) {
             //we only revert the underbid if the seller specifies a different
             //whitelisted buyer to the highest bider
 
-            _resetBids(_nftContractAddress, _tokenId);
+            _resetBids(_nftContractAddress, _tokenId, _nftSeller);
 
             _payout(nftHighestBidder,nftHighestBid);
         }
@@ -965,6 +949,7 @@ contract ERC1155Marketplace is Ownable {
         emit WhitelistedBuyerUpdated(
             _nftContractAddress,
             _tokenId,
+            _nftSeller,
             _newWhitelistedBuyer
         );
     }
@@ -972,80 +957,93 @@ contract ERC1155Marketplace is Ownable {
     function updateMinimumPrice(
         address _nftContractAddress,
         uint256 _tokenId,
+        address _nftSeller,
         uint128 _newMinPrice
     )
         external
-        onlyNftSeller(_nftContractAddress, _tokenId)
-        minimumBidNotMade(_nftContractAddress, _tokenId)
-        isNotASale(_nftContractAddress, _tokenId)
+        onlyNftSeller(_nftSeller)
+        minimumBidNotMade(_nftContractAddress, _tokenId, _nftSeller)
+        isNotASale(_nftContractAddress, _tokenId, _nftSeller)
         priceGreaterThanZero(_newMinPrice)
         minPriceDoesNotExceedLimit(
-            nftContractAuctions[_nftContractAddress][_tokenId].buyNowPrice,
+            nftContractAuctions[_nftContractAddress][_tokenId][_nftSeller].buyNowPrice,
             _newMinPrice
+        ) {
+        _updateMinimumPrice(_nftContractAddress, _tokenId, _nftSeller,_newMinPrice);
+    }
+
+    function _updateMinimumPrice(
+        address _nftContractAddress,
+        uint256 _tokenId,
+        address _nftSeller,
+        uint128 _newMinPrice
         )
-    {
-        nftContractAuctions[_nftContractAddress][_tokenId]
-            .minPrice = _newMinPrice;
+        internal {
+            nftContractAuctions[_nftContractAddress][_tokenId][_nftSeller]
+                .minPrice = _newMinPrice;
 
-        emit MinimumPriceUpdated(_nftContractAddress, _tokenId, _newMinPrice);
+            emit MinimumPriceUpdated(_nftContractAddress, _tokenId, _nftSeller, _newMinPrice);
 
-        if (_isMinimumBidMade(_nftContractAddress, _tokenId)) {
-            _transferNftToAuctionContract(_nftContractAddress, _tokenId);
-            _updateAuctionEnd(_nftContractAddress, _tokenId);
+            if (_isMinimumBidMade(_nftContractAddress, _tokenId, _nftSeller)) {
+                _transferNftToAuctionContract(_nftContractAddress, _tokenId, _nftSeller);
+                _updateAuctionEnd(_nftContractAddress, _tokenId, _nftSeller);
         }
     }
 
     function updateBuyNowPrice(
         address _nftContractAddress,
         uint256 _tokenId,
+        address _nftSeller,
         uint128 _newBuyNowPrice
     )
         external
-        onlyNftSeller(_nftContractAddress, _tokenId)
+        onlyNftSeller(_nftSeller)
         priceGreaterThanZero(_newBuyNowPrice)
         minPriceDoesNotExceedLimit(
             _newBuyNowPrice,
-            nftContractAuctions[_nftContractAddress][_tokenId].minPrice
+            nftContractAuctions[_nftContractAddress][_tokenId][_nftSeller].minPrice
         )
     {
-        nftContractAuctions[_nftContractAddress][_tokenId]
+        nftContractAuctions[_nftContractAddress][_tokenId][_nftSeller]
             .buyNowPrice = _newBuyNowPrice;
-        emit BuyNowPriceUpdated(_nftContractAddress, _tokenId, _newBuyNowPrice);
-        if (_isBuyNowPriceMet(_nftContractAddress, _tokenId)) {
-            _transferNftToAuctionContract(_nftContractAddress, _tokenId);
-            _transferNftAndPaySeller(_nftContractAddress, _tokenId);
+        emit BuyNowPriceUpdated(_nftContractAddress, _tokenId, _nftSeller, _newBuyNowPrice);
+        if (_isBuyNowPriceMet(_nftContractAddress, _tokenId, _nftSeller)) {
+            _transferNftToAuctionContract(_nftContractAddress, _tokenId, _nftSeller);
+            _transferNftAndPaySeller(_nftContractAddress, _tokenId, _nftSeller);
         }
+    }
+
+    function updateTokenQty(
+        address _nftContractAddress,
+        uint256 _tokenId,
+        address _nftSeller,
+        uint256 _tokenQty
+    )
+        external    
+        onlyNftSeller(_nftSeller)
+        minimumBidNotMade(_nftContractAddress, _tokenId, _nftSeller)
+        sellerHasTokenBalance(_nftContractAddress, _tokenId, _nftSeller, _tokenQty)
+
+    {
+        require(_tokenQty > 0, "Must be updated to a nonzero qty");
+        nftContractAuctions[_nftContractAddress][_tokenId][_nftSeller].tokenQty = _tokenQty;
+
     }
 
     /*
      * The NFT seller can opt to end an auction by taking the current highest bid.
      */
-    function takeHighestBid(address _nftContractAddress, uint256 _tokenId)
+    function takeHighestBid(address _nftContractAddress, uint256 _tokenId, address _nftSeller)
         external
-        onlyNftSeller(_nftContractAddress, _tokenId)
+        onlyNftSeller(_nftSeller)
     {
         require(
-            _isABidMade(_nftContractAddress, _tokenId),
+            _isABidMade(_nftContractAddress, _tokenId, _nftSeller),
             "cannot payout 0 bid"
         );
-        _transferNftToAuctionContract(_nftContractAddress, _tokenId);
-        _transferNftAndPaySeller(_nftContractAddress, _tokenId);
-        emit HighestBidTaken(_nftContractAddress, _tokenId);
-    }
-
-    /*
-     * Query the owner of an NFT deposited for auction
-     */
-    function ownerOfNFT(address _nftContractAddress, uint256 _tokenId)
-        external
-        view
-        returns (address)
-    {
-        address nftSeller = nftContractAuctions[_nftContractAddress][_tokenId]
-            .nftSeller;
-        require(nftSeller != address(0), "NFT not deposited");
-
-        return nftSeller;
+        _transferNftToAuctionContract(_nftContractAddress, _tokenId, _nftSeller);
+        _transferNftAndPaySeller(_nftContractAddress, _tokenId, _nftSeller);
+        emit HighestBidTaken(_nftContractAddress, _tokenId, _nftSeller);
     }
 
     /*
