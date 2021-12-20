@@ -5,9 +5,9 @@ import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "./interfaces/iSeekers.sol";
-import "./interfaces/iKeepersVault.sol";
+import "./interfaces/iVault.sol";
 
-contract KeepersVault is iKeepersVault, ERC1155, Ownable, ReentrancyGuard {
+contract Vault is iVault, ERC1155, Ownable, ReentrancyGuard {
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 //                                                                                              //

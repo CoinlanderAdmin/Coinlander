@@ -14,14 +14,14 @@ async function main() {
   console.log("Seeker contract address", seekers.address)
 
   // Deploy the Keepers Vault contract 
-  const KeepersVault = await ethers.getContractFactory("KeepersVault")
-  const keepersVault = await KeepersVault.deploy(seekers.address)
-  await keepersVault.deployed()
-  console.log("KeepersVault address", keepersVault.address)
+  const Vault = await ethers.getContractFactory("Vault")
+  const vault = await Vault.deploy(seekers.address)
+  await vault.deployed()
+  console.log("Vault address", vault.address)
 
   // Deploy the Coin contract 
   const SeasonOne = await ethers.getContractFactory("SeasonOne")
-  const seasonOne = await SeasonOne.deploy(seekers.address, keepersVault.address)
+  const seasonOne = await SeasonOne.deploy(seekers.address, vault.address)
   await seasonOne.deployed()
   console.log("CoinOne address", seasonOne.address)
 
@@ -44,7 +44,7 @@ async function main() {
   const data = {
     contracts: {
       "seeker": seekers.address,
-      "vault": keepersVault.address,
+      "vault": vault.address,
       "seasonOne": seasonOne.address,
       "nft-marketplace": erc721Marketplace.address,
       "sft-marketplace": erc1155Marketplace.address,
