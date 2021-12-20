@@ -25,6 +25,9 @@ async function main() {
   await seasonOne.deployed()
   console.log("CoinOne address", seasonOne.address)
 
+  // Establish permissions for SeasonOne contract within Seekers contract
+  await seekers.addGameContract(seasonOne.address)
+
   // Deploy the Nft Marketplace contract
   const ERC721Marketplace = await ethers.getContractFactory("ERC721Marketplace")
   const erc721Marketplace = await ERC721Marketplace.deploy()
