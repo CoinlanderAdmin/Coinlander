@@ -51,11 +51,7 @@ contract ERC1155Marketplace is Ownable {
         address nftSeller,
         uint256 tokenQuantity,
         uint128 minPrice,
-        uint128 buyNowPrice,
-        uint32 auctionBidPeriod,
-        uint32 bidIncreasePercentage,
-        address feeRecipient,
-        uint32 feePercentage
+        uint128 buyNowPrice
     );
 
     event SaleCreated(
@@ -64,9 +60,7 @@ contract ERC1155Marketplace is Ownable {
         address nftSeller,
         uint256 tokenQuantity,
         uint128 buyNowPrice,
-        address whitelistedBuyer,
-        address feeRecipient,
-        uint32 feePercentage
+        address whitelistedBuyer
     );
 
     event BidMade(
@@ -534,11 +528,7 @@ contract ERC1155Marketplace is Ownable {
             _nftSeller,
             _tokenQty,
             _minPrice,
-            _buyNowPrice,
-            _getAuctionBidPeriod(_nftContractAddress, _tokenId, _nftSeller),
-            _getBidIncreasePercentage(_nftContractAddress, _tokenId, _nftSeller),
-            _feeRecipient,
-            _feePercentage
+            _buyNowPrice
         );
         _updateOngoingAuction(_nftContractAddress, _tokenId, _nftSeller);
     }
@@ -548,20 +538,17 @@ contract ERC1155Marketplace is Ownable {
         uint256 _tokenId,
         uint256 _tokenQty,
         uint128 _minPrice,
-        uint128 _buyNowPrice,
-        uint32 _auctionBidPeriod, 
-        uint32 _bidIncreasePercentage
+        uint128 _buyNowPrice
     )
         external
         isAuctionNotStartedByOwner(_nftContractAddress, _tokenId, msg.sender)
         priceGreaterThanZero(_minPrice)
-        increasePercentageAboveMinimum(_bidIncreasePercentage)
         sellerHasTokenBalance(_nftContractAddress, _tokenId, msg.sender, _tokenQty)
     {
         nftContractAuctions[_nftContractAddress][_tokenId][msg.sender]
-            .auctionBidPeriod = _auctionBidPeriod;
+            .auctionBidPeriod = defaultAuctionBidPeriod;
         nftContractAuctions[_nftContractAddress][_tokenId][msg.sender]
-            .bidIncreasePercentage = _bidIncreasePercentage;
+            .bidIncreasePercentage = defaultBidIncreasePercentage;
         _createNewNftAuction(
             _nftContractAddress,
             _tokenId,
@@ -641,9 +628,7 @@ contract ERC1155Marketplace is Ownable {
             msg.sender,
             _tokenQty,
             _buyNowPrice,
-            _whitelistedBuyer,
-            _feeRecipient,
-            _feePercentage
+            _whitelistedBuyer
         );
         //check if buyNowPrice is met and conclude sale, otherwise reverse an early bid
         if (_isABidMade(_nftContractAddress, _tokenId, msg.sender)) {
@@ -983,16 +968,25 @@ contract ERC1155Marketplace is Ownable {
         minPriceDoesNotExceedLimit(
             nftContractAuctions[_nftContractAddress][_tokenId][_nftSeller].buyNowPrice,
             _newMinPrice
+        ) {
+        _updateMinimumPrice(_nftContractAddress, _tokenId, _nftSeller,_newMinPrice);
+    }
+
+    function _updateMinimumPrice(
+        address _nftContractAddress,
+        uint256 _tokenId,
+        address _nftSeller,
+        uint128 _newMinPrice
         )
-    {
-        nftContractAuctions[_nftContractAddress][_tokenId][_nftSeller]
-            .minPrice = _newMinPrice;
+        internal {
+            nftContractAuctions[_nftContractAddress][_tokenId][_nftSeller]
+                .minPrice = _newMinPrice;
 
-        emit MinimumPriceUpdated(_nftContractAddress, _tokenId, _nftSeller, _newMinPrice);
+            emit MinimumPriceUpdated(_nftContractAddress, _tokenId, _nftSeller, _newMinPrice);
 
-        if (_isMinimumBidMade(_nftContractAddress, _tokenId, _nftSeller)) {
-            _transferNftToAuctionContract(_nftContractAddress, _tokenId, _nftSeller);
-            _updateAuctionEnd(_nftContractAddress, _tokenId, _nftSeller);
+            if (_isMinimumBidMade(_nftContractAddress, _tokenId, _nftSeller)) {
+                _transferNftToAuctionContract(_nftContractAddress, _tokenId, _nftSeller);
+                _updateAuctionEnd(_nftContractAddress, _tokenId, _nftSeller);
         }
     }
 
