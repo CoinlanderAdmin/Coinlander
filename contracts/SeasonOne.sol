@@ -11,7 +11,7 @@ import "./interfaces/iKeepersVault.sol";
 
 // @TODO investigate EIP-712 for external method calls 
 
-contract CoinOne is ERC1155, Ownable, ReentrancyGuard {
+contract SeasonOne is ERC1155, Ownable, ReentrancyGuard {
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 //                                                                                              //

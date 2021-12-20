@@ -20,10 +20,10 @@ async function main() {
   console.log("KeepersVault address", keepersVault.address)
 
   // Deploy the Coin contract 
-  const CoinOne = await ethers.getContractFactory("CoinOne")
-  const coinOne = await CoinOne.deploy(seekers.address, keepersVault.address)
-  await coinOne.deployed()
-  console.log("CoinOne address", coinOne.address)
+  const SeasonOne = await ethers.getContractFactory("SeasonOne")
+  const seasonOne = await SeasonOne.deploy(seekers.address, keepersVault.address)
+  await seasonOne.deployed()
+  console.log("CoinOne address", seasonOne.address)
 
   // Deploy the Nft Marketplace contract
   const ERC721Marketplace = await ethers.getContractFactory("ERC721Marketplace")
@@ -42,7 +42,7 @@ async function main() {
     contracts: {
       "seeker": seekers.address,
       "vault": keepersVault.address,
-      "coin": coinOne.address,
+      "seasonOne": seasonOne.address,
       "nft-marketplace": erc721Marketplace.address,
       "sft-marketplace": erc1155Marketplace.address,
     }
