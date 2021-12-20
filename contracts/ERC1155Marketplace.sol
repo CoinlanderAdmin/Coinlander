@@ -1,20 +1,23 @@
 //SPDX-License-Identifier: Unlicense
 pragma solidity ^0.8.8;
 
-import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
-import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
+import "@openzeppelin/contracts/token/ERC1155/IERC1155.sol";
+import "@openzeppelin/contracts/token/ERC1155/IERC1155Receiver.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 
 /// @title An Auction Contract for bidding and selling single and batched NFTs, based on Avo Labs impl
 /// @author Avo Labs GmbH, @stevieraykatz
-/// @notice This contract can be used for auctioning NFTs from ERC721 contracts 
-contract NFTAuction is Ownable {
-    mapping(address => mapping(uint256 => Auction)) public nftContractAuctions;
+/// @notice This contract can be used for auctioning NFTs from ERC1155 contracts 
+contract ERC1155Marketplace is Ownable {
+
+    // Token contract -> token id -> seller -> Auction
+    mapping(address => mapping(uint256 => mapping(address => Auction))) public nftContractAuctions;
     mapping(address => uint256) failedTransferCredits;
-    //Each Auction is unique to each NFT (contract + id pairing).
+    //Each Auction is unique to each token batch (contract + id + seller).
     struct Auction {
         //map token ID to
+        uint256 tokenQuantity;
         uint32 bidIncreasePercentage;
         uint32 auctionBidPeriod; //Increments the length of time the auction is open in which a new bid can be made after each bid.
         uint64 auctionEnd;
@@ -22,7 +25,6 @@ contract NFTAuction is Ownable {
         uint128 buyNowPrice;
         uint128 nftHighestBid;
         address nftHighestBidder;
-        address nftSeller;
         address whitelistedBuyer; //The seller can specify a whitelisted address for a sale (this is effectively a direct sale).
         address nftRecipient; //The bidder can specify a recipient for the NFT if their bid is successful.
         address feeRecipient;
@@ -47,6 +49,7 @@ contract NFTAuction is Ownable {
         address nftContractAddress,
         uint256 tokenId,
         address nftSeller,
+        uint256 tokenQuantity,
         uint128 minPrice,
         uint128 buyNowPrice,
         uint32 auctionBidPeriod,
@@ -59,6 +62,7 @@ contract NFTAuction is Ownable {
         address nftContractAddress,
         uint256 tokenId,
         address nftSeller,
+        uint256 tokenQuantity,
         uint128 buyNowPrice,
         address whitelistedBuyer,
         address feeRecipient,
@@ -68,6 +72,7 @@ contract NFTAuction is Ownable {
     event BidMade(
         address nftContractAddress,
         uint256 tokenId,
+        address nftSeller,
         address bidder,
         uint256 ethAmount
     );
@@ -75,6 +80,7 @@ contract NFTAuction is Ownable {
     event AuctionPeriodUpdated(
         address nftContractAddress,
         uint256 tokenId,
+        address nftSeller,
         uint64 auctionEndPeriod
     );
 
@@ -82,6 +88,7 @@ contract NFTAuction is Ownable {
         address nftContractAddress,
         uint256 tokenId,
         address nftSeller,
+        uint256 tokenQuantity,
         uint128 nftHighestBid,
         address nftHighestBidder,
         address nftRecipient
@@ -90,48 +97,58 @@ contract NFTAuction is Ownable {
     event AuctionSettled(
         address nftContractAddress,
         uint256 tokenId,
+        address nftSeller,
         address auctionSettler
     );
 
     event AuctionWithdrawn(
         address nftContractAddress,
         uint256 tokenId,
+        address nftSeller,
         address nftOwner
     );
 
     event BidWithdrawn(
         address nftContractAddress,
         uint256 tokenId,
+        address nftSeller,
         address highestBidder
     );
 
     event WhitelistedBuyerUpdated(
         address nftContractAddress,
         uint256 tokenId,
+        address nftSeller,
         address newWhitelistedBuyer
     );
 
     event MinimumPriceUpdated(
         address nftContractAddress,
         uint256 tokenId,
+        address nftSeller,
         uint256 newMinPrice
     );
 
     event BuyNowPriceUpdated(
         address nftContractAddress,
         uint256 tokenId,
+        address nftSeller,
         uint128 newBuyNowPrice
     );
-    event HighestBidTaken(address nftContractAddress, uint256 tokenId);
+    event HighestBidTaken(
+        address nftContractAddress, 
+        uint256 tokenId,
+        address nftSeller
+    );
 
     /**********************************/
     /*╔═════════════════════════════╗
       ║          MODIFIERS          ║
       ╚═════════════════════════════╝*/
 
-    modifier isAuctionNotStartedByOwner(address _nftContractAddress, uint256 _tokenId) {
+    modifier isAuctionNotStartedByOwner(address _nftContractAddress, uint256 _tokenId, address _nftSeller) {
         require(
-            nftContractAuctions[_nftContractAddress][_tokenId].nftSeller != msg.sender,
+            nftContractAuctions[_nftContractAddress][_tokenId][_nftSeller].tokenQuantity != 0,
             "Auction already started by owner");
 
         if (nftContractAuctions[_nftContractAddress][_tokenId].nftSeller != address(0)) {
@@ -143,8 +160,8 @@ contract NFTAuction is Ownable {
         _;
     }
 
-    modifier auctionOngoing(address _nftContractAddress, uint256 _tokenId) {
-        require(_isAuctionOngoing(_nftContractAddress, _tokenId),
+    modifier auctionOngoing(address _nftContractAddress, uint256 _tokenId, address _nftSeller) {
+        require(_isAuctionOngoing(_nftContractAddress, _tokenId, _nftSeller),
             "Auction has ended");
         _;
     }
@@ -249,9 +266,9 @@ contract NFTAuction is Ownable {
     /*╔══════════════════════════════╗
       ║    AUCTION CHECK FUNCTIONS   ║
       ╚══════════════════════════════╝*/
-    function _isAuctionOngoing(address _nftContractAddress, uint256 _tokenId)
+    function _isAuctionOngoing(address _nftContractAddress, uint256 _tokenId, address _nftSeller)
         internal view returns (bool) {
-        uint64 auctionEndTimestamp = nftContractAuctions[_nftContractAddress][_tokenId].auctionEnd;
+        uint64 auctionEndTimestamp = nftContractAuctions[_nftContractAddress][_tokenId][_nftSeller].auctionEnd;
         //if the auctionEnd is set to 0, the auction is technically on-going, however
         //the minimum bid price (minPrice) has not yet been met.
         return (auctionEndTimestamp == 0 || block.timestamp < auctionEndTimestamp);

@@ -16,15 +16,15 @@ contract KeepersVault is iKeepersVault, ERC1155, Ownable, ReentrancyGuard {
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
     // Coin IDs
-    uint256 public constant FRAGMENT1 = 0;
-    uint256 public constant FRAGMENT2 = 1;
-    uint256 public constant FRAGMENT3 = 2;
-    uint256 public constant FRAGMENT4 = 3;
-    uint256 public constant FRAGMENT5 = 4;
-    uint256 public constant FRAGMENT6 = 5;
-    uint256 public constant FRAGMENT7 = 6;
-    uint256 public constant FRAGMENT8 = 7;
-    uint256 public constant KEY = 8;
+    uint256 public constant KEY = 0;
+    uint256 public constant FRAGMENT1 = 1;
+    uint256 public constant FRAGMENT2 = 2;
+    uint256 public constant FRAGMENT3 = 3;
+    uint256 public constant FRAGMENT4 = 4;
+    uint256 public constant FRAGMENT5 = 5;
+    uint256 public constant FRAGMENT6 = 6;
+    uint256 public constant FRAGMENT7 = 7;
+    uint256 public constant FRAGMENT8 = 8;
 
     // FRAGMENT PARAMETERS
     uint16 public constant MAXFRAGMENTS = 1111;
