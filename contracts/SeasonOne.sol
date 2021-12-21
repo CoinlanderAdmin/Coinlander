@@ -6,7 +6,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "./interfaces/iSeekers.sol";
-import "./interfaces/iKeepersVault.sol";
+import "./interfaces/iVault.sol";
 // import "hardhat/console.sol";
 
 // @TODO investigate EIP-712 for external method calls 

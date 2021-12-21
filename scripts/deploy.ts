@@ -43,7 +43,7 @@ async function main() {
   // Build local json file. Used to store contract data
   const data = {
     contracts: {
-      "seeker": seekers.address,
+      "seekers": seekers.address,
       "vault": vault.address,
       "seasonOne": seasonOne.address,
       "nft-marketplace": erc721Marketplace.address,
