@@ -24,8 +24,9 @@ contract SeasonOne is ERC1155, Ownable, ReentrancyGuard {
     address public COINLANDER;
     bool public released = false;
     bool private transferIsSteal = false;
+    
     using Counters for Counters.Counter;
-    Counters.Counter private seizureCount; 
+    Counters.Counter public seizureCount; 
 
     // GAME CONSTANTS
     uint256 public constant FIRSTSEEKERMINTTHRESH = 290;
@@ -139,9 +140,9 @@ contract SeasonOne is ERC1155, Ownable, ReentrancyGuard {
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
     function seize() external payable nonReentrant {
-        require(released == false);
-        require(msg.value == seizureStake);
-        require(msg.sender != COINLANDER);
+        require(released == false, "Cant be released");
+        require(msg.value == seizureStake, "Must send exact seizure value");
+        require(msg.sender != COINLANDER, "Cant seize from yourself");
 
         address previousOwner = COINLANDER;
         address newOwner = msg.sender;

@@ -3,7 +3,7 @@ import ErrnoException = NodeJS.ErrnoException;
 import * as fs from "fs";
 
 
-async function main() {
+export async function deploy() {
 
 
   const [deployer] = await ethers.getSigners()
@@ -50,11 +50,12 @@ async function main() {
       "sft-marketplace": erc1155Marketplace.address,
     }
   }
+  
   const json = JSON.stringify(data, null, 2)
-  fs.writeFileSync('artifacts/addresses.json', json, "utf8")
+  fs.writeFileSync('addresses.json', json, "utf8")
 }
 
-main()
+deploy()
   .then(() => process.exit(0))
   .catch((error) => {
     console.error(error)
