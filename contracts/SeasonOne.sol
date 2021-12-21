@@ -9,8 +9,6 @@ import "./interfaces/iSeekers.sol";
 import "./interfaces/iVault.sol";
 // import "hardhat/console.sol";
 
-// @TODO investigate EIP-712 for external method calls 
-
 contract SeasonOne is ERC1155, Ownable, ReentrancyGuard {
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -75,7 +73,7 @@ contract SeasonOne is ERC1155, Ownable, ReentrancyGuard {
 
     cloinDeposit[] public cloinDeposits;
     iSeekers public seekers;
-    iKeepersVault private keepersVault;
+    iVault private vault;
 
     event Stolen(address indexed by, address indexed from, uint256 bounty);
     event SweetRelease(address winner);
@@ -88,7 +86,7 @@ contract SeasonOne is ERC1155, Ownable, ReentrancyGuard {
 
         // Add interface for seekers contract 
         seekers = iSeekers(seekersContract);
-        keepersVault = iKeepersVault(keepeersVault);
+        vault = iVault(keepeersVault);
     }
 
 
@@ -165,27 +163,27 @@ contract SeasonOne is ERC1155, Ownable, ReentrancyGuard {
 
     function _processPaymentsAndRewards(address previousOwner, uint256 value) internal {
             
-            // Set aside funds for treasury and prize pool
-            uint256 _take = (value * PERCENTRESERVES) / PERCENTBASIS;
-            uint256 _prize = (_take * PERCENTPRIZE) / PERCENTBASIS;
-            reserve += (_take - _prize);
-            prize += _prize; 
+        // Set aside funds for treasury and prize pool
+        uint256 _take = (value * PERCENTRESERVES) / PERCENTBASIS;
+        uint256 _prize = (_take * PERCENTPRIZE) / PERCENTBASIS;
+        reserve += (_take - _prize);
+        prize += _prize; 
 
-            uint256 deposit = value - _take;
-            pendingWithdrawals[previousOwner]._withdrawValue += deposit;
+        uint256 deposit = value - _take;
+        pendingWithdrawals[previousOwner]._withdrawValue += deposit;
 
-            uint256 shardReward = _calculateShardReward(previousSeizureStake);
-            pendingWithdrawals[previousOwner]._shardOwed += shardReward;
+        uint256 shardReward = _calculateShardReward(previousSeizureStake);
+        pendingWithdrawals[previousOwner]._shardOwed += shardReward;
 
-            pendingWithdrawals[previousOwner]._seekersOwed += 1;
+        pendingWithdrawals[previousOwner]._seekersOwed += 1;
 
-            // Handle all cases that aren't the last 
-            if (!released) {
-                // Store current seizure as previous
-                previousSeizureStake = seizureStake;
-                // Determine what it will cost to seize next time
-                seizureStake = seizureStake + ((seizureStake * PERCENTRATEINCREASE) / PERCENTBASIS);
-            }
+        // Handle all cases that aren't the last 
+        if (!released) {
+            // Store current seizure as previous
+            previousSeizureStake = seizureStake;
+            // Determine what it will cost to seize next time
+            seizureStake = seizureStake + ((seizureStake * PERCENTRATEINCREASE) / PERCENTBASIS);
+        }
     }
 
     // Autonomous game events triggered by Coinlander seizure count 
@@ -225,7 +223,7 @@ contract SeasonOne is ERC1155, Ownable, ReentrancyGuard {
         _processPaymentsAndRewards(msg.sender,msg.value);
 
         // Send prize purse to keepers vault
-        keepersVault.fundPrizePurse{value: prize}();
+        vault.fundPrizePurse{value: prize}();
 
         // Send winning Seeker to winner  
         seekers.sendWinnerSeeker(msg.sender);
@@ -287,7 +285,7 @@ contract SeasonOne is ERC1155, Ownable, ReentrancyGuard {
     
         uint256 fragmentReward = amount * FRAGMENTMULTIPLIER; 
         _burn(msg.sender, SHARD, amount);
-        keepersVault.mintFragments(msg.sender, fragmentReward);
+        vault.mintFragments(msg.sender, fragmentReward);
     }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
