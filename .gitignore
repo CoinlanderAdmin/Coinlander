@@ -8,6 +8,9 @@ artifacts
 cache
 typechain
 
+# contract deploy
+local/
+
 # next.js
 /.next/
 /out/

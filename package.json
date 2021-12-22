@@ -7,7 +7,8 @@
         "test": "TS_NODE_TRANSPILE_ONLY=1 hardhat test",
         "dev": "next dev",
         "deploy": "npx hardhat run --network localhost scripts/deploy.ts",
-        "node": "npx hardhat node"
+        "node": "npx hardhat node",
+        "emulate": "npx hardhat emulate --network localhost --seizes"
     },
     "author": "",
     "license": "ISC",
@@ -22,6 +23,7 @@
         "@types/node": "^16.11.7",
         "@types/react": "^17.0.19",
         "chai": "^4.3.4",
+        "chalk": "^4.1.2",
         "eslint-config-next": "^11.0.1",
         "eslint-config-prettier": "^8.3.0",
         "ethereum-waffle": "^3.4.0",
