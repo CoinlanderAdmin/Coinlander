@@ -2,7 +2,7 @@ import { ethers } from "hardhat"
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers"
 import { SeasonOne__factory, SeasonOne } from "../typechain"
 import { Seekers__factory, Seekers } from "../typechain"
-import { KeepersVault__factory, KeepersVault } from "../typechain"
+import { Vault__factory, Vault } from "../typechain"
 import { expect } from "chai"
 import { BigNumber, utils } from "ethers"
 import { timeStamp } from "console"
@@ -17,8 +17,8 @@ describe("SeasonOne", function () {
   let seasonOne: SeasonOne
   let Seekers: Seekers__factory
   let seekers: Seekers
-  let KeepersVault: KeepersVault__factory
-  let keepersVault: KeepersVault
+  let Vault: Vault__factory
+  let vault: Vault
   let SS: BigNumber
   let oldSS: BigNumber
 
@@ -35,21 +35,21 @@ describe("SeasonOne", function () {
       owner
     )) as Seekers__factory
 
-    KeepersVault = (await ethers.getContractFactory(
-      "KeepersVault",
+    Vault = (await ethers.getContractFactory(
+      "Vault",
       owner
-    )) as KeepersVault__factory   
+    )) as Vault__factory   
   })
 
   beforeEach(async function () {
     seekers = await Seekers.deploy()
-    keepersVault = await KeepersVault.deploy(seekers.address)
-    seasonOne = await SeasonOne.deploy(seekers.address, keepersVault.address)
+    vault = await Vault.deploy(seekers.address)
+    seasonOne = await SeasonOne.deploy(seekers.address, vault.address)
     await seekers.addGameContract(seasonOne.address)
   })
 
   it("can be deployed", async function () {
-    const seasonOne = await SeasonOne.deploy(seekers.address, keepersVault.address)
+    const seasonOne = await SeasonOne.deploy(seekers.address, vault.address)
     await seasonOne.deployed()
   })
 

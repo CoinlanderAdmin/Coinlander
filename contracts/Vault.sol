@@ -110,8 +110,11 @@ contract Vault is iVault, ERC1155, Ownable, ReentrancyGuard {
         _mint(msg.sender, KEY, 1, "0x0");
 
         // Unlock the vault
-        payable(msg.sender).transfer(prize); 
+        emit VaultUnlocked(msg.sender);
+        uint256 _prize = prize;
         prize = 0;
+        (bool success, ) = msg.sender.call{value:_prize}("");
+        require(success);
     }
     
     function fundPrizePurse() payable public {

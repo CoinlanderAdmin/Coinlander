@@ -15,14 +15,14 @@ import "./interfaces/iVault.sol";
    @@   @@@,   /@(  @@@&   @@@   @@@&  @@@@   @@@          @@   @@@   @@@@  @@@@   @@@   @@@    (@(  @@@&  @@@@  @@@@  
   @@@   @@&   @@@(  @@@&   @@@   @@@&  @@@@   @@@         @@@   @@@   @@@@  @@@@   @@@   @@@   @@@(  @     @@@@  @@@@  
   @@@         @@@(  @@@&   @@@   @@@&  @@@@   @@@         @@@   @@@   @@@@  @@@@   @@@   @@@   @@@(        @@@@  @@    
-  @@@         @@@(  @@@&   @@@   @@@&  @@@@   @@@         @@@@  @@@   @@@@  @@@@   @@@   @@@   @@@@@(      @@@@ @@@    
+  @@@         @@@(  @@@&   @@@   @@@&  @@@@   @@@         @@@&  @@@   @@@@  @@@@   @@@   @@@   @@@@@&      @@@@ @@@    
   @@@         @@@(  @@@&   @@@   @@@&  @@@@   @@@         @@@   @@@   @@@@  @@@@   @@@   @@@   @@@(        @@@@  @@@@  
   @@@         @@@(  @@@&   @@@   @@@&  @@@@   @@@         @@@   @@@   @@@@  @@@@   @@@   @@@   @@@(        @@@@  @@@@  
   @@@     @,  @@@(  @@@&   @@@   @@@&  @@@@   @@@         @@@   @@@   @@@@  @@@@   @@@   @@@   @@@(    @&  @@@@  @@@@  
   @@@   @@@,  @@@(  @@@&   @@@   @@@&  @@@@   @@@   *@@   @@@   @@@   @@@@  @@@@   @@@   @@@   @@@(  @@@&  @@@@  @@@@  
   @@@   @@@,  @@@(  @@@&   @@@   @@@&  @@@@   @@@   @@@   @@@   @@@   @@@@  @@@@   @@@   @@@   @@@(  @@@&  @@@@  @@@@  
   @@@   @     @@@(  @      @@@   @@@&  @@@@   @@@   @     @@@   @@@   @@@@  @@@@   @@@   @     @@@(  @     @@@@  @@@@  
-    @@#         @@@        @     @@    @@      ,@@.       @     @,    @@    @@      *@@          @@@       @@    @@    
+    @@#         @@@%       @     @@    @@      ,@@.%      @     @,    @@    @@      *@@%^        @@@       @@    @@    
             
 */
 
@@ -93,7 +93,6 @@ contract SeasonOne is ERC1155, Ownable, ReentrancyGuard {
     iSeekers public seekers;
     iVault private vault;
 
-    event Stolen(address indexed by, address indexed from, uint256 bounty);
     event SweetRelease(address winner);
     
     // OTODO we need to figure out what the url schema for metadata looks like and plop that here in the constructor
@@ -163,8 +162,6 @@ contract SeasonOne is ERC1155, Ownable, ReentrancyGuard {
 
         address previousOwner = COINLANDER;
         address newOwner = msg.sender;
-
-        emit Stolen(newOwner, previousOwner, msg.value);
         
         seizureCount.increment();
 
@@ -320,7 +317,8 @@ contract SeasonOne is ERC1155, Ownable, ReentrancyGuard {
 
         if (withdrawal > 0) {
             pendingWithdrawals[msg.sender]._withdrawValue = 0;
-            payable(msg.sender).transfer(withdrawal);
+            (bool success, ) = msg.sender.call{value:withdrawal}("");
+            require(success);
         }
 
         if (shard > 0) {

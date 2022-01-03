@@ -5,6 +5,8 @@ pragma solidity ^0.8.8;
 
 interface iVault {
 
+    event VaultUnlocked(address winner);
+
     function mintFragments(address _receiver, uint256 amount) external;
     function claimKeepersVault() external;
     function fundPrizePurse() payable external;

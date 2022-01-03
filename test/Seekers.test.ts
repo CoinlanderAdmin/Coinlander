@@ -157,19 +157,19 @@ describe("Seekers", function () {
     })
 
     it("returns 1 before any seekers are minted to summoned", async () => {
-      expect(await seekers.getSeekerCount()).to.equal(1)
+      expect(await seekers.totalSupply()).to.equal(1)
     })
 
     it("returns 2 after a single seeker has been birthed", async () => {
       await seekers.birthSeeker(userA.address)
-      expect(await seekers.getSeekerCount()).to.equal(2)
+      expect(await seekers.totalSupply()).to.equal(2)
     })
 
     it("returns 2 after a single seeker has been summoned", async () => {
       await seekers.activateFirstMint()
       let price = await seekers.FIRSTMINTPRICE()
       await seekers.connect(userA).summonSeeker(1, {value: price})
-      expect(await seekers.getSeekerCount()).to.equal(2)
+      expect(await seekers.totalSupply()).to.equal(2)
     })
 
     it("returns 3 after one is summoned and one is birthed", async () => {
@@ -177,7 +177,7 @@ describe("Seekers", function () {
       await seekers.activateFirstMint()
       let price = await seekers.FIRSTMINTPRICE()
       await seekers.connect(userA).summonSeeker(1, {value: price})
-      expect(await seekers.getSeekerCount()).to.equal(3)
+      expect(await seekers.totalSupply()).to.equal(3)
     })
   })
 

@@ -9,12 +9,13 @@ import "@openzeppelin/contracts/token/ERC721/extensions/IERC721Enumerable.sol";
  */
 
 interface iSeekers is IERC721Enumerable {
-    event firstMintActivated();
-    event secondMintActivated();
-    event thirdMintActivated();
-    event uncloakingAvailable();
-    event seekerDeclaredToClan(uint256 indexed seekerId, address indexed clan);
-    event seekerBornFromCoin(uint256 id, address owner);
+    event FirstMintActivated();
+    event SecondMintActivated();
+    event ThirdMintActivated();
+    event UncloakingAvailable();
+    event SeekerUncloaked(uint256 indexed seekerId);
+    event ScalesAdded(uint256 indexed seekerId, uint256 scalesAdded, uint256 newScaleCount);
+    event SeekerDeclaredToClan(uint256 indexed seekerId, address indexed clan);
 
 
     function summonSeeker(uint256 summonCount) external payable;

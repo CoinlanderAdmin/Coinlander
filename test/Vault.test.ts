@@ -1,12 +1,10 @@
 import { ethers } from "hardhat"
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers"
-import { KeepersVault__factory, KeepersVault } from "../typechain"
+import { Vault__factory, Vault } from "../typechain"
 import { Seekers__factory, Seekers } from "../typechain"
 import { expect } from "chai"
-import { BigNumber, utils } from "ethers"
-import { stringify } from "querystring"
 
-describe("KeepersVault", function () {
+describe("Vault", function () {
   let owner: SignerWithAddress
   let userA: SignerWithAddress
   let userB: SignerWithAddress
@@ -14,8 +12,8 @@ describe("KeepersVault", function () {
   let accounts: SignerWithAddress[]
   let Seekers: Seekers__factory
   let seekers: Seekers
-  let KeepersVault: KeepersVault__factory
-  let kv: KeepersVault
+  let Vault: Vault__factory
+  let kv: Vault
 
   before(async function () {
     ;[owner, userA, userB, userC, ...accounts] = await ethers.getSigners()
@@ -23,20 +21,20 @@ describe("KeepersVault", function () {
       "Seekers",
       owner
     )) as Seekers__factory
-    KeepersVault = (await ethers.getContractFactory(
-      "KeepersVault",
+    Vault = (await ethers.getContractFactory(
+      "Vault",
       owner
-    )) as KeepersVault__factory
+    )) as Vault__factory
   })
 
   beforeEach(async function () {
     seekers = await Seekers.deploy()
     await seekers.addGameContract(owner.address)
-    kv = await KeepersVault.deploy(seekers.address)
+    kv = await Vault.deploy(seekers.address)
   })
 
   it("can be deployed", async function () {
-    const kv = await KeepersVault.deploy(seekers.address)
+    const kv = await Vault.deploy(seekers.address)
     await kv.deployed()
   })
   
@@ -84,28 +82,28 @@ describe("KeepersVault", function () {
         await kv.mintFragments(userA.address, 1)
       }
 
-      let n1 = await kv.balanceOf(userA.address,0)
+      let n1 = await kv.balanceOf(userA.address,1)
       expect(n1).to.equal(N1)
 
-      let n2 = await kv.balanceOf(userA.address,1)      
+      let n2 = await kv.balanceOf(userA.address,2)      
       expect(n2).to.equal(N2)
 
-      let n3 = await kv.balanceOf(userA.address,2)
+      let n3 = await kv.balanceOf(userA.address,3)
       expect(n3).to.equal(N3)
 
-      let n4 = await kv.balanceOf(userA.address,3)
+      let n4 = await kv.balanceOf(userA.address,4)
       expect(n4).to.equal(N4)
 
-      let n5 = await kv.balanceOf(userA.address,4)
+      let n5 = await kv.balanceOf(userA.address,5)
       expect(n5).to.equal(N5)
 
-      let n6 = await kv.balanceOf(userA.address,5)
+      let n6 = await kv.balanceOf(userA.address,6)
       expect(n6).to.equal(N6)
 
-      let n7 = await kv.balanceOf(userA.address,6)
+      let n7 = await kv.balanceOf(userA.address,7)
       expect(n7).to.equal(N7)
 
-      let n8 = await kv.balanceOf(userA.address,7)
+      let n8 = await kv.balanceOf(userA.address,8)
       expect(n8).to.equal(N8)
 
       let N = n1.add(n2).add(n3).add(n4).add(n5).add(n6).add(n7).add(n8)
@@ -132,7 +130,7 @@ describe("KeepersVault", function () {
     })
   })
 
-  describe("upon claimKeepersVault", () => {
+  describe("upon claimVault", () => {
 
     before( async function() {
       // Mint all the fragments for userA 
@@ -140,8 +138,6 @@ describe("KeepersVault", function () {
       for(let i = 0; i < max; i++) {
         await kv.mintFragments(userA.address, 1)
       }
-      
-
       // Fund the prize purse
       const v = ethers.utils.parseUnits("1", "ether").toHexString()
       await kv.fundPrizePurse( { value: v } )
@@ -153,14 +149,14 @@ describe("KeepersVault", function () {
     })
 
     it("does not allow a holder of all fragments without a seeker to claim", async () => {
-      await expect(kv.connect(userA).claimKeepersVault()).to.be.reverted
+      await expect(kv.connect(userA).claimKeepersVault()).to.be.revertedWith("Must have a seeker to open the vault")
     })
 
     it("allows a holder of all fragments with a seeker to claim", async () => {
       await seekers.birthSeeker(userA.address)
       await kv.connect(userA).claimKeepersVault()
       let beforeBalance = await userA.getBalance()
-      expect(await kv.balanceOf(userA.address, 8)).to.equal(1)
+      expect(await kv.balanceOf(userA.address, 0)).to.equal(1)
       expect(await userA.getBalance()).to.be.greaterThan(beforeBalance)
     })
 
@@ -170,6 +166,4 @@ describe("KeepersVault", function () {
       await expect(kv.connect(userA).claimKeepersVault()).to.be.reverted
     })
   })
-
-
 })

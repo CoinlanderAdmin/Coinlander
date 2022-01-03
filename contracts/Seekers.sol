@@ -110,7 +110,6 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
     require(_birthSeekerId < MAXSEEKERS);
     _birthSeekerId += 1;
     mintSeeker(to, _birthSeekerId, true);
-    emit seekerBornFromCoin(_birthSeekerId, to);
     return (_birthSeekerId);
   }
 
@@ -185,7 +184,7 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
   function activateFirstMint() external onlyGame {
     require(firstMintActive == false);
     firstMintActive = true;
-    emit firstMintActivated();
+    emit FirstMintActivated();
     currentBuyableSeekers += FIRSTMINT;
     currentPrice = FIRSTMINTPRICE;
   }
@@ -193,7 +192,7 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
   function activateSecondMint() external onlyGame {
     require(secondMintActive == false);
     secondMintActive = true;
-    emit secondMintActivated();
+    emit SecondMintActivated();
     currentBuyableSeekers += SECONDMINT;
     currentPrice = SECONDMINTPRICE;
   }
@@ -201,7 +200,7 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
   function activateThirdMint() external onlyGame {
     require(thirdMintActive == false);
     thirdMintActive = true;
-    emit thirdMintActivated();
+    emit ThirdMintActivated();
     currentBuyableSeekers += THIRDMINT_INCR;
     currentPrice = THIRDMINTPRICE;
   }
@@ -212,6 +211,7 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
 
   function performUncloaking() external onlyGame {
     uncloaking = true;
+    emit UncloakingAvailable();
   }
 
   function sendWinnerSeeker(address winner) external onlyGame {
@@ -254,6 +254,7 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
         _dethscales
       ); 
     attributesBySeekerId[id] = revealedAttributes;
+    emit SeekerUncloaked(id);
   }
 
   function addScales(uint256 id, uint256 scales) external onlyGame {
@@ -266,6 +267,7 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
     else {
         attributesBySeekerId[id].scales += scales;
     }
+    emit ScalesAdded(id, scales, attributesBySeekerId[id].scales);
   }
 
   function declareForClan(uint id, address clanAddress) external {
@@ -273,7 +275,7 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
     require(clanAddress == address(clanAddress));
 
     attributesBySeekerId[id].clan = clanAddress;
-    emit seekerDeclaredToClan(id,clanAddress);
+    emit SeekerDeclaredToClan(id,clanAddress);
   }
 
 
