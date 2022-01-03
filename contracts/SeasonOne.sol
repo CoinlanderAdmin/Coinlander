@@ -9,6 +9,23 @@ import "./interfaces/iSeekers.sol";
 import "./interfaces/iVault.sol";
 // import "hardhat/console.sol";
 
+/*
+
+      /@@@#       &@@@@    /@@     @&@@@@@    ,@@            ..@@@,     @@@@@@@     @@,.@@@        &@@@@     @@@@@@@   
+   @@   @@@,   /@(  @@@&   @@@   @@@&  @@@@   @@@          @@   @@@   @@@@  @@@@   @@@   @@@    (@(  @@@&  @@@@  @@@@  
+  @@@   @@&   @@@(  @@@&   @@@   @@@&  @@@@   @@@         @@@   @@@   @@@@  @@@@   @@@   @@@   @@@(  @     @@@@  @@@@  
+  @@@         @@@(  @@@&   @@@   @@@&  @@@@   @@@         @@@   @@@   @@@@  @@@@   @@@   @@@   @@@(        @@@@  @@    
+  @@@         @@@(  @@@&   @@@   @@@&  @@@@   @@@         @@@@  @@@   @@@@  @@@@   @@@   @@@   @@@@@(      @@@@ @@@    
+  @@@         @@@(  @@@&   @@@   @@@&  @@@@   @@@         @@@   @@@   @@@@  @@@@   @@@   @@@   @@@(        @@@@  @@@@  
+  @@@         @@@(  @@@&   @@@   @@@&  @@@@   @@@         @@@   @@@   @@@@  @@@@   @@@   @@@   @@@(        @@@@  @@@@  
+  @@@     @,  @@@(  @@@&   @@@   @@@&  @@@@   @@@         @@@   @@@   @@@@  @@@@   @@@   @@@   @@@(    @&  @@@@  @@@@  
+  @@@   @@@,  @@@(  @@@&   @@@   @@@&  @@@@   @@@   *@@   @@@   @@@   @@@@  @@@@   @@@   @@@   @@@(  @@@&  @@@@  @@@@  
+  @@@   @@@,  @@@(  @@@&   @@@   @@@&  @@@@   @@@   @@@   @@@   @@@   @@@@  @@@@   @@@   @@@   @@@(  @@@&  @@@@  @@@@  
+  @@@   @     @@@(  @      @@@   @@@&  @@@@   @@@   @     @@@   @@@   @@@@  @@@@   @@@   @     @@@(  @     @@@@  @@@@  
+    @@#         @@@        @     @@    @@      ,@@.       @     @,    @@    @@      *@@          @@@       @@    @@    
+            
+*/
+
 contract SeasonOne is ERC1155, Ownable, ReentrancyGuard {
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -79,7 +96,7 @@ contract SeasonOne is ERC1155, Ownable, ReentrancyGuard {
     event Stolen(address indexed by, address indexed from, uint256 bounty);
     event SweetRelease(address winner);
     
-    // @TODO we need to figure out what the url schema for metadata looks like and plop that here in the constructor
+    // OTODO we need to figure out what the url schema for metadata looks like and plop that here in the constructor
     constructor(address seekersContract, address keepeersVault) ERC1155("https://coinlander.one/api/token/{id}.json") {
         // Create the One Coin and set the deployer as initial COINLANDER
         _mint(msg.sender, ONECOIN, 1, "0x0");
@@ -247,7 +264,6 @@ contract SeasonOne is ERC1155, Ownable, ReentrancyGuard {
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
     // This is gas expensive, so only the Keepers can call it and pay the associated gas costs
-    // @TODO this needs to be re-worked. We'll run out of gas as it is now 
     function airdropShardPostRelease() external onlyOwner {
         address[] memory allSeekerHolders = seekers.allSeekerOwners();
         for (uint256 i = 0; i < allSeekerHolders.length; i++) {
