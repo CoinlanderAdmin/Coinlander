@@ -48,7 +48,7 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
   mapping(uint256 => bool) isSeekerCloaked;
 
   struct Attributes {
-    bool bornFromCoin;
+    bool bornFromCoin; 
     string alignment;
     uint256 alpha;
     uint256 beta;
@@ -56,6 +56,7 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
     uint256 gamma;
     uint256 scales;
     address clan;
+    uint64 dethscales;
   }
 
   mapping(uint256 => Attributes) attributesBySeekerId;
@@ -134,7 +135,8 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
         0,
         0,
         0,
-        address(0)
+        address(0),
+        uint64(0)
     ); // Initialize all attributes to "hidden" values
     attributesBySeekerId[id] = cloakedAttributes;
 
@@ -236,6 +238,8 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
 
     uint256[4] memory _APs = _getAP(id);
 
+    uint64 _dethscales = _getDethscales(id);
+
     isSeekerCloaked[id] = false; // Uncloaks the Seeker permanently
 
     Attributes memory revealedAttributes = Attributes(
@@ -246,7 +250,8 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
         _APs[2], // Detla
         _APs[3], // Gamma
         attributesBySeekerId[id].scales,
-        attributesBySeekerId[id].clan
+        attributesBySeekerId[id].clan,
+        _dethscales
       ); 
     attributesBySeekerId[id] = revealedAttributes;
   }
@@ -320,6 +325,33 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
     return aps;
   }
 
+  function _getDethscales(uint256 _id) internal view returns (uint64) {
+    uint64 minDethScales = 32;
+    uint64 maxDethScales = 50;
+    uint64 bitCount;
+    uint64 cloakBitMask;
+    bool cloakFound = false;
+
+    while(!cloakFound){
+      // Generate a random bitmask for the cloak  
+      cloakBitMask = uint64(bytes8(keccak256(abi.encodePacked(
+          _id,
+          cloakBitMask, 
+          block.difficulty,
+          block.coinbase,
+          msg.sender
+          ))));
+
+      // Ensure its valid, if not regen with existing hash as input 
+      bitCount =_countSetBits(cloakBitMask);
+      if (bitCount >= minDethScales && bitCount <= maxDethScales) {
+          cloakFound = true;
+      }
+    }
+
+    return cloakBitMask;
+  }
+
   function getBirthStatusById(uint256 id) external view returns (bool) {
     return attributesBySeekerId[id].bornFromCoin;
   }
@@ -347,6 +379,10 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
     return attributesBySeekerId[id].clan;
   }
 
+  function getDethscalesById(uint256 id) external view returns (uint64) {
+    return attributesBySeekerId[id].dethscales;
+  }
+
   function getCloakStatusById(uint256 id) external view returns (bool) {
     return isSeekerCloaked[id];
   }
@@ -361,14 +397,15 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
         25, // Detla
         25, // Gamma
         MAXPIXELS,
-        attributesBySeekerId[id].clan
+        attributesBySeekerId[id].clan,
+        uint64(0)
       ); 
     attributesBySeekerId[id] = winningAttributes;
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
   //                                                                                              //
-  //                                  PSEUDORANDOMNESS MAFS                                       //
+  //                                  PSEUDORANDOMNESS & MAFS                                     //
   //                                                                                              //
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -394,6 +431,17 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
     uint256 rand = _getRandomNumber(mod,0);
     string memory output = sourceArray[rand % sourceArray.length];
     return output;
+  }
+
+  function _countSetBits(uint64 n) internal pure returns (uint64) {
+      // base case
+      if (n == 0) {
+          return 0;
+      }
+      else {
+          // if last bit set add 1 else add 0
+          return (n & 1) + _countSetBits(n >> 1);
+      }   
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
