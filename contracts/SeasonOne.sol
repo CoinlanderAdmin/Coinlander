@@ -5,6 +5,7 @@ import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 import "./interfaces/iSeekers.sol";
 import "./interfaces/iVault.sol";
 // import "hardhat/console.sol";
@@ -70,7 +71,8 @@ contract SeasonOne is ERC1155, Ownable, ReentrancyGuard {
     uint256 constant FRAGMENTMULTIPLIER = 1; // One fragment per Shard 
     uint256 constant BASESHARDREWARD = 1; // 1 Shard guaranteed per seizure
     uint256 constant INCRSHARDREWARD = 30; // 3 Eth/Shard
-    uint256 constant INCRBASIS = 10; //  
+    uint256 constant INCRBASIS = 10; //
+    bytes32 public merkleRoot; // For post-release airdrop 
 
     // BALANCES AND ECONOMIC PARAMETERS 
     // Refund structure, tracks both Eth withdraw value and earned Shard 
@@ -260,17 +262,6 @@ contract SeasonOne is ERC1155, Ownable, ReentrancyGuard {
 //                                                                                              //
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
-    // This is gas expensive, so only the Keepers can call it and pay the associated gas costs
-    function airdropShardPostRelease() external onlyOwner {
-        address[] memory allSeekerHolders = seekers.allSeekerOwners();
-        for (uint256 i = 0; i < allSeekerHolders.length; i++) {
-            address acct = allSeekerHolders[i];
-            if (acct != address(0)) {
-                pendingWithdrawals[acct]._shardOwed += SEEKERSHARDDROP;
-            }
-        }
-    }
-
     function burnShardForScale(uint256 seekerId, uint256 amount) external nonReentrant {
         require(amount > 0);
         require(balanceOf(msg.sender, SHARD) >= amount);
@@ -335,6 +326,18 @@ contract SeasonOne is ERC1155, Ownable, ReentrancyGuard {
         else {
             revert();
         }
+    }
+    
+    function airdropClaim(address account, uint256 amount, bytes32[] calldata merkleProof) external {
+        require(released);
+        bytes32 node = keccak256(abi.encodePacked(account, amount));
+        require(MerkleProof.verify(merkleProof, merkleRoot, node));
+        _mint(account, SHARD, amount, "0x0");
+    }
+
+    function setMerkleRoot(bytes32 merkleRoot_) external onlyOwner {
+        require(released);
+        merkleRoot = merkleRoot_;
     }
 
     function ownerWithdraw() external payable onlyOwner{
