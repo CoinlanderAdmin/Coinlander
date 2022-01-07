@@ -65,7 +65,7 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
   string private _baseTokenURI = "https://coinlander.one/seekers/";
 
   // Alignment
-  string[] private alignment = [
+  string[] private alignments = [
     "Lawful Good",
     "Neutral Good",
     "Chaotic Good",
@@ -217,7 +217,7 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
   function sendWinnerSeeker(address winner) external onlyGame {
     require(gameWon == false);
     gameWon = true;
-    setWinnerSeekerAttributes(1);
+    _setWinnerSeekerAttributes(1);
     _transfer(ownerOf(1), winner, 1);
   }
 
@@ -281,7 +281,7 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
   //                                                                                              //
-  //                                  ATTRIBUTES AND METADATA                                     //
+  //                                  INTERNAL ATTRIBUTES AND METADATA                            //
   //                                                                                              //
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -294,8 +294,23 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
   }
 
   function _getAlignment() internal view returns (string memory) {
-    uint256 mod = alignment.length;
-    return _pluck(mod, alignment);
+    uint256 mod = alignments.length;
+    return _pluck(mod, alignments);
+  }
+
+  // Alignment axes are defined as a tuple which describes where on the 3x3 square the alignment lands
+  // Good -> Evil :: 0 -> 2
+  // Lawful -> Chaotic :: 0 -> 2
+  function _getAlignmentAxes(uint256 id) internal view returns (uint256, uint256) {
+    string memory seekerAlignment = attributesBySeekerId[id].alignment;
+    string memory _alignment;
+    for(uint256 i = 0; i < alignments.length; i++) {
+      _alignment = alignments[i];
+      if(keccak256(bytes(seekerAlignment)) == keccak256(bytes(_alignment))) {
+        return ((i % 3), (i/3));
+      }
+    }
+    return (0,0); // Default if alignment not set
   }
 
   function _getAP(uint256 id) internal view returns (uint256[4] memory) {
@@ -328,8 +343,20 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
   }
 
   function _getDethScales(uint256 _id) internal view returns (uint64) {
-    uint64 minDethScales = 10; // low for Good, high for Evil
-    uint64 maxDethScales = 45;
+
+    // Set fill density based on alignment 
+    (uint256 x, ) = _getAlignmentAxes(_id); // Only need good/evil axis
+    uint64 minDethScales;
+    uint64 maxDethScales;
+    if(x ==1) {
+      minDethScales = 20; // Neutral case
+      maxDethScales = 44;
+    }
+    else{
+      minDethScales = 0; // Good and Evil cases
+      maxDethScales = 10;
+    }
+
     uint64 dethScaleRand = uint64(bytes8(keccak256(abi.encodePacked(
             _id,
             block.difficulty,
@@ -337,8 +364,36 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
             msg.sender
             ))));
     uint64 _dethScales = _getRandomSegment(uint64(_id), dethScaleRand, minDethScales, maxDethScales);
-    return _dethScales;
+
+    if(x==2){
+      return ~_dethScales; // Invert for Evil
+    }
+    else {
+      return _dethScales;
+    }
   }
+ 
+  function _setWinnerSeekerAttributes(uint256 id) internal {
+    isSeekerCloaked[id] = false; // Uncloaks the Seeker permanently
+    Attributes memory winningAttributes = Attributes(
+        true, 
+        "True Neutral",
+        25, // Alpha
+        25, // Beta
+        25, // Detla
+        25, // Gamma
+        MAXPIXELS,
+        attributesBySeekerId[id].clan,
+        uint64(0)
+      ); 
+    attributesBySeekerId[id] = winningAttributes;
+  }
+
+  //////////////////////////////////////////////////////////////////////////////////////////////////
+  //                                                                                              //
+  //                                  EXTERNAL ATTRIBUTES AND METADATA                            //
+  //                                                                                              //
+  //////////////////////////////////////////////////////////////////////////////////////////////////
 
   function getBirthStatusById(uint256 id) external view returns (bool) {
     return attributesBySeekerId[id].bornFromCoin;
@@ -379,9 +434,26 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
     require(!isSeekerCloaked[id]);
     uint64 _dethScales = attributesBySeekerId[id].dethscales;
 
+    // Set noise based on alignment
+    ( ,uint256 y) = _getAlignmentAxes(id); // Only need lawful/chaotic axis
+    uint64 minNoiseBits;
+    uint64 maxNoiseBits;
+    if ( y == 0) { // Lawful
+      minNoiseBits = 0;
+      maxNoiseBits = 3;
+    }
+    if (y == 1) { // Neutral
+      minNoiseBits = 2;
+      maxNoiseBits = 6;
+    }
+    else { // Chaotic
+      minNoiseBits = 5;
+      maxNoiseBits = 10;
+    }
+
+
     bytes8[16] memory fullCloak;
-    uint64 minNoiseBits = 2;
-    uint64 maxNoiseBits = 8;
+    
     
     for(uint8 i = 0; i < fullCloak.length; i++) {
         uint64 segment = _dethScales;
@@ -389,22 +461,6 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
         fullCloak[i] = bytes8(segment | noise); 
     }
     return fullCloak;
-  }
-
-  function setWinnerSeekerAttributes(uint256 id) internal {
-    isSeekerCloaked[id] = false; // Uncloaks the Seeker permanently
-    Attributes memory winningAttributes = Attributes(
-        true, 
-        "True Neutral",
-        25, // Alpha
-        25, // Beta
-        25, // Detla
-        25, // Gamma
-        MAXPIXELS,
-        attributesBySeekerId[id].clan,
-        uint64(0)
-      ); 
-    attributesBySeekerId[id] = winningAttributes;
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
