@@ -238,7 +238,7 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
 
     uint256[4] memory _APs = _getAP(id);
 
-    uint64 _dethscales = _getDethscales(id);
+    uint64 _dethscales = _getDethScales(id);
 
     isSeekerCloaked[id] = false; // Uncloaks the Seeker permanently
 
@@ -327,31 +327,17 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
     return aps;
   }
 
-  function _getDethscales(uint256 _id) internal view returns (uint64) {
-    uint64 minDethScales = 32;
-    uint64 maxDethScales = 50;
-    uint64 bitCount;
-    uint64 cloakBitMask;
-    bool cloakFound = false;
-
-    while(!cloakFound){
-      // Generate a random bitmask for the cloak  
-      cloakBitMask = uint64(bytes8(keccak256(abi.encodePacked(
-          _id,
-          cloakBitMask, 
-          block.difficulty,
-          block.coinbase,
-          msg.sender
-          ))));
-
-      // Ensure its valid, if not regen with existing hash as input 
-      bitCount =_countSetBits(cloakBitMask);
-      if (bitCount >= minDethScales && bitCount <= maxDethScales) {
-          cloakFound = true;
-      }
-    }
-
-    return cloakBitMask;
+  function _getDethScales(uint256 _id) internal view returns (uint64) {
+    uint64 minDethScales = 10; // low for Good, high for Evil
+    uint64 maxDethScales = 45;
+    uint64 dethScaleRand = uint64(bytes8(keccak256(abi.encodePacked(
+            _id,
+            block.difficulty,
+            block.number,
+            msg.sender
+            ))));
+    uint64 _dethScales = _getRandomSegment(uint64(_id), dethScaleRand, minDethScales, maxDethScales);
+    return _dethScales;
   }
 
   function getBirthStatusById(uint256 id) external view returns (bool) {
@@ -387,6 +373,22 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
 
   function getCloakStatusById(uint256 id) external view returns (bool) {
     return isSeekerCloaked[id];
+  }
+
+  function getFullCloak(uint256 id) public view returns (bytes8[16] memory) {
+    require(!isSeekerCloaked[id]);
+    uint64 _dethScales = attributesBySeekerId[id].dethscales;
+
+    bytes8[16] memory fullCloak;
+    uint64 minNoiseBits = 2;
+    uint64 maxNoiseBits = 8;
+    
+    for(uint8 i = 0; i < fullCloak.length; i++) {
+        uint64 segment = _dethScales;
+        uint64 noise = _getRandomSegment(_dethScales, i, minNoiseBits, maxNoiseBits);
+        fullCloak[i] = bytes8(segment | noise); 
+    }
+    return fullCloak;
   }
 
   function setWinnerSeekerAttributes(uint256 id) internal {
@@ -428,6 +430,28 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
 
     return random % mod;
   }
+
+
+  function _getRandomNumber64(uint64 mod, uint64 r1, uint64 r2) public pure returns (uint64) {
+    uint64 seed = uint64(bytes8(keccak256(abi.encodePacked(r1, r2))));
+    return seed % mod;
+  }
+
+  function _getRandomSegment(uint64 seed, uint64 r, uint64 min, uint64 max) 
+    public pure returns (uint64) {
+    uint64 segment;
+    uint64 move;
+
+    uint64 range = max - min;
+    uint64 segBits = uint64(_getRandomNumber64(range, seed, r)) + min;
+
+    for(uint64 i = 0; i < segBits; i++) {
+        move = uint64(_getRandomNumber64(64, i, r));
+        segment = (uint64(2) ** move) | segment;
+    }
+    return segment;
+  }
+
 
   function _pluck(uint256 mod, string[] memory sourceArray) internal view returns (string memory) {
     uint256 rand = _getRandomNumber(mod,0);
