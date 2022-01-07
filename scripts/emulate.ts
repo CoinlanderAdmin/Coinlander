@@ -5,9 +5,13 @@ import {HardhatRuntimeEnvironment} from "hardhat/types";
 import * as logger from './logger'
 
 // Emulate the game. Before running:
-// 1. Run a local node `npm run node`
-// 2. Deploy a contract `npm run deploy`
-// 3. Run emulation `npm run emulate <seizures>`
+// 1. CONTRACTS: Run a local node `npm run node`
+// 2. CONTRACTS: Deploy a contract `npm run deploy`
+// 3. BACKEND: Run `python manage.py contracts` on backend to sync data
+// 4. BACKEND: Run `python manage.py runserver 0.0.0.0:8000` to run backend server
+// 5. BACKEND: Run `python manage.py listener` to run listening service
+// 6. CONTRACTS: Run emulation `npm run emulate <seizures>`
+
 
 // seizes = number of seizes you want to run up to on current node, ie. 100 will run up to the 100th seizure
 // hre = HardhatRuntimeEnvironment, passed in via task function in hardhat.config.ts
