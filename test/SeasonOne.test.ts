@@ -7,6 +7,7 @@ import { expect } from "chai"
 import { BigNumber, utils } from "ethers"
 import { timeStamp } from "console"
 
+
 describe("SeasonOne", function () {
   let owner: SignerWithAddress
   let userA: SignerWithAddress
@@ -21,7 +22,6 @@ describe("SeasonOne", function () {
   let vault: Vault
   let SS: BigNumber
   let oldSS: BigNumber
-
 
   before(async function () {
     ;[owner, userA, userB, userC, ...accounts] = await ethers.getSigners()
@@ -118,12 +118,12 @@ describe("SeasonOne", function () {
       let w = await seasonOne.getPendingWithdrawl(userA.address)
       let takeRate = await seasonOne.PERCENTRESERVES()
       let take = oldSS.mul(takeRate).div(10000)
-      await expect(w).to.equal(oldSS.sub(take))
+      await expect(w[0]).to.equal(oldSS.sub(take))
     })
 
     it("sets the shard reward according to seizure price", async () => {
-      let s = await seasonOne.getPendingShardReward(userA.address)
-      expect(s).to.equal(1)
+      let s = await seasonOne.getPendingWithdrawl(userA.address)
+      expect(s[1]).to.equal(1)
     })
 
     it("the seizure stake has increased according to the increase rate", async () => {
@@ -133,8 +133,8 @@ describe("SeasonOne", function () {
     })
 
     it("sets that a seeker is owed", async () => {
-      let s = await seasonOne.getPendingSeekerReward(userA.address)
-      expect(s).to.equal(1)
+      let s = await seasonOne.getPendingWithdrawl(userA.address)
+      expect(s[2]).to.equal(1)
     })
   })
 
@@ -156,7 +156,7 @@ describe("SeasonOne", function () {
       let refund = await seasonOne.getPendingWithdrawl(userA.address)
       await seasonOne.connect(userA).claimAll()
       let afterBalance = await userA.getBalance()
-      expect(refund).to.be.gt(0)
+      expect(refund[0]).to.be.gt(0)
       expect(afterBalance).to.be.gt(beforeBalance)
     })
 
@@ -264,41 +264,11 @@ describe("SeasonOne", function () {
     })
 
     it("records the deposit successfully", async ()=> {
-      await seasonOne.connect(userA).stakeShardForCloin(1)
+      let tx = await seasonOne.connect(userA).stakeShardForCloin(1)
       let deposit = await seasonOne.cloinDeposits(0)
       expect(deposit.depositor).to.equal(userA.address)
       expect(deposit.amount).to.equal(1)
-      expect(deposit.timestamp).to.not.equal(0)
-    })
-  })
-
-  describe("upon airdropShardPostRelease", () => {
-    beforeEach(async function () {
-      SS = await seasonOne.seizureStake()
-      await seasonOne.connect(userA).seize({ value: SS })
-      SS = await seasonOne.seizureStake()
-      await seasonOne.connect(userB).seize({ value: SS })
-      SS = await seasonOne.seizureStake()
-      await seasonOne.connect(userA).seize({ value: SS })
-      SS = await seasonOne.seizureStake()
-      await seasonOne.connect(userC).seize({ value: SS })
-      await seasonOne.connect(userA).claimAll()
-      await seasonOne.connect(userB).claimAll()
-    })
-
-    it("does not allow a non-owner to call this method", async ()=> {
-      await expect(seasonOne.connect(userA).airdropShardPostRelease()).to.be.reverted
-    })
-
-    it("allows the owner to call this method", async ()=> {
-      await expect(seasonOne.connect(owner).airdropShardPostRelease())
-    })
-
-    it("generates mints according to the number of seekers owned", async ()=> {
-      await seasonOne.connect(owner).airdropShardPostRelease()
-      await expect(await seasonOne.getPendingShardReward(userA.address)).to.equal(2)
-      await expect(await seasonOne.getPendingShardReward(userB.address)).to.equal(1)
-      await expect(await seasonOne.getPendingShardReward(userC.address)).to.equal(0)
+      expect(deposit.blockNumber).equal(tx.blockNumber)
     })
   })
 })

@@ -30,6 +30,9 @@ export async function deploy() {
   // Establish permissions for SeasonOne contract within Seekers contract
   await seekers.addGameContract(seasonOne.address)
 
+  // Set SeasonOne contract as owner of vault contract
+  await vault.transferOwnership(seasonOne.address)
+
   // Deploy the Nft Marketplace contract
   const ERC721Marketplace = await ethers.getContractFactory("ERC721Marketplace")
   const erc721Marketplace = await ERC721Marketplace.deploy()

@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.8;
+// @todo update to sol 0.8.10
 
 import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
-import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 import "./interfaces/iSeekers.sol";
 import "./interfaces/iVault.sol";
 // import "hardhat/console.sol";
@@ -56,7 +56,7 @@ contract SeasonOne is ERC1155, Ownable, ReentrancyGuard {
     // ECONOMIC CONSTANTS  
     uint256 public constant PERCENTRATEINCREASE = 80; // 0.8% increase for each successive seizure 
     uint256 public constant PERCENTRESERVES = 50; // 0.50% goes to treasury 
-    uint256 constant PERCENTPRIZE = 4000; // 40.00% of revenue goes to prize pool     
+    uint256 constant PERCENTPRIZE = 5000; // 50.00% of take goes to prize pool     
     uint256 constant PERCENTBASIS = 10000;
     
     // ECONOMIC STATE VARS 
@@ -66,17 +66,16 @@ contract SeasonOne is ERC1155, Ownable, ReentrancyGuard {
     uint256 private reserve = 0; // Treasury balance 
 
     // SHARD CONSTANTS
-    uint256 constant SEEKERSHARDDROP = 1; // One shard to each Seeker holder 
+    uint256 constant SEEKERSHARDDROP = 1; // At least one shard to each Seeker holder 
+    uint256 constant SHARDDROPRAND = 3; // Up to 3 additional shard drops
     uint256 constant SCALEPERSHARD = 8; // Eight scales per Shard 
     uint256 constant FRAGMENTMULTIPLIER = 1; // One fragment per Shard 
     uint256 constant BASESHARDREWARD = 1; // 1 Shard guaranteed per seizure
     uint256 constant INCRSHARDREWARD = 30; // 3 Eth/Shard
     uint256 constant INCRBASIS = 10; //
-    bytes32 public merkleRoot; // For post-release airdrop 
 
     // BALANCES AND ECONOMIC PARAMETERS 
     // Refund structure, tracks both Eth withdraw value and earned Shard 
-
     struct withdrawParams {
         uint256 _withdrawValue;
         uint256 _shardOwed;
@@ -84,11 +83,12 @@ contract SeasonOne is ERC1155, Ownable, ReentrancyGuard {
     } 
 
     mapping(address => withdrawParams) public pendingWithdrawals;
+    mapping(uint256 => bool) public claimedAirdropBySeekerId;
 
     struct cloinDeposit {
         address depositor; 
         uint256 amount;
-        uint256 timestamp;
+        uint256 blockNumber;
     }
 
     cloinDeposit[] public cloinDeposits;
@@ -96,9 +96,13 @@ contract SeasonOne is ERC1155, Ownable, ReentrancyGuard {
     iVault private vault;
 
     event SweetRelease(address winner);
+    event Seized(address previousOwner, address newOwner, uint256 seizurePrice, uint256 nextSeizurePrice, uint256 currentPrize);
+    event NewCloinDeposit(address depositor, uint256 amount);
+    event ClaimedAll(address claimer);
+    event AirdropClaim(uint256 id);
     
-    // OTODO we need to figure out what the url schema for metadata looks like and plop that here in the constructor
-    constructor(address seekersContract, address keepeersVault) ERC1155("https://coinlander.one/api/token/{id}.json") {
+    //@TODO we need to figure out what the url schema for metadata looks like and plop that here in the constructor
+    constructor(address seekersContract, address keepeersVault) ERC1155("https://meta.coinlander.one/seasonone/{id}") {
         // Create the One Coin and set the deployer as initial COINLANDER
         _mint(msg.sender, ONECOIN, 1, "0x0");
         COINLANDER = msg.sender;
@@ -173,6 +177,8 @@ contract SeasonOne is ERC1155, Ownable, ReentrancyGuard {
         // Establish rewards and refunds 
         _processPaymentsAndRewards(previousOwner, previousSeizureStake);
 
+        emit Seized(previousOwner, newOwner, msg.value, seizureStake, prize);
+
         // Trigger game events if price is worthy 
         _processGameEvents();
     }
@@ -241,6 +247,7 @@ contract SeasonOne is ERC1155, Ownable, ReentrancyGuard {
 
         // Send prize purse to keepers vault
         vault.fundPrizePurse{value: prize}();
+        vault.setSweetRelease();
 
         // Send winning Seeker to winner  
         seekers.sendWinnerSeeker(msg.sender);
@@ -274,16 +281,17 @@ contract SeasonOne is ERC1155, Ownable, ReentrancyGuard {
         require(amount > 0);
         require(balanceOf(msg.sender, SHARD) >= amount);
         _burn(msg.sender, SHARD, amount);
-
+        
         cloinDeposit memory _deposit;
         _deposit.depositor = msg.sender;
         _deposit.amount = amount;
-        _deposit.timestamp = block.timestamp;
+        _deposit.blockNumber = block.number; 
         
         cloinDeposits.push(_deposit);
+        emit NewCloinDeposit(msg.sender, amount);
     }
 
-    function burnShardForFragments(uint256 amount) external postReleaseOnly nonReentrant {
+    function burnShardForFragments(uint256 amount) external nonReentrant {
         require(amount > 0);
         require(balanceOf(msg.sender, SHARD) >= amount);
         require(seekers.balanceOf(msg.sender) != 0);
@@ -326,18 +334,20 @@ contract SeasonOne is ERC1155, Ownable, ReentrancyGuard {
         else {
             revert();
         }
+
+        emit ClaimedAll(msg.sender);
     }
     
-    function airdropClaim(address account, uint256 amount, bytes32[] calldata merkleProof) external {
-        require(released);
-        bytes32 node = keccak256(abi.encodePacked(account, amount));
-        require(MerkleProof.verify(merkleProof, merkleRoot, node));
-        _mint(account, SHARD, amount, "0x0");
-    }
-
-    function setMerkleRoot(bytes32 merkleRoot_) external onlyOwner {
-        require(released);
-        merkleRoot = merkleRoot_;
+    function airdropClaimBySeekerId(uint256 id) external nonReentrant postReleaseOnly {
+        require(seekers.ownerOf(id) == msg.sender);
+        require(!claimedAirdropBySeekerId[id]);
+        claimedAirdropBySeekerId[id] = true;
+        uint256 amount;
+        uint256 r1 = _getRandomNumber(SHARDDROPRAND, id);
+        uint256 r2 = _getRandomNumber(SHARDDROPRAND, r1);
+        amount = SEEKERSHARDDROP + r1 + r2;
+        emit AirdropClaim(id);
+        _mint(msg.sender, SHARD, amount, "0x0");
     }
 
     function ownerWithdraw() external payable onlyOwner{
@@ -353,15 +363,34 @@ contract SeasonOne is ERC1155, Ownable, ReentrancyGuard {
         return reward;  
     }
 
-    function getPendingWithdrawl(address _user) external view returns (uint256) {
-        return pendingWithdrawals[_user]._withdrawValue;
+    function _getRandomNumber(uint256 mod, uint256 r) private view returns (uint256) {
+        uint256 random = uint256(
+            keccak256(
+            abi.encodePacked(
+                mod,
+                r,
+                blockhash(block.number - 1),
+                block.coinbase,
+                block.difficulty,
+                msg.sender
+                )));
+        return random % mod;
     }
 
-    function getPendingShardReward(address _user) external view returns (uint256) {
-        return pendingWithdrawals[_user]._shardOwed;
+    function getPendingWithdrawl(address _user) external view returns (uint256[3] memory) {
+        return [
+            pendingWithdrawals[_user]._withdrawValue,
+            pendingWithdrawals[_user]._shardOwed,
+            pendingWithdrawals[_user]._seekersOwed
+        ];
     }
 
-    function getPendingSeekerReward(address _user) external view returns (uint256) {
-        return pendingWithdrawals[_user]._seekersOwed;
+    function getAirdropStatus(uint256 _id) external view returns (bool) {
+        return claimedAirdropBySeekerId[_id];
+    }
+
+    // If someone messes up and pays us without using the seize method, revert 
+    receive() external payable {
+        revert();
     }
 }

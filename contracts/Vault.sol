@@ -42,9 +42,11 @@ contract Vault is iVault, ERC1155, Ownable, ReentrancyGuard {
 
     iSeekers public seekers;
     uint256 public prize = 0; 
+    bool public gameWon = false;
+    bool public sweetRelease = false;
 
     // @TODO we need to figure out what the url schema for metadata looks like and plop that here in the constructor
-    constructor(address seekersContract) ERC1155("https://coinlander.one/api/keepersVault/token/{id}.json") {
+    constructor(address seekersContract) ERC1155("https://meta.coinlander.one/keepersVault/{id}.json") {
         // Create the One Coin and set the deployer as initial COINLANDER
 
         // Add interface for seekers contract 
@@ -86,7 +88,13 @@ contract Vault is iVault, ERC1155, Ownable, ReentrancyGuard {
         }
     }
 
+    function setSweetRelease() external onlyOwner {
+        sweetRelease = true;
+    }
+
     function claimKeepersVault() external nonReentrant {
+        require(sweetRelease);
+        require(!gameWon, "Games over dawg");
         require(prize > 0, "There must be something to claim");
         require(seekers.balanceOf(msg.sender) > 0, "Must have a seeker to open the vault");
         require(balanceOf(msg.sender, FRAGMENT1) > 0, "Must have a frag1");
@@ -111,13 +119,14 @@ contract Vault is iVault, ERC1155, Ownable, ReentrancyGuard {
 
         // Unlock the vault
         emit VaultUnlocked(msg.sender);
+        gameWon = true;
         uint256 _prize = prize;
         prize = 0;
         (bool success, ) = msg.sender.call{value:_prize}("");
         require(success);
     }
     
-    function fundPrizePurse() payable public {
+    function fundPrizePurse() payable external {
         prize += msg.value;
     }
 
@@ -146,4 +155,8 @@ contract Vault is iVault, ERC1155, Ownable, ReentrancyGuard {
 		);
 		return (random % _arr.length);
 	}
+
+    receive() external payable {
+        revert();
+    }
 }

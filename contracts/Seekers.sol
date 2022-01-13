@@ -16,15 +16,14 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
   uint256 private _summonSeekerId = 0; // Sale id tracker
   uint256 private _birthSeekerId = 0; // Internal id tracker
 
-  uint256 public constant MAXSEEKERS = 11111;
-  bool public gameWon = false;
+  // Minting params
+  uint256 public constant MAXSEEKERS = 11111; 
   uint256 public currentBuyableSeekers = 0;
   uint256 public currentPrice = 0;
   uint256 private reserve = 0; // Contracts treasury balance
   uint256 private constant KEEPERSEEKERS = 32; // Number of Seekers that Keepers can mint for themselves
   uint256 private keepersSeekersMinted = 0;
   uint256 public constant MAXMINTABLE = 10; // Max seekers that can be purchased in one tx
-  uint16 public constant MAXPIXELS = 1024; // 32x32 pixel grid
 
   // Seeker release schedule
   // Activation for each will be called externally by the season 1 Coinlander contract
@@ -40,11 +39,12 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
   uint256 public constant THIRDMINTPRICE = 0.1 ether;
 
   // This adds 2 because we are minting the winner_id = 1 and ids need to be 1 indexed
-  uint256 private constant INTERNALIDOFFSET = FIRSTMINT + SECONDMINT + THIRDMINT + 2;
+  uint256 private constant INTERNALIDOFFSET = FIRSTMINT + SECONDMINT + THIRDMINT + KEEPERSEEKERS + 2;
 
   // On-chain game parameters
+  bool public released = false;
   bool public uncloaking = false;
-  uint256 constant COINAPOFFSET = 10; // AP buff if Seeker is minted through CL seizure
+  uint256 public constant MAXPIXELS = 1024; // 32x32 pixel grid
   mapping(uint256 => bool) isSeekerCloaked;
 
   struct Attributes {
@@ -62,7 +62,8 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
   mapping(uint256 => Attributes) attributesBySeekerId;
 
   // Off-chain metadata
-  string private _baseTokenURI = "https://coinlander.one/seekers/";
+  // @todo need to put a valid endpoint here 
+  string private _baseTokenURI = "https://meta.coinlander.one/seekers/";
 
   // Alignment
   string[] private alignments = [
@@ -102,14 +103,14 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
 
     for (uint256 i = 0; i < summonCount; i++) {
         _summonSeekerId += 1;
-        mintSeeker(msg.sender, _summonSeekerId, false);
+        _mintSeeker(msg.sender, _summonSeekerId, false);
     }
   }
 
   function birthSeeker(address to) external onlyGame returns (uint256) {
     require(_birthSeekerId < MAXSEEKERS);
     _birthSeekerId += 1;
-    mintSeeker(to, _birthSeekerId, true);
+    _mintSeeker(to, _birthSeekerId, true);
     return (_birthSeekerId);
   }
 
@@ -120,59 +121,36 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
 
     for (uint256 i = 0; i < summonCount; i++) {
         _summonSeekerId += 1;
-        mintSeeker(msg.sender, _summonSeekerId, false);
+        _mintSeeker(msg.sender, _summonSeekerId, false);
     }
   }
 
-  function mintSeeker(address to,	uint256 id,	bool wasSeizure) internal {
-    // Initialize Attributes for new Seeker
+  function _mintSeeker(address to,	uint256 id,	bool bornFromCoin) internal {
+
+    // Born from coin grants a scale
+    uint256 scales = 0;
+    if (bornFromCoin) {
+      scales = 1;
+    }
+    
+    // Initialize all attributes to "hidden" values
     Attributes memory cloakedAttributes = Attributes(
-        false,
+        bornFromCoin,
         "",
         0,
         0,
         0,
         0,
-        0,
+        scales,
         address(0),
         uint64(0)
-    ); // Initialize all attributes to "hidden" values
+    ); 
+    
     attributesBySeekerId[id] = cloakedAttributes;
 
     isSeekerCloaked[id] = true; // All Seekers begin cloaked
 
-    // Seekers born from having held the Coinlander get special props
-    if (wasSeizure) {
-        attributesBySeekerId[id].bornFromCoin = true;
-        attributesBySeekerId[id].scales += 1;
-    }
-
     _safeMint(to, id);
-  }
-
-
-  //////////////////////////////////////////////////////////////////////////////////////////////////
-  //                                                                                              //
-  //                             EXTERNALLY CALLABLE TOKEN METHODS                                //
-  //                                                                                              //
-  //////////////////////////////////////////////////////////////////////////////////////////////////
-
-  /**
-  * @dev This determinstically leaves a gap in returned array if we haven't reached Sweet Release
-  * It will also not de-dup address with multiple tokens. The upshot is that it can be used to know
-  * who has which id via array index.
-  */
-
-  function allSeekerOwners() external view returns (address[] memory) {
-    address[] memory _allTokenOwners = new address[](_birthSeekerId);
-    for (uint256 i = 0; i < _summonSeekerId; ++i) {
-        _allTokenOwners[i] = ownerOf(i + 1);
-    }
-    for (uint256 i = INTERNALIDOFFSET; i < _birthSeekerId; i++) {
-        _allTokenOwners[i] = ownerOf(i + 1);
-    }
-
-    return _allTokenOwners;
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -185,7 +163,7 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
     require(firstMintActive == false);
     firstMintActive = true;
     emit FirstMintActivated();
-    currentBuyableSeekers += FIRSTMINT;
+    currentBuyableSeekers += (FIRSTMINT + KEEPERSEEKERS);
     currentPrice = FIRSTMINTPRICE;
   }
 
@@ -215,8 +193,8 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
   }
 
   function sendWinnerSeeker(address winner) external onlyGame {
-    require(gameWon == false);
-    gameWon = true;
+    require(released == false);
+    released = true;
     _setWinnerSeekerAttributes(1);
     _transfer(ownerOf(1), winner, 1);
   }
@@ -324,11 +302,11 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
     }
 
     // Determine 4 random attribute points
-    uint256 range = maxSingle - minSingle;
-    uint256 ap1 = minSingle + _getRandomNumber(range,id);
-    uint256 ap2 = minSingle + _getRandomNumber(range,ap1);
-    uint256 ap3 = minSingle + _getRandomNumber(range,ap2);
-    uint256 ap4 = minSingle + _getRandomNumber(range,ap3);
+    uint256 rangeSingle = maxSingle - minSingle;
+    uint256 ap1 = minSingle + _getRandomNumber(rangeSingle,id);
+    uint256 ap2 = minSingle + _getRandomNumber(rangeSingle,ap1);
+    uint256 ap3 = minSingle + _getRandomNumber(rangeSingle,ap2);
+    uint256 ap4 = minSingle + _getRandomNumber(rangeSingle,ap3);
 
     // Shuffle them
     uint256[4] memory aps = [ap1, ap2, ap3, ap4];
@@ -422,7 +400,7 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
     return attributesBySeekerId[id].clan;
   }
 
-  function getDethscalesById(uint256 id) external view returns (uint64) {
+  function getDethScalesById(uint256 id) external view returns (uint64) {
     return attributesBySeekerId[id].dethscales;
   }
 
@@ -430,7 +408,7 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
     return isSeekerCloaked[id];
   }
 
-  function getFullCloak(uint256 id) public view returns (bytes8[16] memory) {
+  function getFullCloak(uint256 id) external view returns (bytes8[16] memory) {
     require(!isSeekerCloaked[id]);
     uint64 _dethScales = attributesBySeekerId[id].dethscales;
 
@@ -451,10 +429,9 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
       maxNoiseBits = 10;
     }
 
-
     bytes8[16] memory fullCloak;
     
-    
+    // Deterministically add noise 
     for(uint8 i = 0; i < fullCloak.length; i++) {
         uint64 segment = _dethScales;
         uint64 noise = _getRandomSegment(_dethScales, i, minNoiseBits, maxNoiseBits);
@@ -566,5 +543,9 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
     returns (bool)
   {
     return super.supportsInterface(interfaceId);
+  }
+
+  receive() external payable {
+    revert();
   }
 }

@@ -75,12 +75,6 @@ describe("Seekers", function () {
       await seekers.birthSeeker(userA.address) 
       id = await seekers.tokenOfOwnerByIndex(userA.address,0)
     })
-    
-    it("sets the baseURI to the contracts preset value", async () => {
-      let expectedURI = "https://coinlander.one/seekers/" + String(id)
-      let returnedURI = await seekers.tokenURI(id)
-      expect(returnedURI).to.equal(expectedURI)
-    })
 
     it("allows a keeper to change the base URI", async () => {
       await seekers.setBaseURI("testString")

@@ -21,15 +21,15 @@ interface iSeekers is IERC721Enumerable {
     function summonSeeker(uint256 summonCount) external payable;
     function birthSeeker(address to) external returns (uint256);
     function keepersSummonSeeker(uint256 summonCount) external;
-    function allSeekerOwners() external view returns (address[] memory);
     function activateFirstMint() external;
     function activateSecondMint() external;
     function activateThirdMint() external;
+    function seizureMintIncrement() external;
     function performUncloaking() external;
     function sendWinnerSeeker(address winner) external;
     function uncloakSeeker(uint256 id) external;
     function addScales(uint256 id, uint256 scales) external;
-    function seizureMintIncrement() external;
+    function declareForClan(uint id, address clanAddress) external;
     function ownerWithdraw() external payable;
 
     /**
@@ -40,4 +40,7 @@ interface iSeekers is IERC721Enumerable {
     function getApById(uint256 id) external view returns (uint256[4] memory);
     function getScaleCountById(uint256 id) external view returns (uint256);
     function getClanById(uint256 id) external view returns (address);
+    function getDethScalesById(uint256 id) external view returns (uint64);
+    function getCloakStatusById(uint256 id) external view returns (bool);
+    function getFullCloak(uint256 id) external view returns (bytes8[16] memory);
 }

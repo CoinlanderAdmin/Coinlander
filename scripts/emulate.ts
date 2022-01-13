@@ -1,7 +1,7 @@
 import {SignerWithAddress} from "@nomiclabs/hardhat-ethers/signers"
 import * as fs from "fs";
 import {BigNumber} from "ethers";
-import {HardhatRuntimeEnvironment} from "hardhat/types";
+import {HardhatEthersHelpers} from "hardhat/types"
 import * as logger from './logger'
 
 // Emulate the game. Before running:
@@ -16,15 +16,14 @@ import * as logger from './logger'
 // seizes = number of seizes you want to run up to on current node, ie. 100 will run up to the 100th seizure
 // hre = HardhatRuntimeEnvironment, passed in via task function in hardhat.config.ts
 
-async function emulate(seizes: number, hre: HardhatRuntimeEnvironment) {
+async function emulate(seizes: number, ethers: HardhatEthersHelpers) {
   logger.divider()
   logger.out('Starting contract emulation...', logger.Level.Info)
   logger.divider()
 
   // We must use the injected hardhat param instead of directly importing because we run this
   // as a hardhat task. https://hardhat.org/advanced/hardhat-runtime-environment.html
-  const {ethers} = hre
-
+  
   // Load json config data. We want to use fs here instead of imports because
   // this data shouldn't be stored in git, and causes bad imports pre-deploy script
   const addressesJson = fs.readFileSync('local/addresses.json', 'utf8');
