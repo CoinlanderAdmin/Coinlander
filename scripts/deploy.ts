@@ -54,9 +54,9 @@ export async function deploy() {
     contracts: {
       "seekers": seekers.address,
       "vault": vault.address,
-      "season_one": seasonOne.address,
-      "nft_marketplace": erc721Marketplace.address,
-      "sft_marketplace": erc1155Marketplace.address,
+      "seasonOne": seasonOne.address,
+      "nftMarketplace": erc721Marketplace.address,
+      "sftMarketplace": erc1155Marketplace.address,
     }
   }
   const json = JSON.stringify(data, null, 2)

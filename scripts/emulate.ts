@@ -7,12 +7,16 @@ import * as logger from './logger'
 // Emulate the game. Before running:
 // 1. CONTRACTS: Run a local node `npm run node`
 // 2. CONTRACTS: Deploy a contract `npm run deploy`
-// 3. CONTRACTS: Run emulation `npm run emulate <seizures>`
+// 3. BACKEND: Run `python manage.py contracts` on backend to sync data
+// 4. BACKEND: Run `python manage.py runserver 0.0.0.0:8000` to run backend server
+// 5. BACKEND: Run `python manage.py listener` to run listening service
+// 6. CONTRACTS: Run emulation `npm run emulate <seizures>`
+
 
 // seizes = number of seizes you want to run up to on current node, ie. 100 will run up to the 100th seizure
 // hre = HardhatRuntimeEnvironment, passed in via task function in hardhat.config.ts
 
-async function emulate(seizes: number, ethers: any) {
+async function emulate(seizes: number, ethers: HardhatEthersHelpers) {
   logger.divider()
   logger.out('Starting contract emulation...', logger.Level.Info)
   logger.divider()
@@ -31,7 +35,7 @@ async function emulate(seizes: number, ethers: any) {
   const Vault = await ethers.getContractFactory("Vault")
   const vault = await Vault.attach(addresses.contracts.vault)
   const SeasonOne = await ethers.getContractFactory("SeasonOne")
-  const seasonOne = await SeasonOne.attach(addresses.contracts.season_one)
+  const seasonOne = await SeasonOne.attach(addresses.contracts.seasonOne)
   logger.pad(30, 'Seekers contract:', seekers.address)
   logger.pad(30, 'Vault contract:', vault.address)
   logger.pad(30, 'SeasonOne contract:', seasonOne.address)
@@ -177,7 +181,7 @@ async function emulate(seizes: number, ethers: any) {
       let userSeekerBalance = (await seekers.balanceOf(user.address)).toNumber() -1
       let lastToken = (await seekers.tokenOfOwnerByIndex(user.address, userSeekerBalance)).toNumber()
       await seekers.connect(user).uncloakSeeker(lastToken)
-      logger.pad(30, `Seeker ${lastToken} uncloaked:`, user.address)
+      logger.pad(30, `Seeker ${lastToken} unclocked:`, user.address)
     }
   }
 
