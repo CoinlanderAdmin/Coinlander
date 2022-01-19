@@ -13,7 +13,8 @@ task("emulate", "Play through the game.")
   .addParam("seizes", "The number of seizes to emulate.")
   .setAction(async (args, hre) => {
     const {seizes} = args
-    await emulate(seizes, hre)
+    const {ethers} = hre
+    await emulate(seizes, ethers)
   })
 
 const config: HardhatUserConfig = {
@@ -28,7 +29,7 @@ const config: HardhatUserConfig = {
     },
   },
   mocha: {
-    timeout: 150000
+    timeout: 5000000
   }
 }
 export default config

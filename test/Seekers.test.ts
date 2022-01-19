@@ -6,7 +6,6 @@ import { BigNumber, utils } from "ethers"
 import { stringify } from "querystring"
 import "hardhat-gas-reporter"
 
-
 describe("Seekers", function () {
   let owner: SignerWithAddress
   let userA: SignerWithAddress
@@ -368,7 +367,7 @@ describe("Seekers", function () {
 
     it("does not set the scale count higher than the max pixel count", async () => {
       let maxScales = await seekers.MAXPIXELS()
-      await seekers.addScales(id,(maxScales + 1))
+      await seekers.addScales(id,(maxScales.toNumber() + 1))
       expect(await seekers.getScaleCountById(id)).to.equal(maxScales)
     })
   })

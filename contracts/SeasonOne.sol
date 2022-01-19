@@ -185,21 +185,23 @@ contract SeasonOne is ERC1155, Ownable, ReentrancyGuard {
 
 
     function _processPaymentsAndRewards(address previousOwner, uint256 value) internal {
+        // Exclude first seizure since deployer doesnt get rewards
+        if (seizureCount.current() != 1) {
+            // Set aside funds for treasury and prize pool
+            uint256 _take = (value * PERCENTRESERVES) / PERCENTBASIS;
+            uint256 _prize = (_take * PERCENTPRIZE) / PERCENTBASIS;
+            reserve += (_take - _prize);
+            prize += _prize; 
+
+            uint256 deposit = value - _take;
+            pendingWithdrawals[previousOwner]._withdrawValue += deposit;
+
+            uint256 shardReward = _calculateShardReward(previousSeizureStake);
+            pendingWithdrawals[previousOwner]._shardOwed += shardReward;
+
+            pendingWithdrawals[previousOwner]._seekersOwed += 1;
+        }
             
-        // Set aside funds for treasury and prize pool
-        uint256 _take = (value * PERCENTRESERVES) / PERCENTBASIS;
-        uint256 _prize = (_take * PERCENTPRIZE) / PERCENTBASIS;
-        reserve += (_take - _prize);
-        prize += _prize; 
-
-        uint256 deposit = value - _take;
-        pendingWithdrawals[previousOwner]._withdrawValue += deposit;
-
-        uint256 shardReward = _calculateShardReward(previousSeizureStake);
-        pendingWithdrawals[previousOwner]._shardOwed += shardReward;
-
-        pendingWithdrawals[previousOwner]._seekersOwed += 1;
-
         // Handle all cases that aren't the last 
         if (!released) {
             // Store current seizure as previous
