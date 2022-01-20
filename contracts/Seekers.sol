@@ -6,6 +6,7 @@ import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "./interfaces/iSeekers.sol";
+// import "hardhat/console.sol";
 
 contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
   // Access control setup
@@ -56,7 +57,7 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
     uint256 gamma;
     uint256 scales;
     address clan;
-    uint64 dethscales;
+    uint16 dethscales;
   }
 
   mapping(uint256 => Attributes) attributesBySeekerId;
@@ -143,7 +144,7 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
         0,
         scales,
         address(0),
-        uint64(0)
+        uint16(0)
     ); 
     
     attributesBySeekerId[id] = cloakedAttributes;
@@ -208,15 +209,13 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
   function uncloakSeeker(uint256 id) external {
-    require(uncloaking == true);
-    require(isSeekerCloaked[id]);
-    require(msg.sender == ownerOf(id));
+    require(uncloaking == true, "cant uncloak yet");
+    require(isSeekerCloaked[id], "seeker already uncloaked");
+    require(msg.sender == ownerOf(id), "must own seeker to reveal it");
 
     string memory _alignment = _getAlignment();
 
     uint256[4] memory _APs = _getAP(id);
-
-    uint64 _dethscales = _getDethScales(id);
 
     isSeekerCloaked[id] = false; // Uncloaks the Seeker permanently
 
@@ -229,9 +228,13 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
         _APs[3], // Gamma
         attributesBySeekerId[id].scales,
         attributesBySeekerId[id].clan,
-        _dethscales
+        uint16(0)
       ); 
     attributesBySeekerId[id] = revealedAttributes;
+
+    uint16 _dethscales = _getDethScales(id);
+    attributesBySeekerId[id].dethscales = _dethscales;
+
     emit SeekerUncloaked(id);
   }
 
@@ -285,7 +288,7 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
     for(uint256 i = 0; i < alignments.length; i++) {
       _alignment = alignments[i];
       if(keccak256(bytes(seekerAlignment)) == keccak256(bytes(_alignment))) {
-        return ((i % 3), (i/3));
+        return ((i/3),(i % 3));
       }
     }
     return (0,0); // Default if alignment not set
@@ -320,28 +323,37 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
     return aps;
   }
 
-  function _getDethScales(uint256 _id) internal view returns (uint64) {
+  function _getDethScales(uint256 _id) internal view returns (uint16) {
 
     // Set fill density based on alignment 
     (uint256 x, ) = _getAlignmentAxes(_id); // Only need good/evil axis
-    uint64 minDethScales;
-    uint64 maxDethScales;
+    uint16 minDethScales;
+    uint16 maxDethScales;
     if(x ==1) {
-      minDethScales = 20; // Neutral case
-      maxDethScales = 44;
+      minDethScales = 7; // Neutral case
+      maxDethScales = 12;
     }
     else{
-      minDethScales = 0; // Good and Evil cases
-      maxDethScales = 10;
+      minDethScales = 4; // Good and Evil cases
+      maxDethScales = 8;
     }
 
-    uint64 dethScaleRand = uint64(bytes8(keccak256(abi.encodePacked(
+    uint16 dethScaleRand = uint16(bytes2(keccak256(abi.encodePacked(
             _id,
             block.difficulty,
             block.number,
             msg.sender
             ))));
-    uint64 _dethScales = _getRandomSegment(uint64(_id), dethScaleRand, minDethScales, maxDethScales);
+
+    uint16 _dethScales;
+    uint16 move;
+    uint16 range = maxDethScales - minDethScales;
+    uint16 segBits = _getRandomNumber16(range, uint16(_id), dethScaleRand) + minDethScales;
+
+    for(uint16 i = 0; i < segBits; i++) {
+        move = _getRandomNumber16(16, i, dethScaleRand);
+        _dethScales = (uint16(2) ** move) | _dethScales;
+    }
 
     if(x==2){
       return ~_dethScales; // Invert for Evil
@@ -362,7 +374,7 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
         25, // Gamma
         MAXPIXELS,
         attributesBySeekerId[id].clan,
-        uint64(0)
+        uint16(0)
       ); 
     attributesBySeekerId[id] = winningAttributes;
   }
@@ -400,7 +412,7 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
     return attributesBySeekerId[id].clan;
   }
 
-  function getDethScalesById(uint256 id) external view returns (uint64) {
+  function getDethscalesById(uint256 id) external view returns (uint16) {
     return attributesBySeekerId[id].dethscales;
   }
 
@@ -408,34 +420,97 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
     return isSeekerCloaked[id];
   }
 
-  function getFullCloak(uint256 id) external view returns (bytes8[16] memory) {
+  function getFullCloak(uint256 id) external view returns (uint32[32] memory) {
     require(!isSeekerCloaked[id]);
-    uint64 _dethScales = attributesBySeekerId[id].dethscales;
+    uint16 _dethscales = attributesBySeekerId[id].dethscales;
 
     // Set noise based on alignment
     ( ,uint256 y) = _getAlignmentAxes(id); // Only need lawful/chaotic axis
-    uint64 minNoiseBits;
-    uint64 maxNoiseBits;
+    uint16 minNoiseBits;
+    uint16 maxNoiseBits;
     if ( y == 0) { // Lawful
       minNoiseBits = 0;
-      maxNoiseBits = 3;
+      maxNoiseBits = 16;
     }
     if (y == 1) { // Neutral
-      minNoiseBits = 2;
-      maxNoiseBits = 6;
+      minNoiseBits = 16;
+      maxNoiseBits = 32;
     }
     else { // Chaotic
-      minNoiseBits = 5;
-      maxNoiseBits = 10;
+      minNoiseBits = 32;
+      maxNoiseBits = 64;
     }
 
-    bytes8[16] memory fullCloak;
+    uint32[32] memory fullCloak;
+    // Because solidity doesn't have a native way to handle 4-bit values, 
+    // we construct an entire row out of each primitive
+    //
+    // EXAMPLE
+    // uint16 dethscale = 1001 0110 1100 0001
+    //
+    //  Primitives:
+    //   r1'  r2'  r3'  r4'
+    //  1001 0110 1100 0001
+    // 
+    //  Full Rows: 
+    // uint32 r1 = 1001 1001 ,,, 1001 
+    // uint32 r2 = 0110 0110 ,,, 0110 
+    // uint32 r3 = 1100 1100 ,,, 1100
+    // uint32 r4 = 0001 0001 ,,, 0001
+
+    uint32 input = uint32(_dethscales);
+    uint32[4] memory rows;
+
+    // r1
+    rows[0] = (input >> 12) | 
+      ((input >> 12) << 4) | 
+      ((input >> 12) << 8) | 
+      ((input >> 12) << 12) |
+      ((input >> 12) << 16) |
+      ((input >> 12) << 20) |
+      ((input >> 12) << 24) |
+      ((input >> 12) << 28);
+
+    // r2
+    rows[1] = (0xF & (input >> 8)) | 
+      ((0xF & (input >> 8)) << 4) | 
+      ((0xF & (input >> 8)) << 8) | 
+      ((0xF & (input >> 8)) << 12) |
+      ((0xF & (input >> 8)) << 16) |
+      ((0xF & (input >> 8)) << 20) |
+      ((0xF & (input >> 8)) << 24) |
+      ((0xF & (input >> 8)) << 28);
+
+    // r3
+    rows[2] = (0xF & (input >> 4)) | 
+      ((0xF & (input >> 4)) << 4) | 
+      ((0xF & (input >> 4)) << 8) | 
+      ((0xF & (input >> 4)) << 12) |
+      ((0xF & (input >> 4)) << 16) |
+      ((0xF & (input >> 4)) << 20) |
+      ((0xF & (input >> 4)) << 24) |
+      ((0xF & (input >> 4)) << 28);
     
+    // r4
+    rows[3] = (0xF & input) | 
+      ((0xF & input) << 4) | 
+      ((0xF & input) << 8) | 
+      ((0xF & input) << 12) |
+      ((0xF & input) << 16) |
+      ((0xF & input) << 20) |
+      ((0xF & input) << 24) |
+      ((0xF & input) << 28);
+
+    // Build full cloak from rows 
+    for(uint16 i = 0; i < fullCloak.length; i++) {
+        fullCloak[i] = rows[i % 4]; 
+    }
     // Deterministically add noise 
-    for(uint8 i = 0; i < fullCloak.length; i++) {
-        uint64 segment = _dethScales;
-        uint64 noise = _getRandomSegment(_dethScales, i, minNoiseBits, maxNoiseBits);
-        fullCloak[i] = bytes8(segment | noise); 
+    uint16 noiseBits = _getRandomNumber16((maxNoiseBits - minNoiseBits), _dethscales, maxNoiseBits) + minNoiseBits;
+    for (uint16 i = 0; i < noiseBits; i++) {
+      uint16 noiseCol = _getRandomNumber16(32, _dethscales, i);
+      uint16 noiseRow = _getRandomNumber16(32, noiseCol, i);
+      fullCloak[noiseRow] = (uint32(2) ** noiseCol) ^ fullCloak[noiseRow];
     }
     return fullCloak;
   }
@@ -464,27 +539,10 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
     return random % mod;
   }
 
-
-  function _getRandomNumber64(uint64 mod, uint64 r1, uint64 r2) public pure returns (uint64) {
-    uint64 seed = uint64(bytes8(keccak256(abi.encodePacked(r1, r2))));
+  function _getRandomNumber16(uint16 mod, uint16 r1, uint16 r2) public pure returns (uint16) {
+    uint16 seed = uint16(bytes2(keccak256(abi.encodePacked(r1, r2))));
     return seed % mod;
   }
-
-  function _getRandomSegment(uint64 seed, uint64 r, uint64 min, uint64 max) 
-    public pure returns (uint64) {
-    uint64 segment;
-    uint64 move;
-
-    uint64 range = max - min;
-    uint64 segBits = uint64(_getRandomNumber64(range, seed, r)) + min;
-
-    for(uint64 i = 0; i < segBits; i++) {
-        move = uint64(_getRandomNumber64(64, i, r));
-        segment = (uint64(2) ** move) | segment;
-    }
-    return segment;
-  }
-
 
   function _pluck(uint256 mod, string[] memory sourceArray) internal view returns (string memory) {
     uint256 rand = _getRandomNumber(mod,0);
