@@ -41,6 +41,7 @@ contract SeasonOne is ERC1155, Ownable, ReentrancyGuard {
     // COINLANDER PARAMETERS
     address public COINLANDER;
     bool public released = false;
+    bool public shardSpendable = false;
     bool private transferIsSteal = false;
     
     using Counters for Counters.Counter;
@@ -51,11 +52,12 @@ contract SeasonOne is ERC1155, Ownable, ReentrancyGuard {
     uint256 public constant SECONDSEEKERMINTTHRESH = 666;
     uint256 public constant THIRDSEEKERMINTTHRESH = 784;
     uint256 public constant UNCLOAKINGTHRESH = 464;
+    uint256 public constant SHARDSPENDABLE = 550;
     uint256 public constant SWEETRELEASE = 1111; 
 
     // ECONOMIC CONSTANTS  
     uint256 public constant PERCENTRATEINCREASE = 80; // 0.8% increase for each successive seizure 
-    uint256 public constant PERCENTRESERVES = 50; // 0.50% goes to treasury 
+    uint256 public constant PERCENTTAKE = 50; // 0.50% take for prize and reserve 
     uint256 constant PERCENTPRIZE = 5000; // 50.00% of take goes to prize pool     
     uint256 constant PERCENTBASIS = 10000;
     
@@ -97,6 +99,7 @@ contract SeasonOne is ERC1155, Ownable, ReentrancyGuard {
 
     event SweetRelease(address winner);
     event Seized(address previousOwner, address newOwner, uint256 seizurePrice, uint256 nextSeizurePrice, uint256 currentPrize);
+    event ShardSpendable();
     event NewCloinDeposit(address depositor, uint256 amount);
     event ClaimedAll(address claimer);
     event AirdropClaim(uint256 id);
@@ -188,9 +191,9 @@ contract SeasonOne is ERC1155, Ownable, ReentrancyGuard {
         // Exclude first seizure since deployer doesnt get rewards
         if (seizureCount.current() != 1) {
             // Set aside funds for treasury and prize pool
-            uint256 _take = (value * PERCENTRESERVES) / PERCENTBASIS;
+            uint256 _take = (value * PERCENTTAKE) / PERCENTBASIS;
             uint256 _prize = (_take * PERCENTPRIZE) / PERCENTBASIS;
-            reserve += (_take - _prize);
+            reserve += (_take - _prize); 
             prize += _prize; 
 
             uint256 deposit = value - _take;
@@ -235,6 +238,11 @@ contract SeasonOne is ERC1155, Ownable, ReentrancyGuard {
             seekers.performUncloaking();
         }
 
+        if (count == SHARDSPENDABLE) {
+            shardSpendable = true; 
+            emit ShardSpendable();
+        }
+
         if (count == SWEETRELEASE) {
             _triggerRelease();
         }
@@ -259,6 +267,11 @@ contract SeasonOne is ERC1155, Ownable, ReentrancyGuard {
         require(released == true);
         _;
     }
+
+    modifier shardSpendableOnly() {
+        require(shardSpendable == true);
+        _;
+    }
     
     function getSeizureCount() external view returns(uint256) {
         return seizureCount.current();
@@ -271,7 +284,7 @@ contract SeasonOne is ERC1155, Ownable, ReentrancyGuard {
 //                                                                                              //
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
-    function burnShardForScale(uint256 seekerId, uint256 amount) external nonReentrant {
+    function burnShardForScale(uint256 seekerId, uint256 amount) external nonReentrant shardSpendableOnly {
         require(amount > 0);
         require(balanceOf(msg.sender, SHARD) >= amount);
         _burn(msg.sender, SHARD, amount);
@@ -279,7 +292,7 @@ contract SeasonOne is ERC1155, Ownable, ReentrancyGuard {
         seekers.addScales(seekerId, scales);
     }
 
-    function stakeShardForCloin(uint256 amount) external nonReentrant {
+    function stakeShardForCloin(uint256 amount) external nonReentrant shardSpendableOnly {
         require(amount > 0);
         require(balanceOf(msg.sender, SHARD) >= amount);
         _burn(msg.sender, SHARD, amount);
@@ -293,7 +306,7 @@ contract SeasonOne is ERC1155, Ownable, ReentrancyGuard {
         emit NewCloinDeposit(msg.sender, amount);
     }
 
-    function burnShardForFragments(uint256 amount) external nonReentrant {
+    function burnShardForFragments(uint256 amount) external nonReentrant shardSpendableOnly {
         require(amount > 0);
         require(balanceOf(msg.sender, SHARD) >= amount);
         require(seekers.balanceOf(msg.sender) != 0);
