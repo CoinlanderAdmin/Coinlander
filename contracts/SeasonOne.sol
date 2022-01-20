@@ -52,7 +52,7 @@ contract SeasonOne is ERC1155, Ownable, ReentrancyGuard {
     uint256 public constant SECONDSEEKERMINTTHRESH = 666;
     uint256 public constant THIRDSEEKERMINTTHRESH = 784;
     uint256 public constant UNCLOAKINGTHRESH = 464;
-    uint256 public constant SHARDSPENDABLE = 550;
+    uint256 public constant SHARDSPENDABLE = 515;
     uint256 public constant SWEETRELEASE = 1111; 
 
     // ECONOMIC CONSTANTS  
