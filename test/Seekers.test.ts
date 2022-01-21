@@ -7,6 +7,7 @@ import { stringify } from "querystring"
 import "hardhat-gas-reporter"
 
 describe("Seekers", function () {
+  
   let owner: SignerWithAddress
   let userA: SignerWithAddress
   let userB: SignerWithAddress
@@ -338,6 +339,92 @@ describe("Seekers", function () {
       await seekers.connect(userA).uncloakSeeker(id)
       const afterClan = await seekers.getClanById(id)
       expect(afterClan).to.equal(beforeClan)
+    })
+
+    it("assigns a dethscale pattern", async () => {
+      await seekers.performUncloaking()
+      let dethscalesBefore = await seekers.getDethscalesById(id)
+      expect(dethscalesBefore).to.equal(0);
+      await seekers.connect(userA).uncloakSeeker(id)
+      let dethscalesAfter = await seekers.getDethscalesById(id)
+      expect(dethscalesAfter).to.be.greaterThan(0);
+    })
+  })
+
+  describe("upon rerollDethscales", () => {
+    let id: BigNumber 
+    beforeEach(async function () {
+      seekers = await Seekers.deploy()
+      await seekers.addGameContract(owner.address) // to simulate OneCoin contract
+      await seekers.birthSeeker(userA.address)
+      id = await seekers.tokenOfOwnerByIndex(userA.address,0)
+    })
+    
+    it("does not let dethscales get rerolled before the uncloaking holiday", async () => {
+      await expect(seekers.connect(userA).rerollDethscales(id)).to.be.reverted
+    })
+
+    it("does not let dethscales get rerolled by a non owner", async () => {
+      await seekers.performUncloaking()
+      await expect(seekers.connect(userB).rerollDethscales(id)).to.be.reverted
+    })
+
+    it("requires that the seeker has been uncloaked", async () => {
+      await seekers.performUncloaking()
+      await expect(seekers.connect(userA).rerollDethscales(id)).to.be.reverted
+      await seekers.connect(userA).uncloakSeeker(id)
+      expect(await seekers.connect(userA).rerollDethscales(id))
+    })
+
+    it("actually rerolls dethscales", async () => {
+      await seekers.performUncloaking()
+      await seekers.connect(userA).uncloakSeeker(id)
+      let beforeDethscales = await seekers.getDethscalesById(id)
+      await seekers.connect(userA).rerollDethscales(id)
+      let afterDethscales = await seekers.getDethscalesById(id)
+      expect(beforeDethscales).to.not.equal(afterDethscales)
+    })
+
+    it("requires that the seeker has scales to burn", async () => {
+      await seekers.performUncloaking()
+      await seekers.connect(userA).uncloakSeeker(id)
+      let scaleCount = (await seekers.getScaleCountById(id)).toNumber()
+      for(let i=0; i < scaleCount; i++){
+        await seekers.connect(userA).rerollDethscales(id)
+      }
+      await expect(seekers.connect(userA).rerollDethscales(id)).to.be.reverted
+    })
+  })
+
+  describe("upon getFullCloak", () => {
+    let id: BigNumber 
+    beforeEach(async function () {
+      seekers = await Seekers.deploy()
+      await seekers.addGameContract(owner.address) // to simulate OneCoin contract
+      await seekers.birthSeeker(userA.address)
+      id = await seekers.tokenOfOwnerByIndex(userA.address,0)
+    })
+
+    it("reverts for a cloaked seeker", async () => {
+      await expect(seekers.getFullCloak(id)).to.be.reverted
+    })
+
+    it("returns an array of the expected length", async () => {
+      await seekers.performUncloaking()
+      await seekers.connect(userA).uncloakSeeker(id)
+      let fullCloak = await seekers.getFullCloak(id)
+      expect(fullCloak.length).to.equal(32)
+    })
+
+    it("returns the same cloak across multiple calls", async () => {
+      await seekers.performUncloaking()
+      await seekers.connect(userA).uncloakSeeker(id)
+      let firstFullCloak = await seekers.getFullCloak(id)
+      let secondFullCloak = await seekers.getFullCloak(id)
+      function arrayEquiv(element: number, index: number, array: Array<number>) {
+        return element == secondFullCloak[index]
+      }
+      expect(firstFullCloak.every(arrayEquiv))
     })
   })
 

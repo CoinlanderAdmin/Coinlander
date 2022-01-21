@@ -46,6 +46,9 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
   bool public released = false;
   bool public uncloaking = false;
   uint256 public constant MAXPIXELS = 1024; // 32x32 pixel grid
+  uint256 public constant SUMMONSEEKERSCALESTART = 3;
+  uint256 public constant BIRTHSEEKERSCALESTART = 5;
+  uint256 public constant DETHSCALEREROLLCOST = 1;
   mapping(uint256 => bool) isSeekerCloaked;
 
   struct Attributes {
@@ -128,10 +131,10 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
 
   function _mintSeeker(address to,	uint256 id,	bool bornFromCoin) internal {
 
-    // Born from coin grants a scale
-    uint256 scales = 0;
+    // Born from coin grants more scales
+    uint256 scales = SUMMONSEEKERSCALESTART;
     if (bornFromCoin) {
-      scales = 1;
+      scales = BIRTHSEEKERSCALESTART;
     }
     
     // Initialize all attributes to "hidden" values
@@ -209,9 +212,9 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
   function uncloakSeeker(uint256 id) external {
-    require(uncloaking == true, "cant uncloak yet");
-    require(isSeekerCloaked[id], "seeker already uncloaked");
+    require(uncloaking, "cant uncloak yet");
     require(msg.sender == ownerOf(id), "must own seeker to reveal it");
+    require(isSeekerCloaked[id], "seeker already uncloaked");
 
     string memory _alignment = _getAlignment();
 
@@ -236,6 +239,19 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
     attributesBySeekerId[id].dethscales = _dethscales;
 
     emit SeekerUncloaked(id);
+  }
+
+  function rerollDethscales(uint256 id) external {
+    require(uncloaking);
+    require(msg.sender == ownerOf(id));
+    require(!isSeekerCloaked[id]);
+    require(attributesBySeekerId[id].scales > 0);
+
+    attributesBySeekerId[id].scales -= DETHSCALEREROLLCOST;
+    attributesBySeekerId[id].dethscales = _getDethScales(id);
+
+    emit DethscalesRerolled(id);
+
   }
 
   function addScales(uint256 id, uint256 scales) external onlyGame {
@@ -338,12 +354,7 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
       maxDethScales = 8;
     }
 
-    uint16 dethScaleRand = uint16(bytes2(keccak256(abi.encodePacked(
-            _id,
-            block.difficulty,
-            block.number,
-            msg.sender
-            ))));
+    uint16 dethScaleRand = uint16(_getRandomNumber(2**16, _id));
 
     uint16 _dethScales;
     uint16 move;
@@ -539,6 +550,8 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
     return random % mod;
   }
 
+  // Deterministic "random" number picker - used for generating full cloak artwork the same every time
+  // while still enabling the injection of randomly assigned noise.
   function _getRandomNumber16(uint16 mod, uint16 r1, uint16 r2) public pure returns (uint16) {
     uint16 seed = uint16(bytes2(keccak256(abi.encodePacked(r1, r2))));
     return seed % mod;
@@ -566,6 +579,7 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
   //                                ACCESS CONTROL/PERMISSIONS                                    //
   //                                                                                              //
   //////////////////////////////////////////////////////////////////////////////////////////////////
+
   modifier onlyGame() {
     require(
       hasRole(GAME_ROLE, msg.sender));

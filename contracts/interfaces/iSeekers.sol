@@ -14,6 +14,7 @@ interface iSeekers is IERC721Enumerable {
     event ThirdMintActivated();
     event UncloakingAvailable();
     event SeekerUncloaked(uint256 indexed seekerId);
+    event DethscalesRerolled(uint256 id);
     event ScalesAdded(uint256 indexed seekerId, uint256 scalesAdded, uint256 newScaleCount);
     event SeekerDeclaredToClan(uint256 indexed seekerId, address indexed clan);
 
@@ -28,6 +29,7 @@ interface iSeekers is IERC721Enumerable {
     function performUncloaking() external;
     function sendWinnerSeeker(address winner) external;
     function uncloakSeeker(uint256 id) external;
+    function rerollDethscales(uint256 id) external;
     function addScales(uint256 id, uint256 scales) external;
     function declareForClan(uint id, address clanAddress) external;
     function ownerWithdraw() external payable;
