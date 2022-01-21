@@ -116,7 +116,7 @@ describe("SeasonOne", function () {
 
     it("sets the withdraw ammt according to the seizure price less platform take", async () => {
       let w = await seasonOne.getPendingWithdrawl(userA.address)
-      let takeRate = await seasonOne.PERCENTRESERVES()
+      let takeRate = await seasonOne.PERCENTTAKE()
       let take = oldSS.mul(takeRate).div(10000)
       await expect(w[0]).to.equal(oldSS.sub(take))
     })
