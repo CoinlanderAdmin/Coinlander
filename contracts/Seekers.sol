@@ -235,7 +235,7 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
       ); 
     attributesBySeekerId[id] = revealedAttributes;
 
-    uint16 _dethscales = _getDethScales(id);
+    uint16 _dethscales = _getDethscales(id, false);
     attributesBySeekerId[id].dethscales = _dethscales;
 
     emit SeekerUncloaked(id);
@@ -245,10 +245,10 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
     require(uncloaking);
     require(msg.sender == ownerOf(id));
     require(!isSeekerCloaked[id]);
-    require(attributesBySeekerId[id].scales > 0);
+    require(attributesBySeekerId[id].scales >= DETHSCALEREROLLCOST);
 
     attributesBySeekerId[id].scales -= DETHSCALEREROLLCOST;
-    attributesBySeekerId[id].dethscales = _getDethScales(id);
+    attributesBySeekerId[id].dethscales = _getDethscales(id, true);
 
     emit DethscalesRerolled(id);
 
@@ -339,38 +339,54 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
     return aps;
   }
 
-  function _getDethScales(uint256 _id) internal view returns (uint16) {
+  function _getDethscales(uint256 _id, bool reroll) internal view returns (uint16) {
 
     // Set fill density based on alignment 
     (uint256 x, ) = _getAlignmentAxes(_id); // Only need good/evil axis
-    uint16 minDethScales;
-    uint16 maxDethScales;
+    uint16 minDethscales;
+    uint16 maxDethscales;
     if(x ==1) {
-      minDethScales = 7; // Neutral case
-      maxDethScales = 12;
+      minDethscales = 7; // Neutral case
+      maxDethscales = 12;
     }
     else{
-      minDethScales = 4; // Good and Evil cases
-      maxDethScales = 8;
+      minDethscales = 4; // Good and Evil cases
+      maxDethscales = 8;
     }
 
-    uint16 dethScaleRand = uint16(_getRandomNumber(2**16, _id));
-
-    uint16 _dethScales;
+    uint16 _dethscales;
     uint16 move;
-    uint16 range = maxDethScales - minDethScales;
-    uint16 segBits = _getRandomNumber16(range, uint16(_id), dethScaleRand) + minDethScales;
+    uint16 range = maxDethscales - minDethscales;
+    uint16 rand = reroll ? 
+      attributesBySeekerId[_id].dethscales : // use old dethscales if rerolling
+      uint16(_getRandomNumber(2**16, _id));  // generate new scale pattern
+    uint16 segBits = _getRandomNumber16(range, uint16(_id), rand) + minDethscales;
 
     for(uint16 i = 0; i < segBits; i++) {
-        move = _getRandomNumber16(16, i, dethScaleRand);
-        _dethScales = (uint16(2) ** move) | _dethScales;
+        move = _getRandomNumber16(16, i, rand);
+        _dethscales = (uint16(2) ** move) | _dethscales;
     }
 
+    uint16 rarityFlip = uint16(_getRandomNumber(100, rand));
+
     if(x==2){
-      return ~_dethScales; // Invert for Evil
+      if(rarityFlip <= 5 && !reroll){ // dont change rarity on reroll
+        return _dethscales; // dont invert for rare evil
+      }
+      else {
+        return ~_dethscales; // Invert for Evil
+      }
+    }
+    if(x==0) {
+      if(rarityFlip <= 5 && !reroll) { // dont change rarity on reroll 
+        return ~_dethscales; // invert for rare good
+      }
+      else{
+        return _dethscales;
+      }
     }
     else {
-      return _dethScales;
+      return _dethscales;
     }
   }
  

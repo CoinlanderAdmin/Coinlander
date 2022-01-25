@@ -27,6 +27,7 @@ export async function deploy() {
   let p = await seekers.currentPrice()
   await seekers.summonSeeker(8,{value : p.mul(8)})
   
+  // Generate art for ids 2-8
   for (let i = 1; i < 8; i++) {
     var id = await seekers.tokenOfOwnerByIndex(deployer.address, i)
     logger.out('Uncloaking seeker: ' + id.toNumber())
@@ -37,6 +38,21 @@ export async function deploy() {
     var fs = require('fs');
     fs.writeFileSync('local/data/' + id.toNumber() + '.json', json, 'utf8');
     logger.divider()
+  }
+
+  // Regen art for id 2
+  await seekers.addScales(2, 10);
+  let scaleCount = await (await seekers.getScaleCountById(2)).toNumber()
+  for (let i = 1; i < scaleCount; i++) {
+    await seekers.rerollDethscales(2,1)
+    let fullCloak = await seekers.getFullCloak(2)
+    var json = JSON.stringify(fullCloak);
+    var fs = require('fs');
+    fs.writeFileSync('local/data/' + 2 + '_regen_' + i + '.json', json, 'utf8');
+
+    console.log('Regenerating Seeker id 2')
+    logger.divider()
+
   }
 
 }
