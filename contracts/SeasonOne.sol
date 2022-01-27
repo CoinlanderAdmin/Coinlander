@@ -62,7 +62,7 @@ contract SeasonOne is ERC1155, Ownable, ReentrancyGuard {
     uint256 constant PERCENTBASIS = 10000;
     
     // ECONOMIC STATE VARS 
-    uint256 public seizureStake = 5 * 10**16; // First price for Coinlander 0.05Eth
+    uint256 public seizureStake = 5 * 10**12; // First price for Coinlander 0.05Eth
     uint256 private previousSeizureStake = 0; 
     uint256 public prize = 0; // Prize pool balance
     uint256 private reserve = 0; // Treasury balance 

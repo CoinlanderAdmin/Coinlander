@@ -6,6 +6,7 @@ import "tsconfig-paths/register"
 import "hardhat-contract-sizer"
 
 import emulate from "./scripts/emulate";
+import emulateRinkArby from "./scripts/emulateRinkArby"
 import {task} from "hardhat/internal/core/config/config-env";
 import fs from "fs";
 
@@ -13,9 +14,17 @@ import fs from "fs";
 import { config as dotenvConfig } from "dotenv";
 import { resolve } from "path";
 dotenvConfig({ path: resolve(__dirname, "./.env") });
-const pkey: string | undefined = process.env.PRIVATE_KEY;
-if (!pkey) {
-  throw new Error("Please set your PRIVATE_KEY in a .env file");
+const owner: string | undefined = process.env.OWNER_KEY;
+if (!owner) {
+  throw new Error("Please set your OWNER_KEY in a .env file");
+}
+const userA: string | undefined = process.env.USERA_KEY;
+if (!userA) {
+  throw new Error("Please set your USERA_KEY in a .env file");
+}
+const userB: string | undefined = process.env.USERB_KEY;
+if (!userB) {
+  throw new Error("Please set your USERB_KEY in a .env file");
 }
 
 task("emulate", "Play through the game.")
@@ -24,6 +33,14 @@ task("emulate", "Play through the game.")
     const {seizes} = args
     const {ethers} = hre
     await emulate(seizes, ethers)
+  })
+
+task("emulateRinkArby", "Play through the game.")
+  .addParam("seizes", "The number of seizes to emulate.")
+  .setAction(async (args, hre) => {
+    const {seizes} = args
+    const {ethers} = hre
+    await emulateRinkArby(seizes, ethers)
   })
 
 const config: HardhatUserConfig = {
@@ -39,7 +56,7 @@ const config: HardhatUserConfig = {
     RinkArby: {
       url: "https://rinkeby.arbitrum.io/rpc",
       chainId: 421611,
-      accounts: [pkey]
+      accounts: [owner,userA,userB]
     }
   },
   mocha: {
