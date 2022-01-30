@@ -62,16 +62,19 @@ contract SeasonOne is ERC1155, Ownable, ReentrancyGuard {
     uint256 constant PERCENTBASIS = 10000;
     
     // ECONOMIC STATE VARS 
-    uint256 public seizureStake = 5 * 10**12; // First price for Coinlander 0.05Eth
+    // uint256 public seizureStake = 5 * 10**16; // First price for Coinlander 0.05Eth
+    uint256 public seizureStake = 5 * 10**12; // test value
     uint256 private previousSeizureStake = 0; 
     uint256 public prize = 0; // Prize pool balance
     uint256 private reserve = 0; // Treasury balance 
+    uint256 private keeperShardsMinted = 0;
 
     // SHARD CONSTANTS
+    uint256 constant KEEPERSHARDS = 111; // Keepers can mint up to 100 shards for community rewards
     uint256 constant SEEKERSHARDDROP = 1; // At least one shard to each Seeker holder 
     uint256 constant SHARDDROPRAND = 3; // Up to 3 additional shard drops
     uint256 constant SCALEPERSHARD = 8; // Eight scales per Shard 
-    uint256 constant FRAGMENTMULTIPLIER = 1; // One fragment per Shard 
+    uint256 public constant SHARDTOFRAGMENTMULTIPLIER = 5; // One fragment per 5 Shards 
     uint256 constant BASESHARDREWARD = 1; // 1 Shard guaranteed per seizure
     uint256 constant INCRSHARDREWARD = 30; // 3 Eth/Shard
     uint256 constant INCRBASIS = 10; //
@@ -98,7 +101,9 @@ contract SeasonOne is ERC1155, Ownable, ReentrancyGuard {
     iVault private vault;
 
     event SweetRelease(address winner);
-    event Seized(address previousOwner, address newOwner, uint256 seizurePrice, uint256 nextSeizurePrice, uint256 currentPrize);
+    event Seized(address previousOwner, address newOwner, 
+            uint256 seizurePrice, uint256 nextSeizurePrice, 
+            uint256 currentPrize, uint256 seizureNumber);
     event ShardSpendable();
     event NewCloinDeposit(address depositor, uint256 amount);
     event ClaimedAll(address claimer);
@@ -180,7 +185,7 @@ contract SeasonOne is ERC1155, Ownable, ReentrancyGuard {
         // Establish rewards and refunds 
         _processPaymentsAndRewards(previousOwner, previousSeizureStake);
 
-        emit Seized(previousOwner, newOwner, msg.value, seizureStake, prize);
+        emit Seized(previousOwner, newOwner, msg.value, seizureStake, prize, seizureCount.current());
 
         // Trigger game events if price is worthy 
         _processGameEvents();
@@ -308,10 +313,10 @@ contract SeasonOne is ERC1155, Ownable, ReentrancyGuard {
 
     function burnShardForFragments(uint256 amount) external nonReentrant shardSpendableOnly {
         require(amount > 0);
+        require((amount % SHARDTOFRAGMENTMULTIPLIER) == 0); // must be even multiple of the exch. rate
         require(balanceOf(msg.sender, SHARD) >= amount);
-        require(seekers.balanceOf(msg.sender) != 0);
     
-        uint256 fragmentReward = amount * FRAGMENTMULTIPLIER; 
+        uint256 fragmentReward = amount / SHARDTOFRAGMENTMULTIPLIER; 
         _burn(msg.sender, SHARD, amount);
         vault.mintFragments(msg.sender, fragmentReward);
     }
@@ -362,6 +367,14 @@ contract SeasonOne is ERC1155, Ownable, ReentrancyGuard {
         uint256 r2 = _getRandomNumber(SHARDDROPRAND, r1);
         amount = SEEKERSHARDDROP + r1 + r2;
         emit AirdropClaim(id);
+        _mint(msg.sender, SHARD, amount, "0x0");
+    }
+
+    function keeperShardMint(uint256 amount) external onlyOwner {
+        require((keeperShardsMinted + amount) <= KEEPERSHARDS);
+        require(amount > 0);
+
+        keeperShardsMinted += amount; 
         _mint(msg.sender, SHARD, amount, "0x0");
     }
 
