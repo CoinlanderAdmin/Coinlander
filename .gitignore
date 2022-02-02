@@ -4,9 +4,7 @@
 .pnp.js
 
 # hardhat build
-artifacts
 cache
-typechain
 
 # contract deploy
 local/
