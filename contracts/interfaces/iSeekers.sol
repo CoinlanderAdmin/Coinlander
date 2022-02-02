@@ -26,6 +26,7 @@ interface iSeekers is IERC721Enumerable {
     function activateSecondMint() external;
     function activateThirdMint() external;
     function seizureMintIncrement() external;
+    function endGoodsOnly() external;
     function performUncloaking() external;
     function sendWinnerSeeker(address winner) external;
     function uncloakSeeker(uint256 id) external;

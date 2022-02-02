@@ -8,6 +8,10 @@ import { BigNumber, utils } from "ethers"
 import { timeStamp } from "console"
 
 
+// TODO: migrate the shard tests to a post-emulate validation file 
+// A lot of the tests here are broken as a result of the ShardSpendable event.  
+// These tests need to be run against a chain that has reached Sweet Release 
+
 describe("SeasonOne", function () {
   let owner: SignerWithAddress
   let userA: SignerWithAddress
@@ -232,6 +236,7 @@ describe("SeasonOne", function () {
     })
 
     it("successfully burns shard", async ()=> {
+      console.log(await seasonOne.balanceOf(userA.address,1))
       await seasonOne.connect(userA).burnShardForScale(1,1)
       expect(await seasonOne.balanceOf(userA.address,1)).to.equal(0)
     })
@@ -270,5 +275,41 @@ describe("SeasonOne", function () {
       expect(deposit.amount).to.equal(1)
       expect(deposit.blockNumber).equal(tx.blockNumber)
     })
+  })
+
+  describe("upon burn shard for fragment", () => {
+    let startingBalance = 10
+    let SHARDTOFRAGMENT: number
+    beforeEach(async function () {
+      await seasonOne.keeperShardMint(20)
+      await seasonOne.safeBatchTransferFrom(owner.address, userA.address, [1], [startingBalance], "")
+      await seasonOne.safeBatchTransferFrom(owner.address, userB.address, [1], [startingBalance], "")
+
+
+      SS = await seasonOne.seizureStake()
+      await seasonOne.connect(userA).seize({ value: SS })
+      SS = await seasonOne.seizureStake()
+      await seasonOne.connect(userB).seize({ value: SS })
+      await seasonOne.connect(userA).claimAll()
+      SHARDTOFRAGMENT = (await seasonOne.SHARDTOFRAGMENTMULTIPLIER()).toNumber()
+    })
+
+    it("requires the user to specify a non zero shard amount", async () => {
+      await expect(seasonOne.connect(userA).burnShardForFragments(0)).to.be.reverted
+    })
+
+    it("requires that the user specify an even multiple of the shard-to-fragment conversation rate", async () =>  { 
+      await expect(seasonOne.connect(userA).burnShardForFragments(SHARDTOFRAGMENT - 1)).to.be.reverted
+    })
+
+    it("requires that the user claiming fragments owns a Seeker", async () => {
+
+    })
+    it("allows a user to burn shard for fragment at the correct rate", async () =>  {
+      await seasonOne.connect(userA).burnShardForFragments(SHARDTOFRAGMENT)
+      expect(await seasonOne.balanceOf(userA.address, 1)).to.equal(startingBalance - SHARDTOFRAGMENT)
+    })
+
+
   })
 })

@@ -48,11 +48,12 @@ contract SeasonOne is ERC1155, Ownable, ReentrancyGuard {
     Counters.Counter public seizureCount; 
 
     // GAME CONSTANTS
-    uint256 public constant FIRSTSEEKERMINTTHRESH = 290;
+    uint256 public constant FIRSTSEEKERMINTTHRESH = 333;
+    uint256 public constant UNCLOAKINGTHRESH = 444;
+    uint256 public constant SHARDSPENDABLE = 555;
     uint256 public constant SECONDSEEKERMINTTHRESH = 666;
-    uint256 public constant THIRDSEEKERMINTTHRESH = 784;
-    uint256 public constant UNCLOAKINGTHRESH = 464;
-    uint256 public constant SHARDSPENDABLE = 515;
+    uint256 public constant THIRDSEEKERMINTTHRESH = 777;
+    uint256 public constant GOODSONLYEND = 888;
     uint256 public constant SWEETRELEASE = 1111; 
 
     // ECONOMIC CONSTANTS  
@@ -97,7 +98,8 @@ contract SeasonOne is ERC1155, Ownable, ReentrancyGuard {
     }
 
     cloinDeposit[] public cloinDeposits;
-    iSeekers public seekers;
+    iSeekers public seekers; 
+
     iVault private vault;
 
     event SweetRelease(address winner);
@@ -233,6 +235,10 @@ contract SeasonOne is ERC1155, Ownable, ReentrancyGuard {
 
         if (count == THIRDSEEKERMINTTHRESH) {
             seekers.activateThirdMint();
+        }
+
+        if (count == GOODSONLYEND) {
+            seekers.endGoodsOnly();
         }
 
         if (count > THIRDSEEKERMINTTHRESH) {

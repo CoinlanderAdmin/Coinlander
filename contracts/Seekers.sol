@@ -22,7 +22,7 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
   uint256 public currentBuyableSeekers = 0;
   uint256 public currentPrice = 0;
   uint256 private reserve = 0; // Contracts treasury balance
-  uint256 private constant KEEPERSEEKERS = 32; // Number of Seekers that Keepers can mint for themselves
+  uint256 private constant KEEPERSEEKERS = 64; // Number of Seekers that Keepers can mint for themselves
   uint256 private keepersSeekersMinted = 0;
   uint256 public constant MAXMINTABLE = 10; // Max seekers that can be purchased in one tx
 
@@ -36,11 +36,15 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
   bool public secondMintActive = false;
   uint256 public constant SECONDMINTPRICE = 0.00005 ether; // test value
   // uint256 public constant SECONDMINTPRICE = 0.05 ether;
-  uint256 public constant THIRDMINT = 1635;
-  uint256 public constant THIRDMINT_INCR = 5;
+  uint256 public constant THIRDMINT = 267; // bulk release at third mint thresh 
+  uint256 public constant THIRDMINT_INCR = 4; // additional release at each seizure after third mint thresh 
   bool public thirdMintActive = false;
   uint256 public constant THIRDMINTPRICE = 0.0001 ether; // test value
   // uint256 public constant THIRDMINTPRICE = 0.1 ether;
+
+  // Game params
+  bool public evilsOnly = false; 
+  bool public goodsOnly = false; 
 
   // This adds 2 because we are minting the winner_id = 1 and ids need to be 1 indexed
   uint256 private constant INTERNALIDOFFSET = FIRSTMINT + SECONDMINT + THIRDMINT + KEEPERSEEKERS + 2;
@@ -177,6 +181,7 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
   function activateSecondMint() external onlyGame {
     require(secondMintActive == false);
     secondMintActive = true;
+    evilsOnly = true;
     emit SecondMintActivated();
     currentBuyableSeekers += SECONDMINT;
     currentPrice = SECONDMINTPRICE;
@@ -185,13 +190,19 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
   function activateThirdMint() external onlyGame {
     require(thirdMintActive == false);
     thirdMintActive = true;
+    evilsOnly = false;
+    goodsOnly = true;
     emit ThirdMintActivated();
-    currentBuyableSeekers += THIRDMINT_INCR;
+    currentBuyableSeekers += THIRDMINT_INCR + THIRDMINT;
     currentPrice = THIRDMINTPRICE;
   }
 
   function seizureMintIncrement() external onlyGame {
     currentBuyableSeekers += THIRDMINT_INCR;
+  }
+
+  function endGoodsOnly() external onlyGame {
+    goodsOnly = false;
   }
 
   function performUncloaking() external onlyGame {
@@ -294,8 +305,21 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
   }
 
   function _getAlignment() internal view returns (string memory) {
-    uint256 mod = alignments.length;
-    return _pluck(mod, alignments);
+    if(goodsOnly) {
+      string[] memory goodAlignments = new string[](3);
+      goodAlignments[0] = alignments[0];
+      goodAlignments[1] = alignments[1];
+      goodAlignments[2] = alignments[2];
+      return _pluck(3, goodAlignments);
+    }
+    if(evilsOnly) {
+      string[] memory evilAlignments = new string[](3);
+      evilAlignments[6] = alignments[0];
+      evilAlignments[7] = alignments[1];
+      evilAlignments[8] = alignments[2];
+      return _pluck(3, evilAlignments);
+    }
+    return _pluck(alignments.length, alignments);
   }
 
   // Alignment axes are defined as a tuple which describes where on the 3x3 square the alignment lands
