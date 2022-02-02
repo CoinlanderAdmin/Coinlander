@@ -411,7 +411,7 @@ contract SeasonOne is ERC1155, Ownable, ReentrancyGuard {
         return random % mod;
     }
 
-    function getPendingWithdrawl(address _user) external view returns (uint256[3] memory) {
+    function getPendingWithdrawal(address _user) external view returns (uint256[3] memory) {
         return [
             pendingWithdrawals[_user]._withdrawValue,
             pendingWithdrawals[_user]._shardOwed,

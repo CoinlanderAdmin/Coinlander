@@ -314,9 +314,9 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
     }
     if(evilsOnly) {
       string[] memory evilAlignments = new string[](3);
-      evilAlignments[6] = alignments[0];
-      evilAlignments[7] = alignments[1];
-      evilAlignments[8] = alignments[2];
+      evilAlignments[0] = alignments[6];
+      evilAlignments[1] = alignments[7];
+      evilAlignments[2] = alignments[8];
       return _pluck(3, evilAlignments);
     }
     return _pluck(alignments.length, alignments);
