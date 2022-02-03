@@ -1,5 +1,8 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.8;
+// Author: @stevieraykatz
+// https://github.com/coinlander/Coinlander
+
+pragma solidity ^0.8.10;
 
 import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";

@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: UNLICENSED
+// Author: @stevieraykatz
+// https://github.com/coinlander/Coinlander
 
-pragma solidity ^0.8.8;
+pragma solidity ^0.8.10;
 
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
@@ -662,6 +664,6 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
   }
 
   receive() external payable {
-    revert();
+    revert("E020");
   }
 }

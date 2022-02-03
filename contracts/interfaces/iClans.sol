@@ -1,5 +1,8 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.8;
+// Author: @stevieraykatz
+// https://github.com/coinlander/Coinlander
+
+pragma solidity ^0.8.10;
 
 /**
  * @title Required interface for compatibility with future Coinlander contracts

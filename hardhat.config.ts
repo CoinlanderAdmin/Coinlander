@@ -41,7 +41,7 @@ task("emulate", "Play through the game.")
   })
 
 const config: HardhatUserConfig = {
-  solidity: "0.8.8",
+  solidity: "0.8.10",
   networks: {
     localhost: {
       allowUnlimitedContractSize: true,

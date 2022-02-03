@@ -1,4 +1,7 @@
 // SPDX-License-Identifier: UNLICENSED
+// Author: @stevieraykatz
+// https://github.com/coinlander/Coinlander
+
 pragma solidity ^0.8.8;
 
 import "@openzeppelin/contracts/token/ERC721/extensions/IERC721Enumerable.sol";

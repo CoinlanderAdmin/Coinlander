@@ -1,5 +1,8 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.8;
+// Author: @stevieraykatz
+// https://github.com/coinlander/Coinlander
+
+pragma solidity ^0.8.10;
 
 // @TODO investigate EIP-712 for external method calls 
 
