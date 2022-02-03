@@ -40,11 +40,12 @@ interface SeasonOneInterface extends ethers.utils.Interface {
     "balanceOfBatch(address[],uint256[])": FunctionFragment;
     "burnShardForFragments(uint256)": FunctionFragment;
     "burnShardForScale(uint256,uint256)": FunctionFragment;
+    "changeURI(string)": FunctionFragment;
     "claimAll()": FunctionFragment;
     "claimedAirdropBySeekerId(uint256)": FunctionFragment;
     "cloinDeposits(uint256)": FunctionFragment;
     "getAirdropStatus(uint256)": FunctionFragment;
-    "getPendingWithdrawl(address)": FunctionFragment;
+    "getPendingWithdrawal(address)": FunctionFragment;
     "getSeizureCount()": FunctionFragment;
     "isApprovedForAll(address,address)": FunctionFragment;
     "keeperShardMint(uint256)": FunctionFragment;
@@ -134,6 +135,7 @@ interface SeasonOneInterface extends ethers.utils.Interface {
     functionFragment: "burnShardForScale",
     values: [BigNumberish, BigNumberish]
   ): string;
+  encodeFunctionData(functionFragment: "changeURI", values: [string]): string;
   encodeFunctionData(functionFragment: "claimAll", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "claimedAirdropBySeekerId",
@@ -148,7 +150,7 @@ interface SeasonOneInterface extends ethers.utils.Interface {
     values: [BigNumberish]
   ): string;
   encodeFunctionData(
-    functionFragment: "getPendingWithdrawl",
+    functionFragment: "getPendingWithdrawal",
     values: [string]
   ): string;
   encodeFunctionData(
@@ -278,6 +280,7 @@ interface SeasonOneInterface extends ethers.utils.Interface {
     functionFragment: "burnShardForScale",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "changeURI", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "claimAll", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "claimedAirdropBySeekerId",
@@ -292,7 +295,7 @@ interface SeasonOneInterface extends ethers.utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "getPendingWithdrawl",
+    functionFragment: "getPendingWithdrawal",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -546,6 +549,11 @@ export class SeasonOne extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
+    changeURI(
+      _newURI: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
     claimAll(
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
@@ -571,7 +579,7 @@ export class SeasonOne extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[boolean]>;
 
-    getPendingWithdrawl(
+    getPendingWithdrawal(
       _user: string,
       overrides?: CallOverrides
     ): Promise<[[BigNumber, BigNumber, BigNumber]]>;
@@ -724,6 +732,11 @@ export class SeasonOne extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
+  changeURI(
+    _newURI: string,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
   claimAll(
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
@@ -749,7 +762,7 @@ export class SeasonOne extends BaseContract {
     overrides?: CallOverrides
   ): Promise<boolean>;
 
-  getPendingWithdrawl(
+  getPendingWithdrawal(
     _user: string,
     overrides?: CallOverrides
   ): Promise<[BigNumber, BigNumber, BigNumber]>;
@@ -900,6 +913,8 @@ export class SeasonOne extends BaseContract {
       overrides?: CallOverrides
     ): Promise<void>;
 
+    changeURI(_newURI: string, overrides?: CallOverrides): Promise<void>;
+
     claimAll(overrides?: CallOverrides): Promise<void>;
 
     claimedAirdropBySeekerId(
@@ -923,7 +938,7 @@ export class SeasonOne extends BaseContract {
       overrides?: CallOverrides
     ): Promise<boolean>;
 
-    getPendingWithdrawl(
+    getPendingWithdrawal(
       _user: string,
       overrides?: CallOverrides
     ): Promise<[BigNumber, BigNumber, BigNumber]>;
@@ -1259,6 +1274,11 @@ export class SeasonOne extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
+    changeURI(
+      _newURI: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
     claimAll(
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
@@ -1278,7 +1298,7 @@ export class SeasonOne extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    getPendingWithdrawl(
+    getPendingWithdrawal(
       _user: string,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
@@ -1434,6 +1454,11 @@ export class SeasonOne extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
+    changeURI(
+      _newURI: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
     claimAll(
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
@@ -1453,7 +1478,7 @@ export class SeasonOne extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    getPendingWithdrawl(
+    getPendingWithdrawal(
       _user: string,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;

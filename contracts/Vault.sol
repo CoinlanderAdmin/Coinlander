@@ -80,7 +80,7 @@ contract Vault is iVault, ERC1155, Ownable, ReentrancyGuard {
     }
 
     function mintFragments(address _receiver, uint256 amount) external onlyOwner {
-        require(fragments.length >= amount);
+        require(fragments.length >= amount, "E009");
         for(uint256 i = 0; i < amount; i++){
             uint256 fragmentType = _getRandom(fragments);
             _mint(_receiver, uint256(fragmentType), 1, "0x0");
@@ -93,18 +93,18 @@ contract Vault is iVault, ERC1155, Ownable, ReentrancyGuard {
     }
 
     function claimKeepersVault() external nonReentrant {
-        require(sweetRelease);
-        require(!gameWon, "Games over dawg");
-        require(prize > 0, "There must be something to claim");
-        require(seekers.balanceOf(msg.sender) > 0, "Must have a seeker to open the vault");
-        require(balanceOf(msg.sender, FRAGMENT1) > 0, "Must have a frag1");
-        require(balanceOf(msg.sender, FRAGMENT2) > 0, "Must have a frag2");
-        require(balanceOf(msg.sender, FRAGMENT3) > 0, "Must have a frag3");
-        require(balanceOf(msg.sender, FRAGMENT4) > 0, "Must have a frag4");
-        require(balanceOf(msg.sender, FRAGMENT5) > 0, "Must have a frag5");
-        require(balanceOf(msg.sender, FRAGMENT6) > 0, "Must have a frag6");
-        require(balanceOf(msg.sender, FRAGMENT7) > 0, "Must have a frag7");
-        require(balanceOf(msg.sender, FRAGMENT8) > 0, "Must have a frag8");
+        require(sweetRelease, "E010");
+        require(!gameWon, "E011");
+        require(prize > 0, "E012");
+        require(seekers.balanceOf(msg.sender) > 0, "E013");
+        require(balanceOf(msg.sender, FRAGMENT1) > 0, "E001");
+        require(balanceOf(msg.sender, FRAGMENT2) > 0, "E002");
+        require(balanceOf(msg.sender, FRAGMENT3) > 0, "E003");
+        require(balanceOf(msg.sender, FRAGMENT4) > 0, "E004");
+        require(balanceOf(msg.sender, FRAGMENT5) > 0, "E005");
+        require(balanceOf(msg.sender, FRAGMENT6) > 0, "E006");
+        require(balanceOf(msg.sender, FRAGMENT7) > 0, "E007");
+        require(balanceOf(msg.sender, FRAGMENT8) > 0, "E008");
 
         // Assemble the Key 
         _burn(msg.sender, FRAGMENT1, 1);
@@ -123,7 +123,7 @@ contract Vault is iVault, ERC1155, Ownable, ReentrancyGuard {
         uint256 _prize = prize;
         prize = 0;
         (bool success, ) = msg.sender.call{value:_prize}("");
-        require(success);
+        require(success, "E014");
     }
     
     function fundPrizePurse() payable external {
@@ -157,6 +157,6 @@ contract Vault is iVault, ERC1155, Ownable, ReentrancyGuard {
 	}
 
     receive() external payable {
-        revert();
+        revert("E014");
     }
 }

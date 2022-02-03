@@ -96,10 +96,9 @@ contract SeasonOne is ERC1155, Ownable, ReentrancyGuard {
         uint256 amount;
         uint256 blockNumber;
     }
-
     cloinDeposit[] public cloinDeposits;
-    iSeekers public seekers; 
 
+    iSeekers public seekers; 
     iVault private vault;
 
     event SweetRelease(address winner);
@@ -153,7 +152,6 @@ contract SeasonOne is ERC1155, Ownable, ReentrancyGuard {
         super._beforeTokenTransfer(operator, from, to, ids, amounts, data);
     }
     
-
     function _stealTransfer(address holder, address newOwner) internal {
         transferIsSteal = true;
         _safeTransferFrom(holder, newOwner, ONECOIN, 1, "0x0"); // There is only 1 
@@ -163,6 +161,9 @@ contract SeasonOne is ERC1155, Ownable, ReentrancyGuard {
         }
     }
 
+    function changeURI(string calldata _newURI) external onlyOwner {
+        _setURI(_newURI);
+    }
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -172,9 +173,9 @@ contract SeasonOne is ERC1155, Ownable, ReentrancyGuard {
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
     function seize() external payable nonReentrant {
-        require(released == false, "Cant be released");
-        require(msg.value == seizureStake, "Must send exact seizure value");
-        require(msg.sender != COINLANDER, "Cant seize from yourself");
+        require(released == false, "E001");
+        require(msg.value == seizureStake, "E002");
+        require(msg.sender != COINLANDER, "E003");
 
         address previousOwner = COINLANDER;
         address newOwner = msg.sender;
@@ -275,12 +276,12 @@ contract SeasonOne is ERC1155, Ownable, ReentrancyGuard {
     }
 
     modifier postReleaseOnly() {
-        require(released == true);
+        require(released == true, "E004");
         _;
     }
 
     modifier shardSpendableOnly() {
-        require(shardSpendable == true);
+        require(shardSpendable == true, "E005");
         _;
     }
     
@@ -296,16 +297,16 @@ contract SeasonOne is ERC1155, Ownable, ReentrancyGuard {
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
     function burnShardForScale(uint256 seekerId, uint256 amount) external nonReentrant shardSpendableOnly {
-        require(amount > 0);
-        require(balanceOf(msg.sender, SHARD) >= amount);
+        require(amount > 0, "E006");
+        require(balanceOf(msg.sender, SHARD) >= amount, "E007");
         _burn(msg.sender, SHARD, amount);
         uint256 scales = amount * SCALEPERSHARD;
         seekers.addScales(seekerId, scales);
     }
 
     function stakeShardForCloin(uint256 amount) external nonReentrant shardSpendableOnly {
-        require(amount > 0);
-        require(balanceOf(msg.sender, SHARD) >= amount);
+        require(amount > 0, "E006");
+        require(balanceOf(msg.sender, SHARD) >= amount, "E007");
         _burn(msg.sender, SHARD, amount);
         
         cloinDeposit memory _deposit;
@@ -318,9 +319,9 @@ contract SeasonOne is ERC1155, Ownable, ReentrancyGuard {
     }
 
     function burnShardForFragments(uint256 amount) external nonReentrant shardSpendableOnly {
-        require(amount > 0);
-        require((amount % SHARDTOFRAGMENTMULTIPLIER) == 0); // must be even multiple of the exch. rate
-        require(balanceOf(msg.sender, SHARD) >= amount);
+        require(amount > 0, "E006");
+        require(balanceOf(msg.sender, SHARD) >= amount, "E007");
+        require((amount % SHARDTOFRAGMENTMULTIPLIER) == 0, "E008"); // must be even multiple of the exch. rate
     
         uint256 fragmentReward = amount / SHARDTOFRAGMENTMULTIPLIER; 
         _burn(msg.sender, SHARD, amount);
@@ -343,7 +344,7 @@ contract SeasonOne is ERC1155, Ownable, ReentrancyGuard {
         if (withdrawal > 0) {
             pendingWithdrawals[msg.sender]._withdrawValue = 0;
             (bool success, ) = msg.sender.call{value:withdrawal}("");
-            require(success);
+            require(success, "E009");
         }
 
         if (shard > 0) {
@@ -358,15 +359,15 @@ contract SeasonOne is ERC1155, Ownable, ReentrancyGuard {
             }
         }
         else {
-            revert();
+            revert("E010");
         }
 
         emit ClaimedAll(msg.sender);
     }
     
     function airdropClaimBySeekerId(uint256 id) external nonReentrant postReleaseOnly {
-        require(seekers.ownerOf(id) == msg.sender);
-        require(!claimedAirdropBySeekerId[id]);
+        require(seekers.ownerOf(id) == msg.sender, "E011");
+        require(!claimedAirdropBySeekerId[id], "E012");
         claimedAirdropBySeekerId[id] = true;
         uint256 amount;
         uint256 r1 = _getRandomNumber(SHARDDROPRAND, id);
@@ -425,6 +426,6 @@ contract SeasonOne is ERC1155, Ownable, ReentrancyGuard {
 
     // If someone messes up and pays us without using the seize method, revert 
     receive() external payable {
-        revert();
+        revert("E009");
     }
 }
