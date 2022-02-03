@@ -491,7 +491,7 @@ export class ISeekers extends BaseContract {
     getApById(
       id: BigNumberish,
       overrides?: CallOverrides
-    ): Promise<[[BigNumber, BigNumber, BigNumber, BigNumber]]>;
+    ): Promise<[[number, number, number, number]]>;
 
     getApproved(
       tokenId: BigNumberish,
@@ -560,7 +560,7 @@ export class ISeekers extends BaseContract {
     getScaleCountById(
       id: BigNumberish,
       overrides?: CallOverrides
-    ): Promise<[BigNumber]>;
+    ): Promise<[number]>;
 
     isApprovedForAll(
       owner: string,
@@ -706,7 +706,7 @@ export class ISeekers extends BaseContract {
   getApById(
     id: BigNumberish,
     overrides?: CallOverrides
-  ): Promise<[BigNumber, BigNumber, BigNumber, BigNumber]>;
+  ): Promise<[number, number, number, number]>;
 
   getApproved(
     tokenId: BigNumberish,
@@ -773,7 +773,7 @@ export class ISeekers extends BaseContract {
   getScaleCountById(
     id: BigNumberish,
     overrides?: CallOverrides
-  ): Promise<BigNumber>;
+  ): Promise<number>;
 
   isApprovedForAll(
     owner: string,
@@ -905,7 +905,7 @@ export class ISeekers extends BaseContract {
     getApById(
       id: BigNumberish,
       overrides?: CallOverrides
-    ): Promise<[BigNumber, BigNumber, BigNumber, BigNumber]>;
+    ): Promise<[number, number, number, number]>;
 
     getApproved(
       tokenId: BigNumberish,
@@ -972,7 +972,7 @@ export class ISeekers extends BaseContract {
     getScaleCountById(
       id: BigNumberish,
       overrides?: CallOverrides
-    ): Promise<BigNumber>;
+    ): Promise<number>;
 
     isApprovedForAll(
       owner: string,

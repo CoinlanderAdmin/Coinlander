@@ -388,7 +388,7 @@ describe("Seekers", function () {
     it("requires that the seeker has scales to burn", async () => {
       await seekers.performUncloaking()
       await seekers.connect(userA).uncloakSeeker(id)
-      let scaleCount = (await seekers.getScaleCountById(id)).toNumber()
+      let scaleCount = (await seekers.getScaleCountById(id))
       for(let i=0; i < scaleCount; i++){
         await seekers.connect(userA).rerollDethscales(id)
       }
@@ -449,12 +449,12 @@ describe("Seekers", function () {
       let beforeScales = await seekers.getScaleCountById(id)
       await seekers.addScales(id,1)
       let afterScales = await seekers.getScaleCountById(id)
-      expect(afterScales).to.be.equal(beforeScales.add(1))
+      expect(afterScales).to.be.equal(beforeScales + 1)
     })
 
     it("does not set the scale count higher than the max pixel count", async () => {
       let maxScales = await seekers.MAXPIXELS()
-      await seekers.addScales(id,(maxScales.toNumber() + 1))
+      await seekers.addScales(id,(maxScales + 1))
       expect(await seekers.getScaleCountById(id)).to.equal(maxScales)
     })
   })

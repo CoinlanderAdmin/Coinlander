@@ -85,9 +85,9 @@ contract SeasonOne is ERC1155, Ownable, ReentrancyGuard {
     // BALANCES AND ECONOMIC PARAMETERS 
     // Refund structure, tracks both Eth withdraw value and earned Shard 
     struct withdrawParams {
-        uint256 _withdrawValue;
-        uint256 _shardOwed;
-        uint256 _seekersOwed;
+        uint224 _withdrawValue;
+        uint16 _shardOwed;
+        uint16 _seekersOwed;
     } 
 
     mapping(address => withdrawParams) public pendingWithdrawals;
@@ -95,8 +95,8 @@ contract SeasonOne is ERC1155, Ownable, ReentrancyGuard {
 
     struct cloinDeposit {
         address depositor; 
-        uint256 amount;
-        uint256 blockNumber;
+        uint16 amount;
+        uint80 blockNumber;
     }
     cloinDeposit[] public cloinDeposits;
 
@@ -108,7 +108,7 @@ contract SeasonOne is ERC1155, Ownable, ReentrancyGuard {
             uint256 seizurePrice, uint256 nextSeizurePrice, 
             uint256 currentPrize, uint256 seizureNumber);
     event ShardSpendable();
-    event NewCloinDeposit(address depositor, uint256 amount);
+    event NewCloinDeposit(address depositor, uint16 amount);
     event ClaimedAll(address claimer);
     event AirdropClaim(uint256 id);
     
@@ -207,9 +207,9 @@ contract SeasonOne is ERC1155, Ownable, ReentrancyGuard {
             prize += _prize; 
 
             uint256 deposit = value - _take;
-            pendingWithdrawals[previousOwner]._withdrawValue += deposit;
+            pendingWithdrawals[previousOwner]._withdrawValue += uint224(deposit);
 
-            uint256 shardReward = _calculateShardReward(previousSeizureStake);
+            uint16 shardReward = _calculateShardReward(previousSeizureStake);
             pendingWithdrawals[previousOwner]._shardOwed += shardReward;
 
             pendingWithdrawals[previousOwner]._seekersOwed += 1;
@@ -313,11 +313,11 @@ contract SeasonOne is ERC1155, Ownable, ReentrancyGuard {
         
         cloinDeposit memory _deposit;
         _deposit.depositor = msg.sender;
-        _deposit.amount = amount;
-        _deposit.blockNumber = block.number; 
+        _deposit.amount = uint16(amount);
+        _deposit.blockNumber = uint80(block.number); 
         
         cloinDeposits.push(_deposit);
-        emit NewCloinDeposit(msg.sender, amount);
+        emit NewCloinDeposit(msg.sender, uint16(amount));
     }
 
     function burnShardForFragments(uint256 amount) external nonReentrant shardSpendableOnly {
@@ -394,10 +394,10 @@ contract SeasonOne is ERC1155, Ownable, ReentrancyGuard {
         payable(msg.sender).transfer(amount);
     }
 
-    function _calculateShardReward(uint256 _value) private pure returns (uint256) {
+    function _calculateShardReward(uint256 _value) private pure returns (uint16) {
         uint256 reward = BASESHARDREWARD;
         reward += (_value/10**18) * INCRBASIS / INCRSHARDREWARD;
-        return reward;  
+        return uint16(reward);  
     }
 
     function _getRandomNumber(uint256 mod, uint256 r) private view returns (uint256) {
@@ -416,9 +416,9 @@ contract SeasonOne is ERC1155, Ownable, ReentrancyGuard {
 
     function getPendingWithdrawal(address _user) external view returns (uint256[3] memory) {
         return [
-            pendingWithdrawals[_user]._withdrawValue,
-            pendingWithdrawals[_user]._shardOwed,
-            pendingWithdrawals[_user]._seekersOwed
+            uint256(pendingWithdrawals[_user]._withdrawValue),
+            uint256(pendingWithdrawals[_user]._shardOwed),
+            uint256(pendingWithdrawals[_user]._seekersOwed)
         ];
     }
 

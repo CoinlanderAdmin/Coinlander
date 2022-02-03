@@ -707,11 +707,11 @@ export class Seekers extends BaseContract {
   interface: SeekersInterface;
 
   functions: {
-    BIRTHSEEKERSCALESTART(overrides?: CallOverrides): Promise<[BigNumber]>;
+    BIRTHSEEKERSCALESTART(overrides?: CallOverrides): Promise<[number]>;
 
     DEFAULT_ADMIN_ROLE(overrides?: CallOverrides): Promise<[string]>;
 
-    DETHSCALEREROLLCOST(overrides?: CallOverrides): Promise<[BigNumber]>;
+    DETHSCALEREROLLCOST(overrides?: CallOverrides): Promise<[number]>;
 
     FIRSTMINT(overrides?: CallOverrides): Promise<[BigNumber]>;
 
@@ -723,7 +723,7 @@ export class Seekers extends BaseContract {
 
     MAXMINTABLE(overrides?: CallOverrides): Promise<[BigNumber]>;
 
-    MAXPIXELS(overrides?: CallOverrides): Promise<[BigNumber]>;
+    MAXPIXELS(overrides?: CallOverrides): Promise<[number]>;
 
     MAXSEEKERS(overrides?: CallOverrides): Promise<[BigNumber]>;
 
@@ -731,7 +731,7 @@ export class Seekers extends BaseContract {
 
     SECONDMINTPRICE(overrides?: CallOverrides): Promise<[BigNumber]>;
 
-    SUMMONSEEKERSCALESTART(overrides?: CallOverrides): Promise<[BigNumber]>;
+    SUMMONSEEKERSCALESTART(overrides?: CallOverrides): Promise<[number]>;
 
     THIRDMINT(overrides?: CallOverrides): Promise<[BigNumber]>;
 
@@ -813,7 +813,7 @@ export class Seekers extends BaseContract {
     getApById(
       id: BigNumberish,
       overrides?: CallOverrides
-    ): Promise<[[BigNumber, BigNumber, BigNumber, BigNumber]]>;
+    ): Promise<[[number, number, number, number]]>;
 
     getApproved(
       tokenId: BigNumberish,
@@ -884,7 +884,7 @@ export class Seekers extends BaseContract {
     getScaleCountById(
       id: BigNumberish,
       overrides?: CallOverrides
-    ): Promise<[BigNumber]>;
+    ): Promise<[number]>;
 
     goodsOnly(overrides?: CallOverrides): Promise<[boolean]>;
 
@@ -1029,11 +1029,11 @@ export class Seekers extends BaseContract {
     uncloaking(overrides?: CallOverrides): Promise<[boolean]>;
   };
 
-  BIRTHSEEKERSCALESTART(overrides?: CallOverrides): Promise<BigNumber>;
+  BIRTHSEEKERSCALESTART(overrides?: CallOverrides): Promise<number>;
 
   DEFAULT_ADMIN_ROLE(overrides?: CallOverrides): Promise<string>;
 
-  DETHSCALEREROLLCOST(overrides?: CallOverrides): Promise<BigNumber>;
+  DETHSCALEREROLLCOST(overrides?: CallOverrides): Promise<number>;
 
   FIRSTMINT(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -1045,7 +1045,7 @@ export class Seekers extends BaseContract {
 
   MAXMINTABLE(overrides?: CallOverrides): Promise<BigNumber>;
 
-  MAXPIXELS(overrides?: CallOverrides): Promise<BigNumber>;
+  MAXPIXELS(overrides?: CallOverrides): Promise<number>;
 
   MAXSEEKERS(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -1053,7 +1053,7 @@ export class Seekers extends BaseContract {
 
   SECONDMINTPRICE(overrides?: CallOverrides): Promise<BigNumber>;
 
-  SUMMONSEEKERSCALESTART(overrides?: CallOverrides): Promise<BigNumber>;
+  SUMMONSEEKERSCALESTART(overrides?: CallOverrides): Promise<number>;
 
   THIRDMINT(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -1135,7 +1135,7 @@ export class Seekers extends BaseContract {
   getApById(
     id: BigNumberish,
     overrides?: CallOverrides
-  ): Promise<[BigNumber, BigNumber, BigNumber, BigNumber]>;
+  ): Promise<[number, number, number, number]>;
 
   getApproved(
     tokenId: BigNumberish,
@@ -1204,7 +1204,7 @@ export class Seekers extends BaseContract {
   getScaleCountById(
     id: BigNumberish,
     overrides?: CallOverrides
-  ): Promise<BigNumber>;
+  ): Promise<number>;
 
   goodsOnly(overrides?: CallOverrides): Promise<boolean>;
 
@@ -1343,11 +1343,11 @@ export class Seekers extends BaseContract {
   uncloaking(overrides?: CallOverrides): Promise<boolean>;
 
   callStatic: {
-    BIRTHSEEKERSCALESTART(overrides?: CallOverrides): Promise<BigNumber>;
+    BIRTHSEEKERSCALESTART(overrides?: CallOverrides): Promise<number>;
 
     DEFAULT_ADMIN_ROLE(overrides?: CallOverrides): Promise<string>;
 
-    DETHSCALEREROLLCOST(overrides?: CallOverrides): Promise<BigNumber>;
+    DETHSCALEREROLLCOST(overrides?: CallOverrides): Promise<number>;
 
     FIRSTMINT(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -1359,7 +1359,7 @@ export class Seekers extends BaseContract {
 
     MAXMINTABLE(overrides?: CallOverrides): Promise<BigNumber>;
 
-    MAXPIXELS(overrides?: CallOverrides): Promise<BigNumber>;
+    MAXPIXELS(overrides?: CallOverrides): Promise<number>;
 
     MAXSEEKERS(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -1367,7 +1367,7 @@ export class Seekers extends BaseContract {
 
     SECONDMINTPRICE(overrides?: CallOverrides): Promise<BigNumber>;
 
-    SUMMONSEEKERSCALESTART(overrides?: CallOverrides): Promise<BigNumber>;
+    SUMMONSEEKERSCALESTART(overrides?: CallOverrides): Promise<number>;
 
     THIRDMINT(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -1435,7 +1435,7 @@ export class Seekers extends BaseContract {
     getApById(
       id: BigNumberish,
       overrides?: CallOverrides
-    ): Promise<[BigNumber, BigNumber, BigNumber, BigNumber]>;
+    ): Promise<[number, number, number, number]>;
 
     getApproved(
       tokenId: BigNumberish,
@@ -1504,7 +1504,7 @@ export class Seekers extends BaseContract {
     getScaleCountById(
       id: BigNumberish,
       overrides?: CallOverrides
-    ): Promise<BigNumber>;
+    ): Promise<number>;
 
     goodsOnly(overrides?: CallOverrides): Promise<boolean>;
 

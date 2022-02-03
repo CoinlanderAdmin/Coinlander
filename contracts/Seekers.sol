@@ -54,22 +54,22 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
   // On-chain game parameters
   bool public released = false;
   bool public uncloaking = false;
-  uint256 public constant MAXPIXELS = 1024; // 32x32 pixel grid
-  uint256 public constant SUMMONSEEKERSCALESTART = 3;
-  uint256 public constant BIRTHSEEKERSCALESTART = 5;
-  uint256 public constant DETHSCALEREROLLCOST = 1;
+  uint16 public constant MAXPIXELS = 1024; // 32x32 pixel grid
+  uint8 public constant SUMMONSEEKERSCALESTART = 3;
+  uint8 public constant BIRTHSEEKERSCALESTART = 5;
+  uint8 public constant DETHSCALEREROLLCOST = 1;
   mapping(uint256 => bool) isSeekerCloaked;
 
-  struct Attributes {
-    bool bornFromCoin; 
+  struct Attributes { 
     string alignment;
-    uint256 alpha;
-    uint256 beta;
-    uint256 delta;
-    uint256 gamma;
-    uint256 scales;
-    address clan;
+    bool bornFromCoin;
+    uint8 alpha;
+    uint8 beta;
+    uint8 delta;
+    uint8 gamma;
+    uint16 scales;
     uint16 dethscales;
+    address clan;
   }
 
   mapping(uint256 => Attributes) attributesBySeekerId;
@@ -141,22 +141,22 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
   function _mintSeeker(address to,	uint256 id,	bool bornFromCoin) internal {
 
     // Born from coin grants more scales
-    uint256 scales = SUMMONSEEKERSCALESTART;
+    uint8 scales = SUMMONSEEKERSCALESTART;
     if (bornFromCoin) {
       scales = BIRTHSEEKERSCALESTART;
     }
     
     // Initialize all attributes to "hidden" values
     Attributes memory cloakedAttributes = Attributes(
-        bornFromCoin,
         "",
+        bornFromCoin,
         0,
         0,
         0,
         0,
         scales,
-        address(0),
-        uint16(0)
+        uint16(0),
+        address(0)
     ); 
     
     attributesBySeekerId[id] = cloakedAttributes;
@@ -234,20 +234,20 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
 
     string memory _alignment = _getAlignment();
 
-    uint256[4] memory _APs = _getAP(id);
+    uint8[4] memory _APs = _getAP(id);
 
     isSeekerCloaked[id] = false; // Uncloaks the Seeker permanently
 
     Attributes memory revealedAttributes = Attributes(
-        attributesBySeekerId[id].bornFromCoin, // Dont change how the Seeker was created
         _alignment, // Sets the alignment
+        attributesBySeekerId[id].bornFromCoin, // Dont change how the Seeker was created
         _APs[0], // Alpha
         _APs[1], // Beta
         _APs[2], // Detla
         _APs[3], // Gamma
         attributesBySeekerId[id].scales,
-        attributesBySeekerId[id].clan,
-        uint16(0)
+        uint16(0),
+        attributesBySeekerId[id].clan
       ); 
     attributesBySeekerId[id] = revealedAttributes;
 
@@ -273,12 +273,12 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
   function addScales(uint256 id, uint256 scales) external onlyGame {
     require(ownerOf(id) != address(0), "E014");
     require(scales > 0, "E015");
-    uint256 _scales = attributesBySeekerId[id].scales;
+    uint16 _scales = attributesBySeekerId[id].scales;
     if ((_scales + scales) >  MAXPIXELS) {
         attributesBySeekerId[id].scales = MAXPIXELS;
     }
     else {
-        attributesBySeekerId[id].scales += scales;
+        attributesBySeekerId[id].scales += uint16(scales);
     }
     emit ScalesAdded(id, scales, attributesBySeekerId[id].scales);
   }
@@ -339,7 +339,7 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
     return (0,0); // Default if alignment not set
   }
 
-  function _getAP(uint256 id) internal view returns (uint256[4] memory) {
+  function _getAP(uint256 id) internal view returns (uint8[4] memory) {
     uint256 minSingle = 17;
     uint256 maxSingle = 23;
 
@@ -351,16 +351,16 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
 
     // Determine 4 random attribute points
     uint256 rangeSingle = maxSingle - minSingle;
-    uint256 ap1 = minSingle + _getRandomNumber(rangeSingle,id);
-    uint256 ap2 = minSingle + _getRandomNumber(rangeSingle,ap1);
-    uint256 ap3 = minSingle + _getRandomNumber(rangeSingle,ap2);
-    uint256 ap4 = minSingle + _getRandomNumber(rangeSingle,ap3);
+    uint8 ap1 = uint8(minSingle + _getRandomNumber(rangeSingle,id));
+    uint8 ap2 = uint8(minSingle + _getRandomNumber(rangeSingle,ap1));
+    uint8 ap3 = uint8(minSingle + _getRandomNumber(rangeSingle,ap2));
+    uint8 ap4 = uint8(minSingle + _getRandomNumber(rangeSingle,ap3));
 
     // Shuffle them
-    uint256[4] memory aps = [ap1, ap2, ap3, ap4];
+    uint8[4] memory aps = [ap1, ap2, ap3, ap4];
     for (uint256 i = 0; i < aps.length; i++) {
         uint256 n = i + uint256(keccak256(abi.encodePacked(block.timestamp))) % (aps.length -i);
-        uint256 temp = aps[n];
+        uint8 temp = aps[n];
         aps[n] = aps[i];
         aps[i] = temp;
     }
@@ -422,15 +422,15 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
   function _setWinnerSeekerAttributes(uint256 id) internal {
     isSeekerCloaked[id] = false; // Uncloaks the Seeker permanently
     Attributes memory winningAttributes = Attributes(
-        true, 
         "True Neutral",
+        true,
         25, // Alpha
         25, // Beta
         25, // Detla
         25, // Gamma
         MAXPIXELS,
-        attributesBySeekerId[id].clan,
-        uint16(0)
+        uint16(0),
+        attributesBySeekerId[id].clan
       ); 
     attributesBySeekerId[id] = winningAttributes;
   }
@@ -450,8 +450,8 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
     return _alignment;
   }
 
-  function getApById(uint256 id) external view returns (uint256[4] memory) {
-    uint256[4] memory _aps = [
+  function getApById(uint256 id) external view returns (uint8[4] memory) {
+    uint8[4] memory _aps = [
         attributesBySeekerId[id].alpha,
         attributesBySeekerId[id].beta,
         attributesBySeekerId[id].gamma,
@@ -460,7 +460,7 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
     return _aps;
   }
 
-  function getScaleCountById(uint256 id) external view returns (uint256) {
+  function getScaleCountById(uint256 id) external view returns (uint16) {
     return attributesBySeekerId[id].scales;
   }
 

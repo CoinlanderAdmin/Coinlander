@@ -326,9 +326,9 @@ const _abi = [
     name: "getApById",
     outputs: [
       {
-        internalType: "uint256[4]",
+        internalType: "uint8[4]",
         name: "",
-        type: "uint256[4]",
+        type: "uint8[4]",
       },
     ],
     stateMutability: "view",
@@ -459,9 +459,9 @@ const _abi = [
     name: "getScaleCountById",
     outputs: [
       {
-        internalType: "uint256",
+        internalType: "uint16",
         name: "",
-        type: "uint256",
+        type: "uint16",
       },
     ],
     stateMutability: "view",

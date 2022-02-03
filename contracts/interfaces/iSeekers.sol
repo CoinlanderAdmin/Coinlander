@@ -43,8 +43,8 @@ interface iSeekers is IERC721Enumerable {
     */
     function getBirthStatusById(uint256 id) external view returns (bool);
     function getAlignmentById(uint256 id) external view returns (string memory);
-    function getApById(uint256 id) external view returns (uint256[4] memory);
-    function getScaleCountById(uint256 id) external view returns (uint256);
+    function getApById(uint256 id) external view returns (uint8[4] memory);
+    function getScaleCountById(uint256 id) external view returns (uint16);
     function getClanById(uint256 id) external view returns (address);
     function getDethscalesById(uint256 id) external view returns (uint16);
     function getCloakStatusById(uint256 id) external view returns (bool);

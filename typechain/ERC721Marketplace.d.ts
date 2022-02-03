@@ -22,9 +22,8 @@ import { TypedEventFilter, TypedEvent, TypedListener } from "./commons";
 
 interface ERC721MarketplaceInterface extends ethers.utils.Interface {
   functions: {
-    "createDefaultNftAuction(address,uint256,uint128,uint128)": FunctionFragment;
     "createNewNftAuction(address,uint256,uint128,uint128,uint32,uint32)": FunctionFragment;
-    "createSale(address,uint256,uint128,address,address,uint32)": FunctionFragment;
+    "createSale(address,uint256,uint128,address)": FunctionFragment;
     "defaultAuctionBidPeriod()": FunctionFragment;
     "defaultBidIncreasePercentage()": FunctionFragment;
     "defaultFeeCollector()": FunctionFragment;
@@ -51,10 +50,6 @@ interface ERC721MarketplaceInterface extends ethers.utils.Interface {
   };
 
   encodeFunctionData(
-    functionFragment: "createDefaultNftAuction",
-    values: [string, BigNumberish, BigNumberish, BigNumberish]
-  ): string;
-  encodeFunctionData(
     functionFragment: "createNewNftAuction",
     values: [
       string,
@@ -67,7 +62,7 @@ interface ERC721MarketplaceInterface extends ethers.utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "createSale",
-    values: [string, BigNumberish, BigNumberish, string, string, BigNumberish]
+    values: [string, BigNumberish, BigNumberish, string]
   ): string;
   encodeFunctionData(
     functionFragment: "defaultAuctionBidPeriod",
@@ -159,10 +154,6 @@ interface ERC721MarketplaceInterface extends ethers.utils.Interface {
     values: [string, BigNumberish]
   ): string;
 
-  decodeFunctionResult(
-    functionFragment: "createDefaultNftAuction",
-    data: BytesLike
-  ): Result;
   decodeFunctionResult(
     functionFragment: "createNewNftAuction",
     data: BytesLike
@@ -449,14 +440,6 @@ export class ERC721Marketplace extends BaseContract {
   interface: ERC721MarketplaceInterface;
 
   functions: {
-    createDefaultNftAuction(
-      _nftContractAddress: string,
-      _tokenId: BigNumberish,
-      _minPrice: BigNumberish,
-      _buyNowPrice: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
-
     createNewNftAuction(
       _nftContractAddress: string,
       _tokenId: BigNumberish,
@@ -472,8 +455,6 @@ export class ERC721Marketplace extends BaseContract {
       _tokenId: BigNumberish,
       _buyNowPrice: BigNumberish,
       _whitelistedBuyer: string,
-      _feeRecipient: string,
-      _feePercentage: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
@@ -615,14 +596,6 @@ export class ERC721Marketplace extends BaseContract {
     ): Promise<ContractTransaction>;
   };
 
-  createDefaultNftAuction(
-    _nftContractAddress: string,
-    _tokenId: BigNumberish,
-    _minPrice: BigNumberish,
-    _buyNowPrice: BigNumberish,
-    overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
-
   createNewNftAuction(
     _nftContractAddress: string,
     _tokenId: BigNumberish,
@@ -638,8 +611,6 @@ export class ERC721Marketplace extends BaseContract {
     _tokenId: BigNumberish,
     _buyNowPrice: BigNumberish,
     _whitelistedBuyer: string,
-    _feeRecipient: string,
-    _feePercentage: BigNumberish,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
@@ -779,14 +750,6 @@ export class ERC721Marketplace extends BaseContract {
   ): Promise<ContractTransaction>;
 
   callStatic: {
-    createDefaultNftAuction(
-      _nftContractAddress: string,
-      _tokenId: BigNumberish,
-      _minPrice: BigNumberish,
-      _buyNowPrice: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
     createNewNftAuction(
       _nftContractAddress: string,
       _tokenId: BigNumberish,
@@ -802,8 +765,6 @@ export class ERC721Marketplace extends BaseContract {
       _tokenId: BigNumberish,
       _buyNowPrice: BigNumberish,
       _whitelistedBuyer: string,
-      _feeRecipient: string,
-      _feePercentage: BigNumberish,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -1306,14 +1267,6 @@ export class ERC721Marketplace extends BaseContract {
   };
 
   estimateGas: {
-    createDefaultNftAuction(
-      _nftContractAddress: string,
-      _tokenId: BigNumberish,
-      _minPrice: BigNumberish,
-      _buyNowPrice: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
-
     createNewNftAuction(
       _nftContractAddress: string,
       _tokenId: BigNumberish,
@@ -1329,8 +1282,6 @@ export class ERC721Marketplace extends BaseContract {
       _tokenId: BigNumberish,
       _buyNowPrice: BigNumberish,
       _whitelistedBuyer: string,
-      _feeRecipient: string,
-      _feePercentage: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
@@ -1445,14 +1396,6 @@ export class ERC721Marketplace extends BaseContract {
   };
 
   populateTransaction: {
-    createDefaultNftAuction(
-      _nftContractAddress: string,
-      _tokenId: BigNumberish,
-      _minPrice: BigNumberish,
-      _buyNowPrice: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
-
     createNewNftAuction(
       _nftContractAddress: string,
       _tokenId: BigNumberish,
@@ -1468,8 +1411,6 @@ export class ERC721Marketplace extends BaseContract {
       _tokenId: BigNumberish,
       _buyNowPrice: BigNumberish,
       _whitelistedBuyer: string,
-      _feeRecipient: string,
-      _feePercentage: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 

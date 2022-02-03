@@ -369,7 +369,7 @@ interface SeasonOneInterface extends ethers.utils.Interface {
     "AirdropClaim(uint256)": EventFragment;
     "ApprovalForAll(address,address,bool)": EventFragment;
     "ClaimedAll(address)": EventFragment;
-    "NewCloinDeposit(address,uint256)": EventFragment;
+    "NewCloinDeposit(address,uint16)": EventFragment;
     "OwnershipTransferred(address,address)": EventFragment;
     "Seized(address,address,uint256,uint256,uint256,uint256)": EventFragment;
     "ShardSpendable()": EventFragment;
@@ -405,7 +405,7 @@ export type ApprovalForAllEvent = TypedEvent<
 export type ClaimedAllEvent = TypedEvent<[string] & { claimer: string }>;
 
 export type NewCloinDepositEvent = TypedEvent<
-  [string, BigNumber] & { depositor: string; amount: BigNumber }
+  [string, number] & { depositor: string; amount: number }
 >;
 
 export type OwnershipTransferredEvent = TypedEvent<
@@ -567,9 +567,9 @@ export class SeasonOne extends BaseContract {
       arg0: BigNumberish,
       overrides?: CallOverrides
     ): Promise<
-      [string, BigNumber, BigNumber] & {
+      [string, number, BigNumber] & {
         depositor: string;
-        amount: BigNumber;
+        amount: number;
         blockNumber: BigNumber;
       }
     >;
@@ -607,10 +607,10 @@ export class SeasonOne extends BaseContract {
       arg0: string,
       overrides?: CallOverrides
     ): Promise<
-      [BigNumber, BigNumber, BigNumber] & {
+      [BigNumber, number, number] & {
         _withdrawValue: BigNumber;
-        _shardOwed: BigNumber;
-        _seekersOwed: BigNumber;
+        _shardOwed: number;
+        _seekersOwed: number;
       }
     >;
 
@@ -750,9 +750,9 @@ export class SeasonOne extends BaseContract {
     arg0: BigNumberish,
     overrides?: CallOverrides
   ): Promise<
-    [string, BigNumber, BigNumber] & {
+    [string, number, BigNumber] & {
       depositor: string;
-      amount: BigNumber;
+      amount: number;
       blockNumber: BigNumber;
     }
   >;
@@ -790,10 +790,10 @@ export class SeasonOne extends BaseContract {
     arg0: string,
     overrides?: CallOverrides
   ): Promise<
-    [BigNumber, BigNumber, BigNumber] & {
+    [BigNumber, number, number] & {
       _withdrawValue: BigNumber;
-      _shardOwed: BigNumber;
-      _seekersOwed: BigNumber;
+      _shardOwed: number;
+      _seekersOwed: number;
     }
   >;
 
@@ -926,9 +926,9 @@ export class SeasonOne extends BaseContract {
       arg0: BigNumberish,
       overrides?: CallOverrides
     ): Promise<
-      [string, BigNumber, BigNumber] & {
+      [string, number, BigNumber] & {
         depositor: string;
-        amount: BigNumber;
+        amount: number;
         blockNumber: BigNumber;
       }
     >;
@@ -964,10 +964,10 @@ export class SeasonOne extends BaseContract {
       arg0: string,
       overrides?: CallOverrides
     ): Promise<
-      [BigNumber, BigNumber, BigNumber] & {
+      [BigNumber, number, number] & {
         _withdrawValue: BigNumber;
-        _shardOwed: BigNumber;
-        _seekersOwed: BigNumber;
+        _shardOwed: number;
+        _seekersOwed: number;
       }
     >;
 
@@ -1060,20 +1060,20 @@ export class SeasonOne extends BaseContract {
 
     ClaimedAll(claimer?: null): TypedEventFilter<[string], { claimer: string }>;
 
-    "NewCloinDeposit(address,uint256)"(
+    "NewCloinDeposit(address,uint16)"(
       depositor?: null,
       amount?: null
     ): TypedEventFilter<
-      [string, BigNumber],
-      { depositor: string; amount: BigNumber }
+      [string, number],
+      { depositor: string; amount: number }
     >;
 
     NewCloinDeposit(
       depositor?: null,
       amount?: null
     ): TypedEventFilter<
-      [string, BigNumber],
-      { depositor: string; amount: BigNumber }
+      [string, number],
+      { depositor: string; amount: number }
     >;
 
     "OwnershipTransferred(address,address)"(
