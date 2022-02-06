@@ -99,7 +99,7 @@ async function emulate(seizes: number, ethers: HardhatEthersHelpers) {
   let coinlanderUser: SignerWithAddress
   coinlanderAddress = await seasonOne.COINLANDER()
   coinlanderUser = await ethers.getSigner(coinlanderAddress)
-
+  
   // Emulate seizures
   let i = 0;
   while (seizureCount < seizes) {

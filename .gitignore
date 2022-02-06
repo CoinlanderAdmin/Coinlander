@@ -25,3 +25,9 @@ local/
 
 # Ds Store
 .DS_Store
+
+# Stashes
+/.*Stash
+
+# local helpers
+*.sh

@@ -4,6 +4,12 @@ import * as logger from "./logger"
 
 export async function deploy() {
   let data: any = {}
+
+  let revision = require('child_process')
+  .execSync('git rev-parse HEAD')
+  .toString().trim()
+
+  console.log(revision)
   
   for(let i = 0; i < 3; i ++){
     logger.divider()
