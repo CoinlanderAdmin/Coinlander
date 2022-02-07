@@ -99,7 +99,7 @@ async function nextTag(git: SimpleGit) {
     let latestSplit = latestTag.split(".")
     let majorIncr: number = +latestSplit[1] + 1
     latestSplit[1] = majorIncr.toString()
-    return latestSplit.toString()
+    return latestSplit.join('.')
   }
   return ""
 }
