@@ -1,15 +1,28 @@
 import {ethers} from "hardhat"
 import * as fs from "fs";
 import * as logger from "./logger"
+import simpleGit, { SimpleGit, CleanOptions } from 'simple-git';
+import { hrtime } from "process";
+
 
 export async function deploy() {
   let data: any = {}
+  const git: SimpleGit = simpleGit().clean(CleanOptions.FORCE);
 
-  let revision = require('child_process')
-  .execSync('git rev-parse HEAD')
-  .toString().trim()
+  const network = await ethers.provider.getNetwork();
+  const timestamp = getFullTimestamp ()
+  console.log(timestamp)
+  logger.divider()
+  logger.out("Deploying to: " + network.name, logger.Level.Info)
+  if(network.chainId == 31337) {
+    logger.divider()
+    logger.out("Committing and tagging as release...", logger.Level.Info)
+    git.add('.')
+    git.commit('Autonomous commit for deploy on ')
 
-  console.log(revision)
+  }
+  
+
   
   for(let i = 0; i < 3; i ++){
     logger.divider()
@@ -42,6 +55,7 @@ export async function deploy() {
 
     // Set SeasonOne contract as owner of vault contract
     await vault.transferOwnership(seasonOne.address)
+
     data[i] = {
       "deployBlock": deployBlock,
       contracts: {
@@ -52,6 +66,16 @@ export async function deploy() {
     }
 
   }
+
+
+  // const network = await ethers.getDefaultProvider().getNetwork();
+  // console.log(network.name)
+  // if (network.name == "") {
+  //   console.log('ye')
+
+
+  // }
+
   logger.divider()
   logger.out('Exporting contract address data...')
   logger.divider()
@@ -64,6 +88,14 @@ export async function deploy() {
   logger.out('Deploy complete!', logger.Level.Info)
   logger.divider()
 }
+
+function getFullTimestamp () {
+  const pad = (n: any,s=2) => (`${new Array(s).fill(0)}${n}`).slice(-s);
+  const d = new Date();
+  
+  return `${pad(d.getFullYear(),4)}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}.${pad(d.getMilliseconds(),3)}`;
+}
+
 
 deploy()
   .then(() => process.exit(0))
