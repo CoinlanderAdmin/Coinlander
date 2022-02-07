@@ -9,16 +9,19 @@ export async function deploy() {
   let data: any = {}
   const git: SimpleGit = simpleGit().clean(CleanOptions.FORCE);
 
-  const network = await ethers.provider.getNetwork();
-  const timestamp = getFullTimestamp ()
-  console.log(timestamp)
+  const network = await ethers.provider.getNetwork()
+  let latestTag = (await git.tags()).latest
+  console.log(latestTag)
+
   logger.divider()
   logger.out("Deploying to: " + network.name, logger.Level.Info)
   if(network.chainId == 31337) {
     logger.divider()
     logger.out("Committing and tagging as release...", logger.Level.Info)
     git.add('.')
-    git.commit('Autonomous commit for deploy on ')
+    git.commit('Autonomous commit for deploy on ' + getFullTimestamp())
+    let latestTag = (await git.tags()).latest
+
 
   }
   
@@ -93,7 +96,7 @@ function getFullTimestamp () {
   const pad = (n: any,s=2) => (`${new Array(s).fill(0)}${n}`).slice(-s);
   const d = new Date();
   
-  return `${pad(d.getFullYear(),4)}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}.${pad(d.getMilliseconds(),3)}`;
+  return `${pad(d.getFullYear(),4)}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
 }
 
 
