@@ -12,6 +12,7 @@ export async function deploy() {
   const network = await ethers.provider.getNetwork()
   let latestTag = (await git.tags()).latest
   console.log(latestTag)
+  console.log(await nextTag(git))
 
   logger.divider()
   logger.out("Deploying to: " + network.name, logger.Level.Info)
@@ -19,8 +20,8 @@ export async function deploy() {
     logger.divider()
     logger.out("Committing and tagging as release...", logger.Level.Info)
     git.add('.')
-    git.commit('Autonomous commit for deploy on ' + getFullTimestamp())
-    let latestTag = (await git.tags()).latest
+    git.commit('Autonomous commit for deploy at ' + getFullTimestamp() + 'on ' + network.name)
+
 
 
   }
@@ -90,6 +91,17 @@ export async function deploy() {
 
   logger.out('Deploy complete!', logger.Level.Info)
   logger.divider()
+}
+
+async function nextTag(git: SimpleGit) {
+  let latestTag = (await git.tags()).latest
+  if(latestTag) {
+    let latestSplit = latestTag.split(".")
+    let majorIncr: number = +latestSplit[1] + 1
+    latestSplit[1] = majorIncr.toString()
+    return latestSplit.toString()
+  }
+  return ""
 }
 
 function getFullTimestamp () {
