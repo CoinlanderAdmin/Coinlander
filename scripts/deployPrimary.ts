@@ -7,6 +7,8 @@ import { hrtime } from "process";
 
 export async function deploy() {
   let data: any = {}
+  data['Commit'] = ''
+
   const git: SimpleGit = simpleGit().clean(CleanOptions.FORCE);
 
   const network = await ethers.provider.getNetwork()
@@ -18,11 +20,13 @@ export async function deploy() {
     logger.divider()
     logger.out("Committing and tagging as release...", logger.Level.Info)
     git.add('.')
-    git.commit('Autonomous commit for deploy at ' + getFullTimestamp() + 'on ' + network.name)
+    git.commit('Autonomous commit for deploy at ' + getFullTimestamp() + ' on ' + network.chainId)
     let newTag = await nextTag(git)
     git.tag([newTag])
     git.pushTags()
+    data['Commit'] = newTag
   }
+  
   
   for(let i = 0; i < 3; i ++){
     logger.divider()
@@ -66,15 +70,6 @@ export async function deploy() {
     }
 
   }
-
-
-  // const network = await ethers.getDefaultProvider().getNetwork();
-  // console.log(network.name)
-  // if (network.name == "") {
-  //   console.log('ye')
-
-
-  // }
 
   logger.divider()
   logger.out('Exporting contract address data...')
