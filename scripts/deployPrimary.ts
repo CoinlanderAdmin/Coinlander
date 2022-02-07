@@ -13,6 +13,7 @@ export async function deploy() {
 
   logger.divider()
   logger.out("Deploying to: " + network.name, logger.Level.Info)
+  logger.out("With chain id: " + network.chainId, logger.Level.Info)
   if(network.chainId == 31337) {
     logger.divider()
     logger.out("Committing and tagging as release...", logger.Level.Info)
