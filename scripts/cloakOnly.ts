@@ -32,11 +32,12 @@ export async function deploy() {
     var id = await seekers.tokenOfOwnerByIndex(deployer.address, i)
     logger.out('Uncloaking seeker: ' + id.toNumber())
     await seekers.connect(deployer).uncloakSeeker(id)
-    console.log('Alignment: ' + (await seekers.getAlignmentById(id)))
+    let alignment = await seekers.getAlignmentById(id)
+    console.log('Alignment: ' + alignment)
     let fullCloak = await seekers.getFullCloak(id)
     var json = JSON.stringify(fullCloak);
     var fs = require('fs');
-    fs.writeFileSync('local/data/' + id.toNumber() + '.json', json, 'utf8');
+    fs.writeFileSync('local/data/' + alignment + id.toNumber() + '.json', json, 'utf8');
     logger.divider()
   }
 

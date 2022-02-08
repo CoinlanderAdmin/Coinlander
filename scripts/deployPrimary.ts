@@ -88,8 +88,9 @@ async function nextTag(git: SimpleGit) {
   let latestTag = (await git.tags()).latest
   if(latestTag) {
     let latestSplit = latestTag.split(".")
-    let majorIncr: number = +latestSplit[1] + 1
-    latestSplit[1] = majorIncr.toString()
+    let minorIncr: number = +latestSplit[1] + 1
+    latestSplit[1] = minorIncr.toString()
+    latestSplit[2] = "0"
     return latestSplit.join('.')
   }
   return ""
