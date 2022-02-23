@@ -26,6 +26,7 @@ async function emulate(seizes: number, ethers: HardhatEthersHelpers) {
   
   // Load json config data. We want to use fs here instead of imports because
   // this data shouldn't be stored in git, and causes bad imports pre-deploy script
+  // TODO: change this to point at the non local addresses file auto-gen'd by primary deploy script
   const addressesJson = fs.readFileSync('local/addresses.json', 'utf8');
   const deployData = JSON.parse(addressesJson);
   const addresses = deployData[index]
