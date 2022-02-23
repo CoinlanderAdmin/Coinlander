@@ -38,6 +38,7 @@ interface SeekersInterface extends ethers.utils.Interface {
     "THIRDMINT()": FunctionFragment;
     "THIRDMINTPRICE()": FunctionFragment;
     "THIRDMINT_INCR()": FunctionFragment;
+    "THIRDMINT_TOTAL()": FunctionFragment;
     "_getRandomNumber16(uint16,uint16,uint16)": FunctionFragment;
     "activateFirstMint()": FunctionFragment;
     "activateSecondMint()": FunctionFragment;
@@ -146,6 +147,10 @@ interface SeekersInterface extends ethers.utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "THIRDMINT_INCR",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "THIRDMINT_TOTAL",
     values?: undefined
   ): string;
   encodeFunctionData(
@@ -390,6 +395,10 @@ interface SeekersInterface extends ethers.utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "THIRDMINT_INCR",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "THIRDMINT_TOTAL",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -739,6 +748,8 @@ export class Seekers extends BaseContract {
 
     THIRDMINT_INCR(overrides?: CallOverrides): Promise<[BigNumber]>;
 
+    THIRDMINT_TOTAL(overrides?: CallOverrides): Promise<[BigNumber]>;
+
     _getRandomNumber16(
       mod: BigNumberish,
       r1: BigNumberish,
@@ -1061,6 +1072,8 @@ export class Seekers extends BaseContract {
 
   THIRDMINT_INCR(overrides?: CallOverrides): Promise<BigNumber>;
 
+  THIRDMINT_TOTAL(overrides?: CallOverrides): Promise<BigNumber>;
+
   _getRandomNumber16(
     mod: BigNumberish,
     r1: BigNumberish,
@@ -1374,6 +1387,8 @@ export class Seekers extends BaseContract {
     THIRDMINTPRICE(overrides?: CallOverrides): Promise<BigNumber>;
 
     THIRDMINT_INCR(overrides?: CallOverrides): Promise<BigNumber>;
+
+    THIRDMINT_TOTAL(overrides?: CallOverrides): Promise<BigNumber>;
 
     _getRandomNumber16(
       mod: BigNumberish,
@@ -1837,6 +1852,8 @@ export class Seekers extends BaseContract {
 
     THIRDMINT_INCR(overrides?: CallOverrides): Promise<BigNumber>;
 
+    THIRDMINT_TOTAL(overrides?: CallOverrides): Promise<BigNumber>;
+
     _getRandomNumber16(
       mod: BigNumberish,
       r1: BigNumberish,
@@ -2133,6 +2150,8 @@ export class Seekers extends BaseContract {
     THIRDMINTPRICE(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     THIRDMINT_INCR(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    THIRDMINT_TOTAL(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     _getRandomNumber16(
       mod: BigNumberish,

@@ -64,6 +64,9 @@ export async function checkState() {
 
     await seasonOne.connect(accounts[0]).claimAll( { gasLimit: 10000000})
    }
+
+let vaultBal = await vault.prize()
+console.log("Vault balance is: ", vaultBal.toNumber())
   
 
   

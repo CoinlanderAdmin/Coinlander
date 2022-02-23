@@ -40,6 +40,7 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
   // uint256 public constant SECONDMINTPRICE = 0.05 ether;
   uint256 public constant THIRDMINT = 267; // bulk release at third mint thresh 
   uint256 public constant THIRDMINT_INCR = 4; // additional release at each seizure after third mint thresh 
+  uint256 public constant THIRDMINT_TOTAL = 1603; // total number of seekers released via third mint 
   bool public thirdMintActive = false;
   uint256 public constant THIRDMINTPRICE = 0.0001 ether; // test value
   // uint256 public constant THIRDMINTPRICE = 0.1 ether;
@@ -49,7 +50,7 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
   bool public goodsOnly = false; 
 
   // This adds 2 because we are minting the winner_id = 1 and ids need to be 1 indexed
-  uint256 private constant INTERNALIDOFFSET = FIRSTMINT + SECONDMINT + THIRDMINT + KEEPERSEEKERS + 2;
+  uint256 private constant INTERNALIDOFFSET = FIRSTMINT + SECONDMINT + THIRDMINT_TOTAL + KEEPERSEEKERS + 2;
 
   // On-chain game parameters
   bool public released = false;
