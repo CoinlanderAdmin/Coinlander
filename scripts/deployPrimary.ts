@@ -78,9 +78,9 @@ export async function deploy() {
     git.add('.')
     git.commit('Autonomous commit for deploy at ' + getFullTimestamp() + ' on ' + network.chainId)
     let newTag = await nextTag(git)
+    logger.pad(5, "Tagged as: ", newTag)
     git.tag([newTag])
     git.pushTags()
-    data['Commit'] = newTag
   }
 }
 
