@@ -4,6 +4,7 @@ import "@nomiclabs/hardhat-waffle"
 import {HardhatUserConfig} from "hardhat/types"
 import "tsconfig-paths/register"
 import "hardhat-contract-sizer"
+import "@nomiclabs/hardhat-etherscan"
 
 import emulate from "./scripts/emulate";
 import {task} from "hardhat/internal/core/config/config-env";
@@ -32,6 +33,11 @@ if (!RinkArbyKey) {
   throw new Error("Please set the alchemy Rinkeby API key the .env file")
 }
 
+const ArbiscanAPIKey: string | undefined = process.env.ARBISCAN_API_KEY
+if (!ArbiscanAPIKey) {
+  throw new Error("Please add the Arbiscan API key to your .env file")
+}
+
 task("emulate", "Play through the game.")
   .addParam("seizes", "The number of seizes to emulate.")
   .setAction(async (args, hre) => {
@@ -55,6 +61,9 @@ const config: HardhatUserConfig = {
       chainId: 421611,
       accounts: [owner, userA, userB]
     }
+  },
+  etherscan: {
+    apiKey: ArbiscanAPIKey
   },
   mocha: {
     timeout: 5000000

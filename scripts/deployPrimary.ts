@@ -16,17 +16,6 @@ export async function deploy() {
   logger.divider()
   logger.out("Deploying to: " + network.name, logger.Level.Info)
   logger.out("With chain id: " + network.chainId, logger.Level.Info)
-  if(network.chainId == 421611) {
-    logger.divider()
-    logger.out("Committing and tagging as release...", logger.Level.Info)
-    git.add('.')
-    git.commit('Autonomous commit for deploy at ' + getFullTimestamp() + ' on ' + network.chainId)
-    let newTag = await nextTag(git)
-    git.tag([newTag])
-    git.pushTags()
-    data['Commit'] = newTag
-  }
-  
   
   for(let i = 0; i < 3; i ++){
     logger.divider()
@@ -78,10 +67,21 @@ export async function deploy() {
   // Build local json file. Used to store address contract data
   
   const json = JSON.stringify(data, null, 2)
-  fs.writeFileSync('local/addresses.json', json, "utf8")
+  fs.writeFileSync('addresses.json', json, "utf8")
 
   logger.out('Deploy complete!', logger.Level.Info)
   logger.divider()
+
+  if(network.chainId == 421611) {
+    logger.divider()
+    logger.out("Committing and tagging as release...", logger.Level.Info)
+    git.add('.')
+    git.commit('Autonomous commit for deploy at ' + getFullTimestamp() + ' on ' + network.chainId)
+    let newTag = await nextTag(git)
+    git.tag([newTag])
+    git.pushTags()
+    data['Commit'] = newTag
+  }
 }
 
 async function nextTag(git: SimpleGit) {

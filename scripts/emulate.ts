@@ -13,13 +13,13 @@ import * as logger from './logger'
 // 6. CONTRACTS: Run emulation `npm run emulate <seizures>`
 
 
-// seizes = number of seizes you want to run up to on current node, ie. 100 will run up to the 100th seizure
-// hre = HardhatRuntimeEnvironment, passed in via task function in hardhat.config.ts
-
 async function emulate(seizes: number, ethers: HardhatEthersHelpers) {
   logger.divider()
   logger.out('Starting contract emulation...', logger.Level.Info)
   logger.divider()
+
+  const index: string = '2'
+  const filename: string = 'E7-meta'
 
   // We must use the injected hardhat param instead of directly importing because we run this
   // as a hardhat task. https://hardhat.org/advanced/hardhat-runtime-environment.html
@@ -27,7 +27,8 @@ async function emulate(seizes: number, ethers: HardhatEthersHelpers) {
   // Load json config data. We want to use fs here instead of imports because
   // this data shouldn't be stored in git, and causes bad imports pre-deploy script
   const addressesJson = fs.readFileSync('local/addresses.json', 'utf8');
-  const addresses = JSON.parse(addressesJson);
+  const deployData = JSON.parse(addressesJson);
+  const addresses = deployData[index]
 
   // Attach to deployed contracts
   const Seekers = await ethers.getContractFactory("Seekers");
@@ -184,6 +185,18 @@ async function emulate(seizes: number, ethers: HardhatEthersHelpers) {
       logger.pad(30, `Seeker ${lastToken} unclocked:`, user.address)
     }
   }
+
+  // Output file that stores where the emulation happened and how far it got
+  const data = {
+    contracts: {
+      "seekers": seekers.address,
+      "vault": vault.address,
+      "seasonOne": seasonOne.address,
+      "seizureCount": seizureCount
+    }
+  }
+  const json = JSON.stringify(data, null, 2)
+  fs.writeFileSync('local/'+filename+'.json', json, "utf8")
 
   // TODO post-release validation here
 
