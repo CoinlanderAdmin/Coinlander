@@ -4,6 +4,8 @@ import * as logger from "./logger"
 import simpleGit, { SimpleGit, CleanOptions } from 'simple-git';
 import { hrtime } from "process";
 
+const debug = require('debug')
+debug.enable('simple-git,simple-git:*');
 
 export async function deploy() {
   let data: any = {}
