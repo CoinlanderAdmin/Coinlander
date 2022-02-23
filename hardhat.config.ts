@@ -63,7 +63,9 @@ const config: HardhatUserConfig = {
     }
   },
   etherscan: {
-    apiKey: ArbiscanAPIKey
+    apiKey: {
+      arbitrumOne: ArbiscanAPIKey
+    }
   },
   mocha: {
     timeout: 5000000

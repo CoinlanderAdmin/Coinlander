@@ -80,7 +80,7 @@ export async function deploy() {
     let newTag = await nextTag(git)
     logger.pad(5, "Tagged as: ", newTag)
     git.tag([newTag])
-    git.pushTags()
+    git.pushTags('origin')
   }
 }
 
