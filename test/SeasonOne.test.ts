@@ -119,14 +119,14 @@ describe("SeasonOne", function () {
     })
 
     it("sets the withdraw ammt according to the seizure price less platform take", async () => {
-      let w = await seasonOne.getPendingWithdrawl(userA.address)
+      let w = await seasonOne.getPendingWithdrawal(userA.address)
       let takeRate = await seasonOne.PERCENTTAKE()
       let take = oldSS.mul(takeRate).div(10000)
       await expect(w[0]).to.equal(oldSS.sub(take))
     })
 
     it("sets the shard reward according to seizure price", async () => {
-      let s = await seasonOne.getPendingWithdrawl(userA.address)
+      let s = await seasonOne.getPendingWithdrawal(userA.address)
       expect(s[1]).to.equal(1)
     })
 
@@ -137,7 +137,7 @@ describe("SeasonOne", function () {
     })
 
     it("sets that a seeker is owed", async () => {
-      let s = await seasonOne.getPendingWithdrawl(userA.address)
+      let s = await seasonOne.getPendingWithdrawal(userA.address)
       expect(s[2]).to.equal(1)
     })
   })
@@ -157,7 +157,7 @@ describe("SeasonOne", function () {
 
     it("pays the user their deposit", async () => {
       let beforeBalance = await userA.getBalance()
-      let refund = await seasonOne.getPendingWithdrawl(userA.address)
+      let refund = await seasonOne.getPendingWithdrawal(userA.address)
       await seasonOne.connect(userA).claimAll()
       let afterBalance = await userA.getBalance()
       expect(refund[0]).to.be.gt(0)

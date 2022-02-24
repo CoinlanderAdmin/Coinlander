@@ -36,11 +36,11 @@ seasonOneContract = w3.eth.contract(address=seasonOneAddress, abi=seasonOneABI)
 seekersContract = w3.eth.contract(address=seekersAddress, abi=seekersABI)
 vaultContract = w3.eth.contract(address=vaultAddress, abi=vaultABI)
 
-tx_hash = "0xe7be3342f7aeb8c2d72f1432f5a8452b625a1f6371f9b4cbfa07ae96b7c17516"
+tx_hash = "0x69afcb03b9760201bb2ebadf69b0dbfb17d8db1098182e1e0a52a46a2dd2ac99"
 receipt = w3.eth.getTransactionReceipt(tx_hash)
+print(receipt)
+# logs = seasonOneContract.events.Seized().processReceipt(receipt)
+# print(logs)
 
-logs = seasonOneContract.events.Seized().processReceipt(receipt)
-print(logs)
-
-log_json = json.dumps(toDict(logs))
-print(log_json)
+# log_json = json.dumps(toDict(logs))
+# print(log_json)

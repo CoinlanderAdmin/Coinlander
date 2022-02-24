@@ -47,7 +47,15 @@ task("emulate", "Play through the game.")
   })
 
 const config: HardhatUserConfig = {
-  solidity: "0.8.10",
+  solidity: {
+    version: "0.8.10",
+    settings: {
+      optimizer: {
+        enabled: true, 
+        runs: 1000
+      }
+    }
+  },
   networks: {
     localhost: {
       allowUnlimitedContractSize: true,
@@ -59,6 +67,7 @@ const config: HardhatUserConfig = {
     RinkArby: {
       url: RinkArbyKey,
       chainId: 421611,
+      //gas: 900000,
       accounts: [owner, userA, userB]
     }
   },

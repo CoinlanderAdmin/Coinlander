@@ -37,36 +37,39 @@ export async function checkState() {
   const [owner, ...accounts] = await ethers.getSigners()
 
   // Check if each event triggered successfully
-  let uncloaking = await seekers.uncloaking()
-  console.log("Uncloaking: ", uncloaking) 
+  console.log("Prize: ", await seasonOne.prize())
+  await seasonOne.connect(owner).ownerWithdraw()
+
+  // let uncloaking = await seekers.uncloaking()
+  // console.log("Uncloaking: ", uncloaking) 
   
-  let shardSpendable = await seasonOne.shardSpendable()
-  console.log("Shard spendable: ", shardSpendable)
+  // let shardSpendable = await seasonOne.shardSpendable()
+  // console.log("Shard spendable: ", shardSpendable)
 
-  let firstMint = await seekers.firstMintActive()
-  console.log("First mint active: ", firstMint)
+  // let firstMint = await seekers.firstMintActive()
+  // console.log("First mint active: ", firstMint)
 
-  let secondMint = await seekers.secondMintActive()
-  console.log("Second mint active: ", secondMint)
+  // let secondMint = await seekers.secondMintActive()
+  // console.log("Second mint active: ", secondMint)
 
-  let thirdMint = await seekers.thirdMintActive()
-  console.log("Third mint active: ", thirdMint)
+  // let thirdMint = await seekers.thirdMintActive()
+  // console.log("Third mint active: ", thirdMint)
 
-  let released = await seasonOne.released()
-  console.log("Sweet release status: ", released)
+  // let released = await seasonOne.released()
+  // console.log("Sweet release status: ", released)
 
-   if(released) {
-    let ownerOfWinnerSeeker = await seekers.ownerOf(1)
-    console.log("Owner of winner seeker: ", ownerOfWinnerSeeker)
+  //  if(released) {
+  //   let ownerOfWinnerSeeker = await seekers.ownerOf(1)
+  //   console.log("Owner of winner seeker: ", ownerOfWinnerSeeker)
 
-    let winner = await seasonOne.COINLANDER()
-    console.log("COINLANDER: ", winner)
+  //   let winner = await seasonOne.COINLANDER()
+  //   console.log("COINLANDER: ", winner)
 
-    await seasonOne.connect(accounts[0]).claimAll( { gasLimit: 10000000})
-   }
+  //   await seasonOne.connect(accounts[0]).claimAll( { gasLimit: 10000000})
+  //  }
 
-let vaultBal = await vault.prize()
-console.log("Vault balance is: ", vaultBal.toNumber())
+// let vaultBal = await vault.prize()
+// console.log("Vault balance is: ", vaultBal.toNumber())
   
 
   
