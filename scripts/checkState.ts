@@ -8,15 +8,8 @@ export async function checkState() {
   logger.out('Attaching to contracts to check state', logger.Level.Info)
   logger.divider()
 
-  const index: string = '2'
-  const filename: string = 'E7-meta'
-
-  // We must use the injected hardhat param instead of directly importing because we run this
-  // as a hardhat task. https://hardhat.org/advanced/hardhat-runtime-environment.html
-  
-  // Load json config data. We want to use fs here instead of imports because
-  // this data shouldn't be stored in git, and causes bad imports pre-deploy script
-  const addressesJson = fs.readFileSync('local/addresses.json', 'utf8');
+  const index: string = '1'
+  const addressesJson = fs.readFileSync('addresses.json', 'utf8');
   const deployData = JSON.parse(addressesJson);
   const addresses = deployData[index]
 
@@ -37,42 +30,73 @@ export async function checkState() {
   const [owner, ...accounts] = await ethers.getSigners()
 
   // Check if each event triggered successfully
-  console.log("Prize: ", await seasonOne.prize())
-  await seasonOne.connect(owner).ownerWithdraw()
+  console.log("Seizure number: ", await (await seasonOne.seizureCount()).toNumber())
+  console.log("Prize: ", await (await seasonOne.prize()).toNumber())
 
-  // let uncloaking = await seekers.uncloaking()
-  // console.log("Uncloaking: ", uncloaking) 
+  let uncloaking = await seekers.uncloaking()
+  console.log("Uncloaking: ", uncloaking) 
   
-  // let shardSpendable = await seasonOne.shardSpendable()
-  // console.log("Shard spendable: ", shardSpendable)
+  let shardSpendable = await seasonOne.shardSpendable()
+  console.log("Shard spendable: ", shardSpendable)
 
-  // let firstMint = await seekers.firstMintActive()
-  // console.log("First mint active: ", firstMint)
+  let firstMint = await seekers.firstMintActive()
+  console.log("First mint active: ", firstMint)
 
-  // let secondMint = await seekers.secondMintActive()
-  // console.log("Second mint active: ", secondMint)
+  let secondMint = await seekers.secondMintActive()
+  console.log("Second mint active: ", secondMint)
 
-  // let thirdMint = await seekers.thirdMintActive()
-  // console.log("Third mint active: ", thirdMint)
+  let thirdMint = await seekers.thirdMintActive()
+  console.log("Third mint active: ", thirdMint)
 
-  // let released = await seasonOne.released()
-  // console.log("Sweet release status: ", released)
+  let released = await seasonOne.released()
+  console.log("Sweet release status: ", released)
 
-  //  if(released) {
-  //   let ownerOfWinnerSeeker = await seekers.ownerOf(1)
-  //   console.log("Owner of winner seeker: ", ownerOfWinnerSeeker)
+  if(released) {
+    let ownerOfWinnerSeeker = await seekers.ownerOf(1)
+    console.log("Owner of winner seeker: ", ownerOfWinnerSeeker)
 
-  //   let winner = await seasonOne.COINLANDER()
-  //   console.log("COINLANDER: ", winner)
+    let winner = await seasonOne.COINLANDER()
+    console.log("COINLANDER: ", winner)
+  }
 
-  //   await seasonOne.connect(accounts[0]).claimAll( { gasLimit: 10000000})
-  //  }
-
-// let vaultBal = await vault.prize()
-// console.log("Vault balance is: ", vaultBal.toNumber())
+  // Check inventory of each user
+  for(const user of accounts) {
+    logger.divider()
+    console.log('USER: ', user.address)
+    console.log('SHARD: ', await (await seasonOne.balanceOf(user.address, 1)).toNumber())
+    let numSeekers = await (await seekers.balanceOf(user.address)).toNumber()
+    console.log('Seekers: ', numSeekers)
+    // let seekerIds = []
+    // for (var i = 0; i < numSeekers; i++){
+    //   var id = await (await seekers.tokenOfOwnerByIndex(user.address, i)).toNumber()
+    //   seekerIds.push(id)
+    // }
+    // console.log('Seeker Ids: ', seekerIds)
+    for (var i = 1; i <= 8; i++){
+      var qty = await (await vault.balanceOf(user.address, i)).toNumber()
+      console.log('Fragment%d: ', i, qty)
+    }
+  } 
   
-
-  
+  // list deposits
+  logger.divider()
+    try {
+      let i = 0
+      while (true) { 
+        let deposit = await seasonOne.cloinDeposits(i)
+        console.log("Deposit %d: ", i)
+        console.log(deposit.depositor)
+        console.log(deposit.amount)
+        console.log(deposit.blockNumber)
+        logger.divider()
+        i++
+      }
+    }
+    catch (error) {
+    }
+   
+  let vaultBal = await vault.prize()
+  console.log("Vault balance is: ", vaultBal.toNumber())
 }
 
 checkState()
