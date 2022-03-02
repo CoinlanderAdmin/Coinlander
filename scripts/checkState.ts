@@ -31,7 +31,7 @@ export async function checkState() {
 
   // Check if each event triggered successfully
   console.log("Seizure number: ", await (await seasonOne.seizureCount()).toNumber())
-  console.log("Prize: ", await (await seasonOne.prize()).toNumber())
+  console.log("Prize: ", await (await seasonOne.prize()).div(1E12).toNumber())
 
   let uncloaking = await seekers.uncloaking()
   console.log("Uncloaking: ", uncloaking) 
