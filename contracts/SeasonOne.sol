@@ -76,7 +76,7 @@ contract SeasonOne is ERC1155, Ownable, ReentrancyGuard {
     uint256 constant KEEPERSHARDS = 111; // Keepers can mint up to 100 shards for community rewards
     uint256 constant SEEKERSHARDDROP = 1; // At least one shard to each Seeker holder 
     uint256 constant SHARDDROPRAND = 4; // Up to 3 additional shard drops (used as mod, so add 1)
-    uint256 constant SCALEPERSHARD = 8; // Eight scales per Shard 
+    uint256 constant POWERPERSHARD = 8; // Eight power units per Shard 
     uint256 public constant SHARDTOFRAGMENTMULTIPLIER = 5; // One fragment per 5 Shards 
     uint256 constant BASESHARDREWARD = 1; // 1 Shard guaranteed per seizure
     uint256 constant INCRSHARDREWARD = 30; // 3 Eth/Shard
@@ -108,7 +108,7 @@ contract SeasonOne is ERC1155, Ownable, ReentrancyGuard {
             uint256 seizurePrice, uint256 nextSeizurePrice, 
             uint256 currentPrize, uint256 seizureNumber);
     event ShardSpendable();
-    event NewCloinDeposit(address depositor, uint16 amount);
+    event NewCloinDeposit(address depositor, uint16 amount, uint256 depositIdx);
     event ClaimedAll(address claimer);
     event AirdropClaim(uint256 id);
     
@@ -299,12 +299,12 @@ contract SeasonOne is ERC1155, Ownable, ReentrancyGuard {
 //                                                                                              //
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
-    function burnShardForScale(uint256 seekerId, uint256 amount) external nonReentrant shardSpendableOnly {
+    function burnShardForPower(uint256 seekerId, uint256 amount) external nonReentrant shardSpendableOnly {
         require(amount > 0, "E006");
         require(balanceOf(msg.sender, SHARD) >= amount, "E007");
         _burn(msg.sender, SHARD, amount);
-        uint256 scales = amount * SCALEPERSHARD;
-        seekers.addScales(seekerId, scales);
+        uint256 power = amount * POWERPERSHARD;
+        seekers.addPower(seekerId, power);
     }
 
     function stakeShardForCloin(uint256 amount) external nonReentrant shardSpendableOnly {
@@ -318,7 +318,8 @@ contract SeasonOne is ERC1155, Ownable, ReentrancyGuard {
         _deposit.blockNumber = uint80(block.number); 
         
         cloinDeposits.push(_deposit);
-        emit NewCloinDeposit(msg.sender, uint16(amount));
+        uint256 depositsLength = cloinDeposits.length;
+        emit NewCloinDeposit(msg.sender, uint16(amount), depositsLength);
     }
 
     function burnShardForFragments(uint256 amount) external nonReentrant shardSpendableOnly {
@@ -349,17 +350,20 @@ contract SeasonOne is ERC1155, Ownable, ReentrancyGuard {
             (bool success, ) = msg.sender.call{value:withdrawal}("");
             require(success, "E009");
 
-        } else if (shard > 0) {
+        } 
+        else if (shard > 0) {
             pendingWithdrawals[msg.sender]._shardOwed = 0;
             _mint(msg.sender, SHARD, shard, "0x0");
 
-        } else if (seeks > 0){
+        } 
+        else if (seeks > 0) {
             pendingWithdrawals[msg.sender]._seekersOwed = 0;
             for (uint256 i = 0; i < seeks; i++){
                 seekers.birthSeeker(msg.sender);
             }
 
-        } else {
+        } 
+        else {
             revert("E010");
         }
 
