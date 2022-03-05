@@ -25,7 +25,7 @@ interface ISeekersInterface extends ethers.utils.Interface {
     "activateFirstMint()": FunctionFragment;
     "activateSecondMint()": FunctionFragment;
     "activateThirdMint()": FunctionFragment;
-    "addScales(uint256,uint256)": FunctionFragment;
+    "addPower(uint256,uint256)": FunctionFragment;
     "approve(address,uint256)": FunctionFragment;
     "balanceOf(address)": FunctionFragment;
     "birthSeeker(address)": FunctionFragment;
@@ -39,7 +39,7 @@ interface ISeekersInterface extends ethers.utils.Interface {
     "getCloakStatusById(uint256)": FunctionFragment;
     "getDethscalesById(uint256)": FunctionFragment;
     "getFullCloak(uint256)": FunctionFragment;
-    "getScaleCountById(uint256)": FunctionFragment;
+    "getPowerById(uint256)": FunctionFragment;
     "isApprovedForAll(address,address)": FunctionFragment;
     "keepersSummonSeeker(uint256)": FunctionFragment;
     "ownerOf(uint256)": FunctionFragment;
@@ -72,7 +72,7 @@ interface ISeekersInterface extends ethers.utils.Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
-    functionFragment: "addScales",
+    functionFragment: "addPower",
     values: [BigNumberish, BigNumberish]
   ): string;
   encodeFunctionData(
@@ -122,7 +122,7 @@ interface ISeekersInterface extends ethers.utils.Interface {
     values: [BigNumberish]
   ): string;
   encodeFunctionData(
-    functionFragment: "getScaleCountById",
+    functionFragment: "getPowerById",
     values: [BigNumberish]
   ): string;
   encodeFunctionData(
@@ -206,7 +206,7 @@ interface ISeekersInterface extends ethers.utils.Interface {
     functionFragment: "activateThirdMint",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(functionFragment: "addScales", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "addPower", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "approve", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "balanceOf", data: BytesLike): Result;
   decodeFunctionResult(
@@ -251,7 +251,7 @@ interface ISeekersInterface extends ethers.utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "getScaleCountById",
+    functionFragment: "getPowerById",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -325,7 +325,7 @@ interface ISeekersInterface extends ethers.utils.Interface {
     "ApprovalForAll(address,address,bool)": EventFragment;
     "DethscalesRerolled(uint256)": EventFragment;
     "FirstMintActivated()": EventFragment;
-    "ScalesAdded(uint256,uint256,uint256)": EventFragment;
+    "PowerAdded(uint256,uint256,uint256)": EventFragment;
     "SecondMintActivated()": EventFragment;
     "SeekerDeclaredToClan(uint256,address)": EventFragment;
     "SeekerUncloaked(uint256)": EventFragment;
@@ -338,7 +338,7 @@ interface ISeekersInterface extends ethers.utils.Interface {
   getEvent(nameOrSignatureOrTopic: "ApprovalForAll"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "DethscalesRerolled"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "FirstMintActivated"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "ScalesAdded"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "PowerAdded"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "SecondMintActivated"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "SeekerDeclaredToClan"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "SeekerUncloaked"): EventFragment;
@@ -369,11 +369,11 @@ export type DethscalesRerolledEvent = TypedEvent<
 
 export type FirstMintActivatedEvent = TypedEvent<[] & {}>;
 
-export type ScalesAddedEvent = TypedEvent<
+export type PowerAddedEvent = TypedEvent<
   [BigNumber, BigNumber, BigNumber] & {
     seekerId: BigNumber;
-    scalesAdded: BigNumber;
-    newScaleCount: BigNumber;
+    powerAdded: BigNumber;
+    newPower: BigNumber;
   }
 >;
 
@@ -451,9 +451,9 @@ export class ISeekers extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
-    addScales(
+    addPower(
       id: BigNumberish,
-      scales: BigNumberish,
+      power: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
@@ -557,7 +557,7 @@ export class ISeekers extends BaseContract {
       ]
     >;
 
-    getScaleCountById(
+    getPowerById(
       id: BigNumberish,
       overrides?: CallOverrides
     ): Promise<[number]>;
@@ -669,9 +669,9 @@ export class ISeekers extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-  addScales(
+  addPower(
     id: BigNumberish,
-    scales: BigNumberish,
+    power: BigNumberish,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
@@ -770,10 +770,7 @@ export class ISeekers extends BaseContract {
     ]
   >;
 
-  getScaleCountById(
-    id: BigNumberish,
-    overrides?: CallOverrides
-  ): Promise<number>;
+  getPowerById(id: BigNumberish, overrides?: CallOverrides): Promise<number>;
 
   isApprovedForAll(
     owner: string,
@@ -873,9 +870,9 @@ export class ISeekers extends BaseContract {
 
     activateThirdMint(overrides?: CallOverrides): Promise<void>;
 
-    addScales(
+    addPower(
       id: BigNumberish,
-      scales: BigNumberish,
+      power: BigNumberish,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -969,10 +966,7 @@ export class ISeekers extends BaseContract {
       ]
     >;
 
-    getScaleCountById(
-      id: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<number>;
+    getPowerById(id: BigNumberish, overrides?: CallOverrides): Promise<number>;
 
     isApprovedForAll(
       owner: string,
@@ -1103,22 +1097,22 @@ export class ISeekers extends BaseContract {
 
     FirstMintActivated(): TypedEventFilter<[], {}>;
 
-    "ScalesAdded(uint256,uint256,uint256)"(
+    "PowerAdded(uint256,uint256,uint256)"(
       seekerId?: BigNumberish | null,
-      scalesAdded?: null,
-      newScaleCount?: null
+      powerAdded?: null,
+      newPower?: null
     ): TypedEventFilter<
       [BigNumber, BigNumber, BigNumber],
-      { seekerId: BigNumber; scalesAdded: BigNumber; newScaleCount: BigNumber }
+      { seekerId: BigNumber; powerAdded: BigNumber; newPower: BigNumber }
     >;
 
-    ScalesAdded(
+    PowerAdded(
       seekerId?: BigNumberish | null,
-      scalesAdded?: null,
-      newScaleCount?: null
+      powerAdded?: null,
+      newPower?: null
     ): TypedEventFilter<
       [BigNumber, BigNumber, BigNumber],
-      { seekerId: BigNumber; scalesAdded: BigNumber; newScaleCount: BigNumber }
+      { seekerId: BigNumber; powerAdded: BigNumber; newPower: BigNumber }
     >;
 
     "SecondMintActivated()"(): TypedEventFilter<[], {}>;
@@ -1189,9 +1183,9 @@ export class ISeekers extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
-    addScales(
+    addPower(
       id: BigNumberish,
-      scales: BigNumberish,
+      power: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
@@ -1255,7 +1249,7 @@ export class ISeekers extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    getScaleCountById(
+    getPowerById(
       id: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
@@ -1368,9 +1362,9 @@ export class ISeekers extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
-    addScales(
+    addPower(
       id: BigNumberish,
-      scales: BigNumberish,
+      power: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
@@ -1440,7 +1434,7 @@ export class ISeekers extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    getScaleCountById(
+    getPowerById(
       id: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;

@@ -88,17 +88,17 @@ const _abi = [
       {
         indexed: false,
         internalType: "uint256",
-        name: "scalesAdded",
+        name: "powerAdded",
         type: "uint256",
       },
       {
         indexed: false,
         internalType: "uint256",
-        name: "newScaleCount",
+        name: "newPower",
         type: "uint256",
       },
     ],
-    name: "ScalesAdded",
+    name: "PowerAdded",
     type: "event",
   },
   {
@@ -206,11 +206,11 @@ const _abi = [
       },
       {
         internalType: "uint256",
-        name: "scales",
+        name: "power",
         type: "uint256",
       },
     ],
-    name: "addScales",
+    name: "addPower",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
@@ -456,7 +456,7 @@ const _abi = [
         type: "uint256",
       },
     ],
-    name: "getScaleCountById",
+    name: "getPowerById",
     outputs: [
       {
         internalType: "uint16",

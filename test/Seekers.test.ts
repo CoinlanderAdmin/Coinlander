@@ -325,11 +325,11 @@ describe("Seekers", function () {
       expect(afterBirth).to.equal(beforeBirth)
     })
 
-    it("does not change the number of scales", async () => {
+    it("does not change the amount of power", async () => {
       await seekers.performUncloaking()
-      const beforeScales = await seekers.getScaleCountById(id)
+      const beforeScales = await seekers.getPowerById(id)
       await seekers.connect(userA).uncloakSeeker(id)
-      const afterScales = await seekers.getScaleCountById(id)
+      const afterScales = await seekers.getPowerById(id)
       expect(afterScales).to.equal(beforeScales)
     })
 
@@ -388,7 +388,7 @@ describe("Seekers", function () {
     it("requires that the seeker has scales to burn", async () => {
       await seekers.performUncloaking()
       await seekers.connect(userA).uncloakSeeker(id)
-      let scaleCount = (await seekers.getScaleCountById(id))
+      let scaleCount = (await seekers.getPowerById(id))
       for(let i=0; i < scaleCount; i++){
         await seekers.connect(userA).rerollDethscales(id)
       }
@@ -428,7 +428,7 @@ describe("Seekers", function () {
     })
   })
 
-  describe("upon addScales", () => {
+  describe("upon addPower", () => {
     let id: BigNumber 
     beforeEach(async function () {
       seekers = await Seekers.deploy()
@@ -437,25 +437,25 @@ describe("Seekers", function () {
       id = await seekers.tokenOfOwnerByIndex(userA.address,0)
     })
     
-    it("does not let scales get added to nonexistant tokens", async () => {
-      await expect(seekers.addScales(id.add(1),1)).to.be.reverted
+    it("does not let power get added to nonexistent tokens", async () => {
+      await expect(seekers.addPower(id.add(1),1)).to.be.reverted
     })
 
-    it("requires a non-zero scale amount", async () => {
-      await expect(seekers.addScales(id,0)).to.be.reverted
+    it("requires a non-zero power amount", async () => {
+      await expect(seekers.addPower(id,0)).to.be.reverted
     })
 
-    it("adds the correct number of scales to the seeker", async () => {
-      let beforeScales = await seekers.getScaleCountById(id)
-      await seekers.addScales(id,1)
-      let afterScales = await seekers.getScaleCountById(id)
+    it("adds the correct amount of power to the seeker", async () => {
+      let beforeScales = await seekers.getPowerById(id)
+      await seekers.addPower(id,1)
+      let afterScales = await seekers.getPowerById(id)
       expect(afterScales).to.be.equal(beforeScales + 1)
     })
 
-    it("does not set the scale count higher than the max pixel count", async () => {
-      let maxScales = await seekers.MAXPIXELS()
-      await seekers.addScales(id,(maxScales + 1))
-      expect(await seekers.getScaleCountById(id)).to.equal(maxScales)
+    it("does not set the power amount higher than the max power value", async () => {
+      let maxScales = await seekers.MAXPOWER()
+      await seekers.addPower(id,(maxScales + 1))
+      expect(await seekers.getPowerById(id)).to.equal(maxScales)
     })
   })
 })

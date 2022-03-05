@@ -152,16 +152,18 @@ describe("SeasonOne", function () {
     })
 
     it("reverts if there isn't anything to withdraw", async () => {
-      await expect(seasonOne.connect(userB).claimAll()).to.be.reverted
+      await expect(seasonOne.connect(userB).claimAll()).to.be.revertedWith("E010")
     })
 
     it("pays the user their deposit", async () => {
       let beforeBalance = await userA.getBalance()
-      let refund = await seasonOne.getPendingWithdrawal(userA.address)
-      await seasonOne.connect(userA).claimAll()
+      let claimables = await seasonOne.getPendingWithdrawal(userA.address)
+      let tx = await seasonOne.connect(userA).claimAll()
+      let receipt = await tx.wait()
+      let gasFee = receipt.cumulativeGasUsed.mul(receipt.effectiveGasPrice)
       let afterBalance = await userA.getBalance()
-      expect(refund[0]).to.be.gt(0)
-      expect(afterBalance).to.be.gt(beforeBalance)
+      expect(claimables[0]).to.be.gt(0)
+      expect(afterBalance).to.be.equal(beforeBalance.add(claimables[0]).sub(gasFee))
     })
 
     it ("mints a shard for them", async () => {
@@ -180,7 +182,7 @@ describe("SeasonOne", function () {
 
     it("does not let them withdraw again", async ()=> {
       await seasonOne.connect(userA).claimAll()
-      await expect(seasonOne.connect(userA).claimAll()).to.be.reverted
+      await expect(seasonOne.connect(userA).claimAll()).to.be.revertedWith("E010")
     })
   })
 
@@ -188,16 +190,21 @@ describe("SeasonOne", function () {
     beforeEach(async function () {
       SS = await seasonOne.seizureStake()
       await seasonOne.connect(userA).seize({ value: SS })
-      oldSS = SS
+      SS = await seasonOne.seizureStake()
+      await seasonOne.connect(userB).seize({ value: SS })
+      SS = await seasonOne.seizureStake()
+      await seasonOne.connect(userA).seize({ value: SS })
       SS = await seasonOne.seizureStake()
       await seasonOne.connect(userB).seize({ value: SS })
     })
 
     it("allows the owner to withdraw the reserve balance", async ()=> {
       let beforeBalance = await owner.getBalance()
-      await seasonOne.ownerWithdraw()
+      let tx = await seasonOne.ownerWithdraw()
+      let receipt = await tx.wait()
+      let gasFee = receipt.cumulativeGasUsed.mul(receipt.effectiveGasPrice)
       let afterBalance = await owner.getBalance()
-      expect(afterBalance).to.be.gt(beforeBalance)
+      expect(afterBalance).to.be.gt(beforeBalance.sub(gasFee))
     })
 
     it("does not allow a non-owner to withdraw the reserve balance", async ()=> {
@@ -210,106 +217,108 @@ describe("SeasonOne", function () {
     })
   })
 
-  describe("upon burnShardForScale", () => {
-    beforeEach(async function () {
-      SS = await seasonOne.seizureStake()
-      await seasonOne.connect(userA).seize({ value: SS })
-      SS = await seasonOne.seizureStake()
-      await seasonOne.connect(userB).seize({ value: SS })
-      await seasonOne.connect(userA).claimAll()
-    })
+// The following tests have been moved into their respective tests for E3/E7 due to the shard spendable event
 
-    it("requires that the user holds a shard", async ()=> {
-      await expect(seasonOne.connect(userB).burnShardForScale(1,1)).to.be.reverted
-    })
+  // describe("upon burnShardForPower", () => {
+  //   beforeEach(async function () {
+  //     SS = await seasonOne.seizureStake()
+  //     await seasonOne.connect(userA).seize({ value: SS })
+  //     SS = await seasonOne.seizureStake()
+  //     await seasonOne.connect(userB).seize({ value: SS })
+  //     await seasonOne.connect(userA).claimAll()
+  //   })
 
-    it("requires that the user specifies a non-zero shard amount", async ()=> {
-      await expect(seasonOne.connect(userA).burnShardForScale(1,0)).to.be.reverted
-    })
+  //   it("requires that the user holds a shard", async ()=> {
+  //     await expect(seasonOne.connect(userB).burnShardForPower(1,1)).to.be.reverted
+  //   })
 
-    it("requires that the user specifies a valid seeker id", async ()=> {
-      await expect(seasonOne.connect(userA).burnShardForScale(0,1)).to.be.reverted
-    })
+  //   it("requires that the user specifies a non-zero shard amount", async ()=> {
+  //     await expect(seasonOne.connect(userA).burnShardForPower(1,0)).to.be.reverted
+  //   })
 
-    it("requires that the user holds the amount of shard they're trying to burn", async ()=> {
-      await expect(seasonOne.connect(userA).burnShardForScale(1,2)).to.be.reverted
-    })
+  //   it("requires that the user specifies a valid seeker id", async ()=> {
+  //     await expect(seasonOne.connect(userA).burnShardForPower(0,1)).to.be.reverted
+  //   })
 
-    it("successfully burns shard", async ()=> {
-      console.log(await seasonOne.balanceOf(userA.address,1))
-      await seasonOne.connect(userA).burnShardForScale(1,1)
-      expect(await seasonOne.balanceOf(userA.address,1)).to.equal(0)
-    })
-  })
+  //   it("requires that the user holds the amount of shard they're trying to burn", async ()=> {
+  //     await expect(seasonOne.connect(userA).burnShardForPower(1,2)).to.be.reverted
+  //   })
 
-  describe("upon stakeShardForCloin", () => {
-    beforeEach(async function () {
-      SS = await seasonOne.seizureStake()
-      await seasonOne.connect(userA).seize({ value: SS })
-      SS = await seasonOne.seizureStake()
-      await seasonOne.connect(userB).seize({ value: SS })
-      await seasonOne.connect(userA).claimAll()
-    })
+  //   it("successfully burns shard", async ()=> {
+  //     console.log(await seasonOne.balanceOf(userA.address,1))
+  //     await seasonOne.connect(userA).burnShardForPower(1,1)
+  //     expect(await seasonOne.balanceOf(userA.address,1)).to.equal(0)
+  //   })
+  // })
 
-    it("requires that the user holds a shard", async ()=> {
-      await expect(seasonOne.connect(userB).stakeShardForCloin(1)).to.be.reverted
-    })
+  // describe("upon stakeShardForCloin", () => {
+  //   beforeEach(async function () {
+  //     SS = await seasonOne.seizureStake()
+  //     await seasonOne.connect(userA).seize({ value: SS })
+  //     SS = await seasonOne.seizureStake()
+  //     await seasonOne.connect(userB).seize({ value: SS })
+  //     await seasonOne.connect(userA).claimAll()
+  //   })
 
-    it("requires that the user specifies a non-zero shard amount", async ()=> {
-      await expect(seasonOne.connect(userA).stakeShardForCloin(0)).to.be.reverted
-    })
+  //   it("requires that the user holds a shard", async ()=> {
+  //     await expect(seasonOne.connect(userB).stakeShardForCloin(1)).to.be.reverted
+  //   })
 
-    it("requires that the user holds the amount of shard they're trying to stake", async ()=> {
-      await expect(seasonOne.connect(userA).stakeShardForCloin(2)).to.be.reverted
-    })
+  //   it("requires that the user specifies a non-zero shard amount", async ()=> {
+  //     await expect(seasonOne.connect(userA).stakeShardForCloin(0)).to.be.reverted
+  //   })
 
-    it("successfully burns shard", async ()=> {
-      await seasonOne.connect(userA).stakeShardForCloin(1)
-      expect(await seasonOne.balanceOf(userA.address,1)).to.equal(0)
-    })
+  //   it("requires that the user holds the amount of shard they're trying to stake", async ()=> {
+  //     await expect(seasonOne.connect(userA).stakeShardForCloin(2)).to.be.reverted
+  //   })
 
-    it("records the deposit successfully", async ()=> {
-      let tx = await seasonOne.connect(userA).stakeShardForCloin(1)
-      let deposit = await seasonOne.cloinDeposits(0)
-      expect(deposit.depositor).to.equal(userA.address)
-      expect(deposit.amount).to.equal(1)
-      expect(deposit.blockNumber).equal(tx.blockNumber)
-    })
-  })
+  //   it("successfully burns shard", async ()=> {
+  //     await seasonOne.connect(userA).stakeShardForCloin(1)
+  //     expect(await seasonOne.balanceOf(userA.address,1)).to.equal(0)
+  //   })
 
-  describe("upon burn shard for fragment", () => {
-    let startingBalance = 10
-    let SHARDTOFRAGMENT: number
-    beforeEach(async function () {
-      await seasonOne.keeperShardMint(20)
-      await seasonOne.safeBatchTransferFrom(owner.address, userA.address, [1], [startingBalance], "")
-      await seasonOne.safeBatchTransferFrom(owner.address, userB.address, [1], [startingBalance], "")
+  //   it("records the deposit successfully", async ()=> {
+  //     let tx = await seasonOne.connect(userA).stakeShardForCloin(1)
+  //     let deposit = await seasonOne.cloinDeposits(0)
+  //     expect(deposit.depositor).to.equal(userA.address)
+  //     expect(deposit.amount).to.equal(1)
+  //     expect(deposit.blockNumber).equal(tx.blockNumber)
+  //   })
+  // })
 
-
-      SS = await seasonOne.seizureStake()
-      await seasonOne.connect(userA).seize({ value: SS })
-      SS = await seasonOne.seizureStake()
-      await seasonOne.connect(userB).seize({ value: SS })
-      await seasonOne.connect(userA).claimAll()
-      SHARDTOFRAGMENT = (await seasonOne.SHARDTOFRAGMENTMULTIPLIER()).toNumber()
-    })
-
-    it("requires the user to specify a non zero shard amount", async () => {
-      await expect(seasonOne.connect(userA).burnShardForFragments(0)).to.be.reverted
-    })
-
-    it("requires that the user specify an even multiple of the shard-to-fragment conversation rate", async () =>  { 
-      await expect(seasonOne.connect(userA).burnShardForFragments(SHARDTOFRAGMENT - 1)).to.be.reverted
-    })
-
-    it("requires that the user claiming fragments owns a Seeker", async () => {
-
-    })
-    it("allows a user to burn shard for fragment at the correct rate", async () =>  {
-      await seasonOne.connect(userA).burnShardForFragments(SHARDTOFRAGMENT)
-      expect(await seasonOne.balanceOf(userA.address, 1)).to.equal(startingBalance - SHARDTOFRAGMENT)
-    })
+  // describe("upon burn shard for fragment", () => {
+  //   let startingBalance = 10
+  //   let SHARDTOFRAGMENT: number
+  //   beforeEach(async function () {
+  //     await seasonOne.keeperShardMint(20)
+  //     await seasonOne.safeBatchTransferFrom(owner.address, userA.address, [1], [startingBalance], "0x00")
+  //     await seasonOne.safeBatchTransferFrom(owner.address, userB.address, [1], [startingBalance], "0x00")
 
 
-  })
+  //     SS = await seasonOne.seizureStake()
+  //     await seasonOne.connect(userA).seize({ value: SS })
+  //     SS = await seasonOne.seizureStake()
+  //     await seasonOne.connect(userB).seize({ value: SS })
+  //     await seasonOne.connect(userA).claimAll()
+  //     SHARDTOFRAGMENT = (await seasonOne.SHARDTOFRAGMENTMULTIPLIER()).toNumber()
+  //   })
+
+  //   it("requires the user to specify a non zero shard amount", async () => {
+  //     await expect(seasonOne.connect(userA).burnShardForFragments(0)).to.be.reverted
+  //   })
+
+  //   it("requires that the user specify an even multiple of the shard-to-fragment conversation rate", async () =>  { 
+  //     await expect(seasonOne.connect(userA).burnShardForFragments(SHARDTOFRAGMENT - 1)).to.be.reverted
+  //   })
+
+  //   it("requires that the user claiming fragments owns a Seeker", async () => {
+
+  //   })
+  //   it("allows a user to burn shard for fragment at the correct rate", async () =>  {
+  //     await seasonOne.connect(userA).burnShardForFragments(SHARDTOFRAGMENT)
+  //     expect(await seasonOne.balanceOf(userA.address, 1)).to.equal(startingBalance - SHARDTOFRAGMENT)
+  //   })
+
+
+//   })
 })

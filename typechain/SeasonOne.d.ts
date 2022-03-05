@@ -39,7 +39,7 @@ interface SeasonOneInterface extends ethers.utils.Interface {
     "balanceOf(address,uint256)": FunctionFragment;
     "balanceOfBatch(address[],uint256[])": FunctionFragment;
     "burnShardForFragments(uint256)": FunctionFragment;
-    "burnShardForScale(uint256,uint256)": FunctionFragment;
+    "burnShardForPower(uint256,uint256)": FunctionFragment;
     "changeURI(string)": FunctionFragment;
     "claimAll()": FunctionFragment;
     "claimedAirdropBySeekerId(uint256)": FunctionFragment;
@@ -132,7 +132,7 @@ interface SeasonOneInterface extends ethers.utils.Interface {
     values: [BigNumberish]
   ): string;
   encodeFunctionData(
-    functionFragment: "burnShardForScale",
+    functionFragment: "burnShardForPower",
     values: [BigNumberish, BigNumberish]
   ): string;
   encodeFunctionData(functionFragment: "changeURI", values: [string]): string;
@@ -277,7 +277,7 @@ interface SeasonOneInterface extends ethers.utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "burnShardForScale",
+    functionFragment: "burnShardForPower",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "changeURI", data: BytesLike): Result;
@@ -369,7 +369,7 @@ interface SeasonOneInterface extends ethers.utils.Interface {
     "AirdropClaim(uint256)": EventFragment;
     "ApprovalForAll(address,address,bool)": EventFragment;
     "ClaimedAll(address)": EventFragment;
-    "NewCloinDeposit(address,uint16)": EventFragment;
+    "NewCloinDeposit(address,uint16,uint256)": EventFragment;
     "OwnershipTransferred(address,address)": EventFragment;
     "Seized(address,address,uint256,uint256,uint256,uint256)": EventFragment;
     "ShardSpendable()": EventFragment;
@@ -405,7 +405,11 @@ export type ApprovalForAllEvent = TypedEvent<
 export type ClaimedAllEvent = TypedEvent<[string] & { claimer: string }>;
 
 export type NewCloinDepositEvent = TypedEvent<
-  [string, number] & { depositor: string; amount: number }
+  [string, number, BigNumber] & {
+    depositor: string;
+    amount: number;
+    depositIdx: BigNumber;
+  }
 >;
 
 export type OwnershipTransferredEvent = TypedEvent<
@@ -543,7 +547,7 @@ export class SeasonOne extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
-    burnShardForScale(
+    burnShardForPower(
       seekerId: BigNumberish,
       amount: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
@@ -726,7 +730,7 @@ export class SeasonOne extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-  burnShardForScale(
+  burnShardForPower(
     seekerId: BigNumberish,
     amount: BigNumberish,
     overrides?: Overrides & { from?: string | Promise<string> }
@@ -907,7 +911,7 @@ export class SeasonOne extends BaseContract {
       overrides?: CallOverrides
     ): Promise<void>;
 
-    burnShardForScale(
+    burnShardForPower(
       seekerId: BigNumberish,
       amount: BigNumberish,
       overrides?: CallOverrides
@@ -1060,20 +1064,22 @@ export class SeasonOne extends BaseContract {
 
     ClaimedAll(claimer?: null): TypedEventFilter<[string], { claimer: string }>;
 
-    "NewCloinDeposit(address,uint16)"(
+    "NewCloinDeposit(address,uint16,uint256)"(
       depositor?: null,
-      amount?: null
+      amount?: null,
+      depositIdx?: null
     ): TypedEventFilter<
-      [string, number],
-      { depositor: string; amount: number }
+      [string, number, BigNumber],
+      { depositor: string; amount: number; depositIdx: BigNumber }
     >;
 
     NewCloinDeposit(
       depositor?: null,
-      amount?: null
+      amount?: null,
+      depositIdx?: null
     ): TypedEventFilter<
-      [string, number],
-      { depositor: string; amount: number }
+      [string, number, BigNumber],
+      { depositor: string; amount: number; depositIdx: BigNumber }
     >;
 
     "OwnershipTransferred(address,address)"(
@@ -1268,7 +1274,7 @@ export class SeasonOne extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
-    burnShardForScale(
+    burnShardForPower(
       seekerId: BigNumberish,
       amount: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
@@ -1448,7 +1454,7 @@ export class SeasonOne extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
-    burnShardForScale(
+    burnShardForPower(
       seekerId: BigNumberish,
       amount: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }

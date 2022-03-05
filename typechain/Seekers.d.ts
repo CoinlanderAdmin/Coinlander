@@ -22,7 +22,7 @@ import { TypedEventFilter, TypedEvent, TypedListener } from "./commons";
 
 interface SeekersInterface extends ethers.utils.Interface {
   functions: {
-    "BIRTHSEEKERSCALESTART()": FunctionFragment;
+    "BIRTHSEEKERPOWERSTART()": FunctionFragment;
     "DEFAULT_ADMIN_ROLE()": FunctionFragment;
     "DETHSCALEREROLLCOST()": FunctionFragment;
     "FIRSTMINT()": FunctionFragment;
@@ -30,11 +30,11 @@ interface SeekersInterface extends ethers.utils.Interface {
     "GAME_ROLE()": FunctionFragment;
     "KEEPERS_ROLE()": FunctionFragment;
     "MAXMINTABLE()": FunctionFragment;
-    "MAXPIXELS()": FunctionFragment;
+    "MAXPOWER()": FunctionFragment;
     "MAXSEEKERS()": FunctionFragment;
     "SECONDMINT()": FunctionFragment;
     "SECONDMINTPRICE()": FunctionFragment;
-    "SUMMONSEEKERSCALESTART()": FunctionFragment;
+    "SUMMONSEEKERPOWERSTART()": FunctionFragment;
     "THIRDMINT()": FunctionFragment;
     "THIRDMINTPRICE()": FunctionFragment;
     "THIRDMINT_INCR()": FunctionFragment;
@@ -45,7 +45,7 @@ interface SeekersInterface extends ethers.utils.Interface {
     "activateThirdMint()": FunctionFragment;
     "addGameContract(address)": FunctionFragment;
     "addKeeper(address)": FunctionFragment;
-    "addScales(uint256,uint256)": FunctionFragment;
+    "addPower(uint256,uint256)": FunctionFragment;
     "approve(address,uint256)": FunctionFragment;
     "balanceOf(address)": FunctionFragment;
     "birthSeeker(address)": FunctionFragment;
@@ -63,8 +63,8 @@ interface SeekersInterface extends ethers.utils.Interface {
     "getCloakStatusById(uint256)": FunctionFragment;
     "getDethscalesById(uint256)": FunctionFragment;
     "getFullCloak(uint256)": FunctionFragment;
+    "getPowerById(uint256)": FunctionFragment;
     "getRoleAdmin(bytes32)": FunctionFragment;
-    "getScaleCountById(uint256)": FunctionFragment;
     "goodsOnly()": FunctionFragment;
     "grantRole(bytes32,address)": FunctionFragment;
     "hasRole(bytes32,address)": FunctionFragment;
@@ -98,7 +98,7 @@ interface SeekersInterface extends ethers.utils.Interface {
   };
 
   encodeFunctionData(
-    functionFragment: "BIRTHSEEKERSCALESTART",
+    functionFragment: "BIRTHSEEKERPOWERSTART",
     values?: undefined
   ): string;
   encodeFunctionData(
@@ -123,7 +123,7 @@ interface SeekersInterface extends ethers.utils.Interface {
     functionFragment: "MAXMINTABLE",
     values?: undefined
   ): string;
-  encodeFunctionData(functionFragment: "MAXPIXELS", values?: undefined): string;
+  encodeFunctionData(functionFragment: "MAXPOWER", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "MAXSEEKERS",
     values?: undefined
@@ -137,7 +137,7 @@ interface SeekersInterface extends ethers.utils.Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
-    functionFragment: "SUMMONSEEKERSCALESTART",
+    functionFragment: "SUMMONSEEKERPOWERSTART",
     values?: undefined
   ): string;
   encodeFunctionData(functionFragment: "THIRDMINT", values?: undefined): string;
@@ -175,7 +175,7 @@ interface SeekersInterface extends ethers.utils.Interface {
   ): string;
   encodeFunctionData(functionFragment: "addKeeper", values: [string]): string;
   encodeFunctionData(
-    functionFragment: "addScales",
+    functionFragment: "addPower",
     values: [BigNumberish, BigNumberish]
   ): string;
   encodeFunctionData(
@@ -238,12 +238,12 @@ interface SeekersInterface extends ethers.utils.Interface {
     values: [BigNumberish]
   ): string;
   encodeFunctionData(
-    functionFragment: "getRoleAdmin",
-    values: [BytesLike]
+    functionFragment: "getPowerById",
+    values: [BigNumberish]
   ): string;
   encodeFunctionData(
-    functionFragment: "getScaleCountById",
-    values: [BigNumberish]
+    functionFragment: "getRoleAdmin",
+    values: [BytesLike]
   ): string;
   encodeFunctionData(functionFragment: "goodsOnly", values?: undefined): string;
   encodeFunctionData(
@@ -352,7 +352,7 @@ interface SeekersInterface extends ethers.utils.Interface {
   ): string;
 
   decodeFunctionResult(
-    functionFragment: "BIRTHSEEKERSCALESTART",
+    functionFragment: "BIRTHSEEKERPOWERSTART",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -377,7 +377,7 @@ interface SeekersInterface extends ethers.utils.Interface {
     functionFragment: "MAXMINTABLE",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(functionFragment: "MAXPIXELS", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "MAXPOWER", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "MAXSEEKERS", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "SECONDMINT", data: BytesLike): Result;
   decodeFunctionResult(
@@ -385,7 +385,7 @@ interface SeekersInterface extends ethers.utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "SUMMONSEEKERSCALESTART",
+    functionFragment: "SUMMONSEEKERPOWERSTART",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "THIRDMINT", data: BytesLike): Result;
@@ -422,7 +422,7 @@ interface SeekersInterface extends ethers.utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "addKeeper", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "addScales", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "addPower", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "approve", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "balanceOf", data: BytesLike): Result;
   decodeFunctionResult(
@@ -480,11 +480,11 @@ interface SeekersInterface extends ethers.utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "getRoleAdmin",
+    functionFragment: "getPowerById",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "getScaleCountById",
+    functionFragment: "getRoleAdmin",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "goodsOnly", data: BytesLike): Result;
@@ -580,10 +580,10 @@ interface SeekersInterface extends ethers.utils.Interface {
     "ApprovalForAll(address,address,bool)": EventFragment;
     "DethscalesRerolled(uint256)": EventFragment;
     "FirstMintActivated()": EventFragment;
+    "PowerAdded(uint256,uint256,uint256)": EventFragment;
     "RoleAdminChanged(bytes32,bytes32,bytes32)": EventFragment;
     "RoleGranted(bytes32,address,address)": EventFragment;
     "RoleRevoked(bytes32,address,address)": EventFragment;
-    "ScalesAdded(uint256,uint256,uint256)": EventFragment;
     "SecondMintActivated()": EventFragment;
     "SeekerDeclaredToClan(uint256,address)": EventFragment;
     "SeekerUncloaked(uint256)": EventFragment;
@@ -596,10 +596,10 @@ interface SeekersInterface extends ethers.utils.Interface {
   getEvent(nameOrSignatureOrTopic: "ApprovalForAll"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "DethscalesRerolled"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "FirstMintActivated"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "PowerAdded"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "RoleAdminChanged"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "RoleGranted"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "RoleRevoked"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "ScalesAdded"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "SecondMintActivated"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "SeekerDeclaredToClan"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "SeekerUncloaked"): EventFragment;
@@ -630,6 +630,14 @@ export type DethscalesRerolledEvent = TypedEvent<
 
 export type FirstMintActivatedEvent = TypedEvent<[] & {}>;
 
+export type PowerAddedEvent = TypedEvent<
+  [BigNumber, BigNumber, BigNumber] & {
+    seekerId: BigNumber;
+    powerAdded: BigNumber;
+    newPower: BigNumber;
+  }
+>;
+
 export type RoleAdminChangedEvent = TypedEvent<
   [string, string, string] & {
     role: string;
@@ -644,14 +652,6 @@ export type RoleGrantedEvent = TypedEvent<
 
 export type RoleRevokedEvent = TypedEvent<
   [string, string, string] & { role: string; account: string; sender: string }
->;
-
-export type ScalesAddedEvent = TypedEvent<
-  [BigNumber, BigNumber, BigNumber] & {
-    seekerId: BigNumber;
-    scalesAdded: BigNumber;
-    newScaleCount: BigNumber;
-  }
 >;
 
 export type SecondMintActivatedEvent = TypedEvent<[] & {}>;
@@ -716,7 +716,7 @@ export class Seekers extends BaseContract {
   interface: SeekersInterface;
 
   functions: {
-    BIRTHSEEKERSCALESTART(overrides?: CallOverrides): Promise<[number]>;
+    BIRTHSEEKERPOWERSTART(overrides?: CallOverrides): Promise<[number]>;
 
     DEFAULT_ADMIN_ROLE(overrides?: CallOverrides): Promise<[string]>;
 
@@ -732,7 +732,7 @@ export class Seekers extends BaseContract {
 
     MAXMINTABLE(overrides?: CallOverrides): Promise<[BigNumber]>;
 
-    MAXPIXELS(overrides?: CallOverrides): Promise<[number]>;
+    MAXPOWER(overrides?: CallOverrides): Promise<[number]>;
 
     MAXSEEKERS(overrides?: CallOverrides): Promise<[BigNumber]>;
 
@@ -740,7 +740,7 @@ export class Seekers extends BaseContract {
 
     SECONDMINTPRICE(overrides?: CallOverrides): Promise<[BigNumber]>;
 
-    SUMMONSEEKERSCALESTART(overrides?: CallOverrides): Promise<[number]>;
+    SUMMONSEEKERPOWERSTART(overrides?: CallOverrides): Promise<[number]>;
 
     THIRDMINT(overrides?: CallOverrides): Promise<[BigNumber]>;
 
@@ -779,9 +779,9 @@ export class Seekers extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
-    addScales(
+    addPower(
       id: BigNumberish,
-      scales: BigNumberish,
+      power: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
@@ -890,12 +890,12 @@ export class Seekers extends BaseContract {
       ]
     >;
 
-    getRoleAdmin(role: BytesLike, overrides?: CallOverrides): Promise<[string]>;
-
-    getScaleCountById(
+    getPowerById(
       id: BigNumberish,
       overrides?: CallOverrides
     ): Promise<[number]>;
+
+    getRoleAdmin(role: BytesLike, overrides?: CallOverrides): Promise<[string]>;
 
     goodsOnly(overrides?: CallOverrides): Promise<[boolean]>;
 
@@ -1040,7 +1040,7 @@ export class Seekers extends BaseContract {
     uncloaking(overrides?: CallOverrides): Promise<[boolean]>;
   };
 
-  BIRTHSEEKERSCALESTART(overrides?: CallOverrides): Promise<number>;
+  BIRTHSEEKERPOWERSTART(overrides?: CallOverrides): Promise<number>;
 
   DEFAULT_ADMIN_ROLE(overrides?: CallOverrides): Promise<string>;
 
@@ -1056,7 +1056,7 @@ export class Seekers extends BaseContract {
 
   MAXMINTABLE(overrides?: CallOverrides): Promise<BigNumber>;
 
-  MAXPIXELS(overrides?: CallOverrides): Promise<number>;
+  MAXPOWER(overrides?: CallOverrides): Promise<number>;
 
   MAXSEEKERS(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -1064,7 +1064,7 @@ export class Seekers extends BaseContract {
 
   SECONDMINTPRICE(overrides?: CallOverrides): Promise<BigNumber>;
 
-  SUMMONSEEKERSCALESTART(overrides?: CallOverrides): Promise<number>;
+  SUMMONSEEKERPOWERSTART(overrides?: CallOverrides): Promise<number>;
 
   THIRDMINT(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -1103,9 +1103,9 @@ export class Seekers extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-  addScales(
+  addPower(
     id: BigNumberish,
-    scales: BigNumberish,
+    power: BigNumberish,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
@@ -1212,12 +1212,9 @@ export class Seekers extends BaseContract {
     ]
   >;
 
-  getRoleAdmin(role: BytesLike, overrides?: CallOverrides): Promise<string>;
+  getPowerById(id: BigNumberish, overrides?: CallOverrides): Promise<number>;
 
-  getScaleCountById(
-    id: BigNumberish,
-    overrides?: CallOverrides
-  ): Promise<number>;
+  getRoleAdmin(role: BytesLike, overrides?: CallOverrides): Promise<string>;
 
   goodsOnly(overrides?: CallOverrides): Promise<boolean>;
 
@@ -1356,7 +1353,7 @@ export class Seekers extends BaseContract {
   uncloaking(overrides?: CallOverrides): Promise<boolean>;
 
   callStatic: {
-    BIRTHSEEKERSCALESTART(overrides?: CallOverrides): Promise<number>;
+    BIRTHSEEKERPOWERSTART(overrides?: CallOverrides): Promise<number>;
 
     DEFAULT_ADMIN_ROLE(overrides?: CallOverrides): Promise<string>;
 
@@ -1372,7 +1369,7 @@ export class Seekers extends BaseContract {
 
     MAXMINTABLE(overrides?: CallOverrides): Promise<BigNumber>;
 
-    MAXPIXELS(overrides?: CallOverrides): Promise<number>;
+    MAXPOWER(overrides?: CallOverrides): Promise<number>;
 
     MAXSEEKERS(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -1380,7 +1377,7 @@ export class Seekers extends BaseContract {
 
     SECONDMINTPRICE(overrides?: CallOverrides): Promise<BigNumber>;
 
-    SUMMONSEEKERSCALESTART(overrides?: CallOverrides): Promise<number>;
+    SUMMONSEEKERPOWERSTART(overrides?: CallOverrides): Promise<number>;
 
     THIRDMINT(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -1410,9 +1407,9 @@ export class Seekers extends BaseContract {
 
     addKeeper(newKeeper: string, overrides?: CallOverrides): Promise<void>;
 
-    addScales(
+    addPower(
       id: BigNumberish,
-      scales: BigNumberish,
+      power: BigNumberish,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -1514,12 +1511,9 @@ export class Seekers extends BaseContract {
       ]
     >;
 
-    getRoleAdmin(role: BytesLike, overrides?: CallOverrides): Promise<string>;
+    getPowerById(id: BigNumberish, overrides?: CallOverrides): Promise<number>;
 
-    getScaleCountById(
-      id: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<number>;
+    getRoleAdmin(role: BytesLike, overrides?: CallOverrides): Promise<string>;
 
     goodsOnly(overrides?: CallOverrides): Promise<boolean>;
 
@@ -1692,6 +1686,24 @@ export class Seekers extends BaseContract {
 
     FirstMintActivated(): TypedEventFilter<[], {}>;
 
+    "PowerAdded(uint256,uint256,uint256)"(
+      seekerId?: BigNumberish | null,
+      powerAdded?: null,
+      newPower?: null
+    ): TypedEventFilter<
+      [BigNumber, BigNumber, BigNumber],
+      { seekerId: BigNumber; powerAdded: BigNumber; newPower: BigNumber }
+    >;
+
+    PowerAdded(
+      seekerId?: BigNumberish | null,
+      powerAdded?: null,
+      newPower?: null
+    ): TypedEventFilter<
+      [BigNumber, BigNumber, BigNumber],
+      { seekerId: BigNumber; powerAdded: BigNumber; newPower: BigNumber }
+    >;
+
     "RoleAdminChanged(bytes32,bytes32,bytes32)"(
       role?: BytesLike | null,
       previousAdminRole?: BytesLike | null,
@@ -1744,24 +1756,6 @@ export class Seekers extends BaseContract {
     ): TypedEventFilter<
       [string, string, string],
       { role: string; account: string; sender: string }
-    >;
-
-    "ScalesAdded(uint256,uint256,uint256)"(
-      seekerId?: BigNumberish | null,
-      scalesAdded?: null,
-      newScaleCount?: null
-    ): TypedEventFilter<
-      [BigNumber, BigNumber, BigNumber],
-      { seekerId: BigNumber; scalesAdded: BigNumber; newScaleCount: BigNumber }
-    >;
-
-    ScalesAdded(
-      seekerId?: BigNumberish | null,
-      scalesAdded?: null,
-      newScaleCount?: null
-    ): TypedEventFilter<
-      [BigNumber, BigNumber, BigNumber],
-      { seekerId: BigNumber; scalesAdded: BigNumber; newScaleCount: BigNumber }
     >;
 
     "SecondMintActivated()"(): TypedEventFilter<[], {}>;
@@ -1820,7 +1814,7 @@ export class Seekers extends BaseContract {
   };
 
   estimateGas: {
-    BIRTHSEEKERSCALESTART(overrides?: CallOverrides): Promise<BigNumber>;
+    BIRTHSEEKERPOWERSTART(overrides?: CallOverrides): Promise<BigNumber>;
 
     DEFAULT_ADMIN_ROLE(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -1836,7 +1830,7 @@ export class Seekers extends BaseContract {
 
     MAXMINTABLE(overrides?: CallOverrides): Promise<BigNumber>;
 
-    MAXPIXELS(overrides?: CallOverrides): Promise<BigNumber>;
+    MAXPOWER(overrides?: CallOverrides): Promise<BigNumber>;
 
     MAXSEEKERS(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -1844,7 +1838,7 @@ export class Seekers extends BaseContract {
 
     SECONDMINTPRICE(overrides?: CallOverrides): Promise<BigNumber>;
 
-    SUMMONSEEKERSCALESTART(overrides?: CallOverrides): Promise<BigNumber>;
+    SUMMONSEEKERPOWERSTART(overrides?: CallOverrides): Promise<BigNumber>;
 
     THIRDMINT(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -1883,9 +1877,9 @@ export class Seekers extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
-    addScales(
+    addPower(
       id: BigNumberish,
-      scales: BigNumberish,
+      power: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
@@ -1957,13 +1951,13 @@ export class Seekers extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    getRoleAdmin(
-      role: BytesLike,
+    getPowerById(
+      id: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    getScaleCountById(
-      id: BigNumberish,
+    getRoleAdmin(
+      role: BytesLike,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
@@ -2111,7 +2105,7 @@ export class Seekers extends BaseContract {
   };
 
   populateTransaction: {
-    BIRTHSEEKERSCALESTART(
+    BIRTHSEEKERPOWERSTART(
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
@@ -2133,7 +2127,7 @@ export class Seekers extends BaseContract {
 
     MAXMINTABLE(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
-    MAXPIXELS(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+    MAXPOWER(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     MAXSEEKERS(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
@@ -2141,7 +2135,7 @@ export class Seekers extends BaseContract {
 
     SECONDMINTPRICE(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
-    SUMMONSEEKERSCALESTART(
+    SUMMONSEEKERPOWERSTART(
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
@@ -2182,9 +2176,9 @@ export class Seekers extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
-    addScales(
+    addPower(
       id: BigNumberish,
-      scales: BigNumberish,
+      power: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
@@ -2264,13 +2258,13 @@ export class Seekers extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    getRoleAdmin(
-      role: BytesLike,
+    getPowerById(
+      id: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    getScaleCountById(
-      id: BigNumberish,
+    getRoleAdmin(
+      role: BytesLike,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
