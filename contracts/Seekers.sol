@@ -8,7 +8,7 @@ import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "./interfaces/iSeekers.sol";
-// import "hardhat/console.sol";
+import "hardhat/console.sol";
 
 contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
   // Access control setup
@@ -347,25 +347,29 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
 
     // Those born from the Coin are deterministically stronger 
     if (attributesBySeekerId[id].bornFromCoin) {
-        minSingle = 15; 
-        maxSingle = 25; 
+      minSingle = 15; 
+      maxSingle = 25; 
     }
 
     // Determine 4 random attribute points
-    uint256 rangeSingle = maxSingle - minSingle;
-    uint8 ap1 = uint8(minSingle + _getRandomNumber(rangeSingle,id));
-    uint8 ap2 = uint8(minSingle + _getRandomNumber(rangeSingle,ap1));
-    uint8 ap3 = uint8(minSingle + _getRandomNumber(rangeSingle,ap2));
-    uint8 ap4 = uint8(minSingle + _getRandomNumber(rangeSingle,ap3));
+    uint256 rangeSingle = maxSingle - minSingle + 1;
+    uint8 ap1 = uint8(minSingle + _getRandomNumber(rangeSingle, 0));
+    console.log(ap1);
+    uint8 ap2 = uint8(minSingle + _getRandomNumber(rangeSingle, 1));
+    console.log(ap2);
+    uint8 ap3 = uint8(minSingle + _getRandomNumber(rangeSingle, 2));
+    console.log(ap3);
+    uint8 ap4 = uint8(minSingle + _getRandomNumber(rangeSingle, 3));
+    console.log(ap4);
 
-    // Set power floor
-    uint8 sum = ap1 + ap2 + ap3 + ap4;
+    // // Set power floor
+    // uint8 sum = ap1 + ap2 + ap3 + ap4;
     uint8[4] memory aps = [ap1, ap2, ap3, ap4];
-    if (sum < minSum) {
-      uint8 diff = minSum - sum;
-      uint8 idx = _getMinIdx(aps);
-      aps[idx] += diff;
-    }
+    // if (sum < minSum) {
+    //   uint8 diff = minSum - sum;
+    //   uint8 idx = _getMinIdx(aps);
+    //   aps[idx] += diff;
+    // }
 
     // Shuffle them
     for (uint256 i = 0; i < aps.length; i++) {
@@ -592,12 +596,12 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
     uint256 random = uint256(
       keccak256(
         abi.encodePacked(
-          mod,
-          r,
           blockhash(block.number - 1),
           block.coinbase,
           block.difficulty,
-          msg.sender
+          msg.sender,
+          mod,
+          r
         )
       )
     );
