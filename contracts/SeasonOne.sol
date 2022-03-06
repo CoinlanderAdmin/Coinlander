@@ -403,7 +403,9 @@ contract SeasonOne is ERC1155, Ownable, ReentrancyGuard {
 
     function _calculateShardReward(uint256 _value) private pure returns (uint16) {
         uint256 reward = BASESHARDREWARD;
-        reward += (_value/10**18) * INCRBASIS / INCRSHARDREWARD;
+        // @todo need a test multiplier for shard reward
+        reward += ((_value * 10**4)/10**18) * INCRBASIS / INCRSHARDREWARD;
+        // reward += (_value/10**18) * INCRBASIS / INCRSHARDREWARD;
         return uint16(reward);  
     }
 

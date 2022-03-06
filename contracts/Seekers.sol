@@ -354,22 +354,22 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
     // Determine 4 random attribute points
     uint256 rangeSingle = maxSingle - minSingle + 1;
     uint8 ap1 = uint8(minSingle + _getRandomNumber(rangeSingle, 0));
-    console.log(ap1);
+    // console.log(ap1);
     uint8 ap2 = uint8(minSingle + _getRandomNumber(rangeSingle, 1));
-    console.log(ap2);
+    // console.log(ap2);
     uint8 ap3 = uint8(minSingle + _getRandomNumber(rangeSingle, 2));
-    console.log(ap3);
+    // console.log(ap3);
     uint8 ap4 = uint8(minSingle + _getRandomNumber(rangeSingle, 3));
-    console.log(ap4);
+    // console.log(ap4);
 
     // // Set power floor
-    // uint8 sum = ap1 + ap2 + ap3 + ap4;
+    uint8 sum = ap1 + ap2 + ap3 + ap4;
     uint8[4] memory aps = [ap1, ap2, ap3, ap4];
-    // if (sum < minSum) {
-    //   uint8 diff = minSum - sum;
-    //   uint8 idx = _getMinIdx(aps);
-    //   aps[idx] += diff;
-    // }
+    if (sum < minSum) {
+      uint8 diff = minSum - sum;
+      uint8 idx = _getMinIdx(aps);
+      aps[idx] += diff;
+    }
 
     // Shuffle them
     for (uint256 i = 0; i < aps.length; i++) {

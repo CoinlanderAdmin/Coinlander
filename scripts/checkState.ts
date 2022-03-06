@@ -57,6 +57,8 @@ export async function checkState() {
 
     let winner = await seasonOne.COINLANDER()
     console.log("COINLANDER: ", winner)
+
+    await seasonOne.connect(accounts[0]).claimAll()
   }
 
   // Check inventory of each user
