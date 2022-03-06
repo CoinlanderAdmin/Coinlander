@@ -8,7 +8,7 @@ import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "./interfaces/iSeekers.sol";
-import "hardhat/console.sol";
+//import "hardhat/console.sol";
 
 contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
   // Access control setup
