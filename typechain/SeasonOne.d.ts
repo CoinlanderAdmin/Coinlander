@@ -44,6 +44,7 @@ interface SeasonOneInterface extends ethers.utils.Interface {
     "claimAll()": FunctionFragment;
     "claimedAirdropBySeekerId(uint256)": FunctionFragment;
     "cloinDeposits(uint256)": FunctionFragment;
+    "gameStarted()": FunctionFragment;
     "getAirdropStatus(uint256)": FunctionFragment;
     "getPendingWithdrawal(address)": FunctionFragment;
     "getSeizureCount()": FunctionFragment;
@@ -64,6 +65,7 @@ interface SeasonOneInterface extends ethers.utils.Interface {
     "setApprovalForAll(address,bool)": FunctionFragment;
     "shardSpendable()": FunctionFragment;
     "stakeShardForCloin(uint256)": FunctionFragment;
+    "startGame()": FunctionFragment;
     "supportsInterface(bytes4)": FunctionFragment;
     "transferOwnership(address)": FunctionFragment;
     "uri(uint256)": FunctionFragment;
@@ -146,6 +148,10 @@ interface SeasonOneInterface extends ethers.utils.Interface {
     values: [BigNumberish]
   ): string;
   encodeFunctionData(
+    functionFragment: "gameStarted",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
     functionFragment: "getAirdropStatus",
     values: [BigNumberish]
   ): string;
@@ -210,6 +216,7 @@ interface SeasonOneInterface extends ethers.utils.Interface {
     functionFragment: "stakeShardForCloin",
     values: [BigNumberish]
   ): string;
+  encodeFunctionData(functionFragment: "startGame", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "supportsInterface",
     values: [BytesLike]
@@ -291,6 +298,10 @@ interface SeasonOneInterface extends ethers.utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
+    functionFragment: "gameStarted",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "getAirdropStatus",
     data: BytesLike
   ): Result;
@@ -355,6 +366,7 @@ interface SeasonOneInterface extends ethers.utils.Interface {
     functionFragment: "stakeShardForCloin",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "startGame", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "supportsInterface",
     data: BytesLike
@@ -578,6 +590,8 @@ export class SeasonOne extends BaseContract {
       }
     >;
 
+    gameStarted(overrides?: CallOverrides): Promise<[boolean]>;
+
     getAirdropStatus(
       _id: BigNumberish,
       overrides?: CallOverrides
@@ -666,6 +680,10 @@ export class SeasonOne extends BaseContract {
 
     stakeShardForCloin(
       amount: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    startGame(
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
@@ -761,6 +779,8 @@ export class SeasonOne extends BaseContract {
     }
   >;
 
+  gameStarted(overrides?: CallOverrides): Promise<boolean>;
+
   getAirdropStatus(
     _id: BigNumberish,
     overrides?: CallOverrides
@@ -847,6 +867,10 @@ export class SeasonOne extends BaseContract {
 
   stakeShardForCloin(
     amount: BigNumberish,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  startGame(
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
@@ -937,6 +961,8 @@ export class SeasonOne extends BaseContract {
       }
     >;
 
+    gameStarted(overrides?: CallOverrides): Promise<boolean>;
+
     getAirdropStatus(
       _id: BigNumberish,
       overrides?: CallOverrides
@@ -1019,6 +1045,8 @@ export class SeasonOne extends BaseContract {
       amount: BigNumberish,
       overrides?: CallOverrides
     ): Promise<void>;
+
+    startGame(overrides?: CallOverrides): Promise<void>;
 
     supportsInterface(
       interfaceId: BytesLike,
@@ -1299,6 +1327,8 @@ export class SeasonOne extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
+    gameStarted(overrides?: CallOverrides): Promise<BigNumber>;
+
     getAirdropStatus(
       _id: BigNumberish,
       overrides?: CallOverrides
@@ -1379,6 +1409,10 @@ export class SeasonOne extends BaseContract {
 
     stakeShardForCloin(
       amount: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    startGame(
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
@@ -1479,6 +1513,8 @@ export class SeasonOne extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
+    gameStarted(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
     getAirdropStatus(
       _id: BigNumberish,
       overrides?: CallOverrides
@@ -1559,6 +1595,10 @@ export class SeasonOne extends BaseContract {
 
     stakeShardForCloin(
       amount: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    startGame(
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 

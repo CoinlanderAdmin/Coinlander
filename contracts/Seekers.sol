@@ -287,7 +287,7 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
   function burnPower(uint256 id, uint16 powerToBurn) external onlyGame {
     require(ownerOf(id) != address(0), "E014");
     require(ownerOf(id) == tx.origin, "E010");
-    require(powerToBurn >= attributesBySeekerId[id].power, "E021");
+    require(powerToBurn <= attributesBySeekerId[id].power, "E021");
     _burnPower(id, powerToBurn);
   }
 
@@ -406,7 +406,7 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
 
     uint16 _dethscales;
     uint16 move;
-    uint16 range = maxDethscales - minDethscales;
+    uint16 range = maxDethscales - minDethscales + 1;
     uint16 rand = reroll ? 
       attributesBySeekerId[_id].dethscales : // use old dethscales if rerolling
       uint16(_getRandomNumber(2**16, _id));  // generate new scale pattern
@@ -515,7 +515,7 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
     }
     else { // Chaotic
       minNoiseBits = 32;
-      maxNoiseBits = 64;
+      maxNoiseBits = 96;
     }
 
     uint32[32] memory fullCloak;
@@ -637,7 +637,7 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
       }
     }
     return minIdx;
-  } 
+  }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
   //                                                                                              //

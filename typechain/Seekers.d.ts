@@ -49,6 +49,7 @@ interface SeekersInterface extends ethers.utils.Interface {
     "approve(address,uint256)": FunctionFragment;
     "balanceOf(address)": FunctionFragment;
     "birthSeeker(address)": FunctionFragment;
+    "burnPower(uint256,uint16)": FunctionFragment;
     "currentBuyableSeekers()": FunctionFragment;
     "currentPrice()": FunctionFragment;
     "declareForClan(uint256,address)": FunctionFragment;
@@ -184,6 +185,10 @@ interface SeekersInterface extends ethers.utils.Interface {
   ): string;
   encodeFunctionData(functionFragment: "balanceOf", values: [string]): string;
   encodeFunctionData(functionFragment: "birthSeeker", values: [string]): string;
+  encodeFunctionData(
+    functionFragment: "burnPower",
+    values: [BigNumberish, BigNumberish]
+  ): string;
   encodeFunctionData(
     functionFragment: "currentBuyableSeekers",
     values?: undefined
@@ -429,6 +434,7 @@ interface SeekersInterface extends ethers.utils.Interface {
     functionFragment: "birthSeeker",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "burnPower", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "currentBuyableSeekers",
     data: BytesLike
@@ -798,6 +804,12 @@ export class Seekers extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
+    burnPower(
+      id: BigNumberish,
+      powerToBurn: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
     currentBuyableSeekers(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     currentPrice(overrides?: CallOverrides): Promise<[BigNumber]>;
@@ -1122,6 +1134,12 @@ export class Seekers extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
+  burnPower(
+    id: BigNumberish,
+    powerToBurn: BigNumberish,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
   currentBuyableSeekers(overrides?: CallOverrides): Promise<BigNumber>;
 
   currentPrice(overrides?: CallOverrides): Promise<BigNumber>;
@@ -1422,6 +1440,12 @@ export class Seekers extends BaseContract {
     balanceOf(owner: string, overrides?: CallOverrides): Promise<BigNumber>;
 
     birthSeeker(to: string, overrides?: CallOverrides): Promise<BigNumber>;
+
+    burnPower(
+      id: BigNumberish,
+      powerToBurn: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
 
     currentBuyableSeekers(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -1896,6 +1920,12 @@ export class Seekers extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
+    burnPower(
+      id: BigNumberish,
+      powerToBurn: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
     currentBuyableSeekers(overrides?: CallOverrides): Promise<BigNumber>;
 
     currentPrice(overrides?: CallOverrides): Promise<BigNumber>;
@@ -2195,6 +2225,12 @@ export class Seekers extends BaseContract {
 
     birthSeeker(
       to: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    burnPower(
+      id: BigNumberish,
+      powerToBurn: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 

@@ -396,6 +396,39 @@ describe("Seekers", function () {
     })
   })
 
+  describe("upon burn power", () => {
+    let id: BigNumber 
+    let ownerId: BigNumber
+    beforeEach(async function () {
+      seekers = await Seekers.deploy()
+      await seekers.addGameContract(owner.address) // Give owner "game contract" role
+      await seekers.birthSeeker(userA.address)
+      await seekers.birthSeeker(owner.address)
+      id = await seekers.tokenOfOwnerByIndex(userA.address,0)
+      ownerId = await seekers.tokenOfOwnerByIndex(owner.address,1)
+    })
+
+    it("reverts for a non existent token ", async () => {
+      await expect(seekers.burnPower(1000, 1)).to.be.reverted
+    })
+
+    it("reverts if the caller is not the token owner ", async () => {
+      await expect(seekers.burnPower(id, 1)).to.be.revertedWith("E010")
+    })
+
+    it("reverts if the token power is less than the power being burned ", async () => {
+      await expect(seekers.burnPower(ownerId, 10)).to.be.revertedWith("E021")
+    })
+
+    it("allows a token owner to burn power from their seeker", async () => {
+      let powerStart = await seekers.getPowerById(ownerId)
+      console.log(powerStart)
+      await seekers.burnPower(ownerId, 1)
+      let powerEnd = await seekers.getPowerById(ownerId)
+      expect(powerStart).to.be.equal(powerEnd + 1)
+    })
+  })
+
   describe("upon getFullCloak", () => {
     let id: BigNumber 
     beforeEach(async function () {
