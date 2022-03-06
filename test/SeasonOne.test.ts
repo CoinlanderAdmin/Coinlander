@@ -50,6 +50,7 @@ describe("SeasonOne", function () {
     vault = await Vault.deploy(seekers.address)
     seasonOne = await SeasonOne.deploy(seekers.address, vault.address)
     await seekers.addGameContract(seasonOne.address)
+    await seasonOne.startGame()
   })
 
   it("can be deployed", async function () {

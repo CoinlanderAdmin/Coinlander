@@ -56,9 +56,9 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
   bool public released = false;
   bool public uncloaking = false;
   uint16 public constant MAXPOWER = 1024; // 32x32 pixel grid
-  uint8 public constant SUMMONSEEKERPOWERSTART = 3;
-  uint8 public constant BIRTHSEEKERPOWERSTART = 5;
-  uint8 public constant DETHSCALEREROLLCOST = 1;
+  uint16 public constant SUMMONSEEKERPOWERSTART = 3;
+  uint16 public constant BIRTHSEEKERPOWERSTART = 5;
+  uint16 public constant DETHSCALEREROLLCOST = 1;
   mapping(uint256 => bool) isSeekerCloaked;
 
   struct Attributes { 
@@ -142,7 +142,7 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
   function _mintSeeker(address to,	uint256 id,	bool bornFromCoin) internal {
 
     // Born from coin grants more power
-    uint8 power = SUMMONSEEKERPOWERSTART;
+    uint16 power = SUMMONSEEKERPOWERSTART;
     if (bornFromCoin) {
       power = BIRTHSEEKERPOWERSTART;
     }
@@ -264,11 +264,11 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
     require(!isSeekerCloaked[id], "E012");
     require(attributesBySeekerId[id].power >= DETHSCALEREROLLCOST, "E013");
 
-    attributesBySeekerId[id].power -= DETHSCALEREROLLCOST;
+    _burnPower(id, DETHSCALEREROLLCOST);
+    // attributesBySeekerId[id].power -= DETHSCALEREROLLCOST;
     attributesBySeekerId[id].dethscales = _getDethscales(id, true);
 
     emit DethscalesRerolled(id);
-
   }
 
   function addPower(uint256 id, uint256 power) external onlyGame {
@@ -282,6 +282,17 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
         attributesBySeekerId[id].power += uint16(power);
     }
     emit PowerAdded(id, power, attributesBySeekerId[id].power);
+  }
+
+  function burnPower(uint256 id, uint16 powerToBurn) external onlyGame {
+    require(ownerOf(id) != address(0), "E014");
+    require(ownerOf(id) == tx.origin, "E010");
+    require(powerToBurn >= attributesBySeekerId[id].power, "E021");
+    _burnPower(id, powerToBurn);
+  }
+
+  function _burnPower(uint256 id, uint16 powerToBurn) internal {
+    attributesBySeekerId[id].power -= powerToBurn;
   }
 
   function declareForClan(uint id, address clanAddress) external {
@@ -354,13 +365,9 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
     // Determine 4 random attribute points
     uint256 rangeSingle = maxSingle - minSingle + 1;
     uint8 ap1 = uint8(minSingle + _getRandomNumber(rangeSingle, 0));
-    // console.log(ap1);
     uint8 ap2 = uint8(minSingle + _getRandomNumber(rangeSingle, 1));
-    // console.log(ap2);
     uint8 ap3 = uint8(minSingle + _getRandomNumber(rangeSingle, 2));
-    // console.log(ap3);
     uint8 ap4 = uint8(minSingle + _getRandomNumber(rangeSingle, 3));
-    // console.log(ap4);
 
     // // Set power floor
     uint8 sum = ap1 + ap2 + ap3 + ap4;
@@ -631,17 +638,6 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
     }
     return minIdx;
   } 
-
-  function _countSetBits(uint64 n) internal pure returns (uint64) {
-      // base case
-      if (n == 0) {
-          return 0;
-      }
-      else {
-          // if last bit set add 1 else add 0
-          return (n & 1) + _countSetBits(n >> 1);
-      }   
-  }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
   //                                                                                              //

@@ -45,6 +45,7 @@ contract SeasonOne is ERC1155, Ownable, ReentrancyGuard {
     bool public released = false;
     bool public shardSpendable = false;
     bool private transferIsSteal = false;
+    bool public gameStarted = false;
     
     using Counters for Counters.Counter;
     Counters.Counter public seizureCount; 
@@ -175,6 +176,7 @@ contract SeasonOne is ERC1155, Ownable, ReentrancyGuard {
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
     function seize() external payable nonReentrant {
+        require(gameStarted, "E013");
         require(released == false, "E001");
         require(msg.value == seizureStake, "E002");
         require(msg.sender != COINLANDER, "E003");
@@ -396,6 +398,10 @@ contract SeasonOne is ERC1155, Ownable, ReentrancyGuard {
         uint256 amount = reserve;
         reserve = 0;
         payable(msg.sender).transfer(amount);
+    }
+
+    function startGame() external onlyOwner {
+        gameStarted = true;
     }
 
     function _calculateShardReward(uint256 _value) private pure returns (uint16) {

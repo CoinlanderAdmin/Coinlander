@@ -11,7 +11,8 @@
         "E009" : "Transfer unsuccessful",
         "E010" : "Nothing to claim",
         "E011" : "Must own Seeker to claim its prize",
-        "E012" : "Prize already claimed for this Seeker"
+        "E012" : "Prize already claimed for this Seeker",
+        "E013" : "Game must be started"
     },
     "Seekers" : {
         "E001" : "Must specify a valid summon count", 
@@ -27,13 +28,14 @@
         "E011" : "Seeker has already been uncloaked", 
         "E012" : "Seeker must be uncloaked", 
         "E013" : "Seeker does not have enough power to pay for cloak reroll",
-        "E014" : "Cant add power to nonexistent tokens",
-        "E015" : "Must add a nonzero number of scales",
+        "E014" : "Cant modify nonexistent tokens",
+        "E015" : "Must add a nonzero amount of power",
         "E016" : "Invalid address provided",
         "E017" : "Only a valid game contract call this",
         "E018" : "Only a Keeper can call this",
         "E019" : "There must be something to withdraw",
-        "E020" : "Transfer unsuccessful"
+        "E020" : "Transfer unsuccessful",
+        "E021" : "Not enough power to burn"
     },
     "Vault" : {
         "E001" : "Must have a fragment 1",
