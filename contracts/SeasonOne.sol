@@ -345,30 +345,27 @@ contract SeasonOne is ERC1155, Ownable, ReentrancyGuard {
         uint256 shard = pendingWithdrawals[msg.sender]._shardOwed;
         uint256 seeks = pendingWithdrawals[msg.sender]._seekersOwed;
 
-        if (withdrawal > 0 || shard > 0 || seeks > 0) {
-
-            if (withdrawal > 0) {
-                pendingWithdrawals[msg.sender]._withdrawValue = 0;
-                (bool success, ) = msg.sender.call{value:withdrawal}("");
-                require(success, "E009");
-            }
-
-            if (shard > 0) {
-                pendingWithdrawals[msg.sender]._shardOwed = 0;
-                _mint(msg.sender, SHARD, shard, "0x0");
-
-            }
-
-            if (seeks > 0) {
-                pendingWithdrawals[msg.sender]._seekersOwed = 0;
-                for (uint256 i = 0; i < seeks; i++){
-                    seekers.birthSeeker(msg.sender);
-                }
-            }
-        }
-        
-        else {
+        if (withdrawal == 0 && shard == 0 && seeks == 0) {
             revert("E010");
+        }
+
+        if (withdrawal > 0) {
+            pendingWithdrawals[msg.sender]._withdrawValue = 0;
+            (bool success, ) = msg.sender.call{value:withdrawal}("");
+            require(success, "E009");
+        }
+
+        if (shard > 0) {
+            pendingWithdrawals[msg.sender]._shardOwed = 0;
+            _mint(msg.sender, SHARD, shard, "0x0");
+
+        }
+
+        if (seeks > 0) {
+            pendingWithdrawals[msg.sender]._seekersOwed = 0;
+            for (uint256 i = 0; i < seeks; i++){
+                seekers.birthSeeker(msg.sender);
+            }
         }
 
         emit ClaimedAll(msg.sender);
