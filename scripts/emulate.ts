@@ -83,6 +83,11 @@ async function emulate(seizes: number, ethers: HardhatEthersHelpers) {
 
   // Get current seizure count stored in local data
   seizureCount = (await seasonOne.seizureCount()).toNumber()
+  // Start game if it hasn't started yet
+  if (seizureCount == 0) {
+    await seasonOne.startGame()
+  }
+  
   remainingSeizures = sweetRelease - seizureCount
   logger.pad(30, 'Current seizures:', seizureCount)
   logger.pad(30, 'Remaining seizures:', remainingSeizures)
@@ -186,7 +191,8 @@ async function emulate(seizes: number, ethers: HardhatEthersHelpers) {
         await seekers.connect(user).uncloakSeeker(lastToken)
         logger.pad(30, `Seeker ${lastToken} uncloaked:`, user.address)
       }
-    } catch {
+    } catch(e){
+      console.log(e)
       continue
     }
   }

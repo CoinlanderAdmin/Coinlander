@@ -57,14 +57,16 @@ export async function checkState() {
 
     let winner = await seasonOne.COINLANDER()
     console.log("COINLANDER: ", winner)
-
-    await seasonOne.connect(accounts[0]).claimAll()
   }
 
   // Check inventory of each user
   for(const user of accounts) {
     logger.divider()
     console.log('USER: ', user.address)
+    let withdrawal = await seasonOne.getPendingWithdrawal(user.address)
+    console.log('Eth available: ', withdrawal[0].div(1E12).toNumber())
+    console.log('Shard available: ', withdrawal[1].toNumber())
+    console.log('Seekers available: ', withdrawal[2].toNumber())
     console.log('SHARD: ', await (await seasonOne.balanceOf(user.address, 1)).toNumber())
     let numSeekers = await (await seekers.balanceOf(user.address)).toNumber()
     console.log('Seekers: ', numSeekers)
@@ -79,6 +81,19 @@ export async function checkState() {
       console.log('Fragment%d: ', i, qty)
     }
   } 
+  console.log('Claiming for account 0')
+  try { 
+    await seasonOne.connect(accounts[0]).claimAll()
+  } catch (error) {
+    console.log(error)
+  }
+  
+  console.log('Claiming for account 1')
+  try { 
+    await seasonOne.connect(accounts[1]).claimAll()
+  } catch (error) {
+    console.log(error)
+  }
   
   // list deposits
   logger.divider()
@@ -98,7 +113,7 @@ export async function checkState() {
     }
    
   let vaultBal = await vault.prize()
-  console.log("Vault balance is: ", vaultBal.toNumber())
+  console.log("Vault balance is: ", vaultBal.div(1E12).toNumber())
 }
 
 checkState()
