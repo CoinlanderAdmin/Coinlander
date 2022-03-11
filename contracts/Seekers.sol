@@ -49,8 +49,8 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
   bool public evilsOnly = false; 
   bool public goodsOnly = false; 
 
-  // This adds 2 because we are minting the winner_id = 1 and ids need to be 1 indexed
-  uint256 private constant INTERNALIDOFFSET = FIRSTMINT + SECONDMINT + THIRDMINT_TOTAL + KEEPERSEEKERS + 2;
+  // This adds 1 because we are special casing the winner_id and setting it to 1
+  uint256 private constant INTERNALIDOFFSET = FIRSTMINT + SECONDMINT + THIRDMINT_TOTAL + KEEPERSEEKERS + 1;
 
   // On-chain game parameters
   bool public released = false;
@@ -111,9 +111,9 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
   function summonSeeker(uint256 summonCount) external payable nonReentrant {
-    require(summonCount > 0 && summonCount <= MAXMINTABLE, "E001");
-    require(msg.value >= (currentPrice * summonCount), "E002");
-    require((_summonSeekerId + summonCount) <= currentBuyableSeekers, "E003");
+    require(summonCount > 0 && summonCount <= MAXMINTABLE, "E-001-001");
+    require(msg.value >= (currentPrice * summonCount), "E-001-002");
+    require((_summonSeekerId + summonCount) <= currentBuyableSeekers, "E-001-003");
 
     for (uint256 i = 0; i < summonCount; i++) {
         _summonSeekerId += 1;
@@ -122,15 +122,15 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
   }
 
   function birthSeeker(address to) external onlyGame returns (uint256) {
-    require(_birthSeekerId < MAXSEEKERS, "E003");
+    require(_birthSeekerId < MAXSEEKERS, "E-001-003");
     _birthSeekerId += 1;
     _mintSeeker(to, _birthSeekerId, true);
     return (_birthSeekerId);
   }
 
   function keepersSummonSeeker(uint256 summonCount) external nonReentrant onlyKeepers {
-    require ((keepersSeekersMinted + summonCount) <= KEEPERSEEKERS, "E004");
-    require((_summonSeekerId + summonCount) <= currentBuyableSeekers, "E003");
+    require ((keepersSeekersMinted + summonCount) <= KEEPERSEEKERS, "E-001-004");
+    require((_summonSeekerId + summonCount) <= currentBuyableSeekers, "E-001-003");
     keepersSeekersMinted += summonCount;
 
     for (uint256 i = 0; i < summonCount; i++) {
@@ -174,7 +174,7 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
   function activateFirstMint() external onlyGame {
-    require(firstMintActive == false, "E005");
+    require(firstMintActive == false, "E-001-005");
     firstMintActive = true;
     emit FirstMintActivated();
     currentBuyableSeekers += (FIRSTMINT + KEEPERSEEKERS);
@@ -182,7 +182,7 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
   }
 
   function activateSecondMint() external onlyGame {
-    require(secondMintActive == false, "E006");
+    require(secondMintActive == false, "E-001-006");
     secondMintActive = true;
     evilsOnly = true;
     emit SecondMintActivated();
@@ -191,7 +191,7 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
   }
 
   function activateThirdMint() external onlyGame {
-    require(thirdMintActive == false, "E007");
+    require(thirdMintActive == false, "E-001-007");
     thirdMintActive = true;
     evilsOnly = false;
     goodsOnly = true;
@@ -214,10 +214,10 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
   }
 
   function sendWinnerSeeker(address winner) external onlyGame {
-    require(released == false, "E008");
+    require(released == false, "E-001-008");
     released = true;
     _setWinnerSeekerAttributes(1);
-    _transfer(ownerOf(1), winner, 1);
+    _safeTransfer(ownerOf(1), winner, 1, "0x0");
   }
 
 
@@ -229,9 +229,9 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
   function uncloakSeeker(uint256 id) external {
-    require(uncloaking, "E009");
-    require(msg.sender == ownerOf(id), "E010");
-    require(isSeekerCloaked[id], "E011");
+    require(uncloaking, "E-001-009");
+    require(msg.sender == ownerOf(id), "E-001-010");
+    require(isSeekerCloaked[id], "E-001-011");
 
     string memory _alignment = _getAlignment();
 
@@ -259,21 +259,19 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
   }
 
   function rerollDethscales(uint256 id) external {
-    require(uncloaking, "E009");
-    require(msg.sender == ownerOf(id), "E010");
-    require(!isSeekerCloaked[id], "E012");
-    require(attributesBySeekerId[id].power >= DETHSCALEREROLLCOST, "E013");
-
+    require(uncloaking, "E-001-009");
+    require(msg.sender == ownerOf(id), "E-001-010");
+    require(!isSeekerCloaked[id], "E-001-012");
+    
     _burnPower(id, DETHSCALEREROLLCOST);
-    // attributesBySeekerId[id].power -= DETHSCALEREROLLCOST;
     attributesBySeekerId[id].dethscales = _getDethscales(id, true);
 
     emit DethscalesRerolled(id);
   }
 
   function addPower(uint256 id, uint256 power) external onlyGame {
-    require(ownerOf(id) != address(0), "E014");
-    require(power > 0, "E015");
+    require(ownerOf(id) != address(0), "E-001-014");
+    require(power > 0, "E-001-015");
     uint16 _power = attributesBySeekerId[id].power;
     if ((_power + power) >  MAXPOWER) {
         attributesBySeekerId[id].power = MAXPOWER;
@@ -285,19 +283,22 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
   }
 
   function burnPower(uint256 id, uint16 powerToBurn) external onlyGame {
-    require(ownerOf(id) != address(0), "E014");
-    require(ownerOf(id) == tx.origin, "E010");
-    require(powerToBurn <= attributesBySeekerId[id].power, "E021");
+    require(ownerOf(id) != address(0), "E-001-014");
+    require(ownerOf(id) == tx.origin, "E-001-010");
+    
     _burnPower(id, powerToBurn);
   }
 
   function _burnPower(uint256 id, uint16 powerToBurn) internal {
+    require(powerToBurn <= attributesBySeekerId[id].power, "E-001-021");
     attributesBySeekerId[id].power -= powerToBurn;
+
+    emit PowerBurned(id, powerToBurn, attributesBySeekerId[id].power);
   }
 
   function declareForClan(uint id, address clanAddress) external {
-    require(msg.sender == ownerOf(id), "E010");
-    require(clanAddress == address(clanAddress), "E016");
+    require(msg.sender == ownerOf(id), "E-001-010");
+    require(clanAddress == address(clanAddress), "E-001-016");
 
     attributesBySeekerId[id].clan = clanAddress;
     emit SeekerDeclaredToClan(id,clanAddress);
@@ -420,7 +421,7 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
     uint16 rarityFlip = uint16(_getRandomNumber(100, rand));
 
     if(x==2){
-      if(rarityFlip <= 5 && !reroll){ // dont change rarity on reroll
+      if(rarityFlip < 5 && !reroll){ // dont change rarity on reroll
         return _dethscales; // dont invert for rare evil
       }
       else {
@@ -428,7 +429,7 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
       }
     }
     if(x==0) {
-      if(rarityFlip <= 5 && !reroll) { // dont change rarity on reroll 
+      if(rarityFlip < 5 && !reroll) { // dont change rarity on reroll 
         return ~_dethscales; // invert for rare good
       }
       else{
@@ -449,8 +450,8 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
         25, // Beta
         25, // Detla
         25, // Gamma
-        MAXPOWER,
-        uint16(0),
+        MAXPOWER, // Power
+        uint16(0), // Dethscales 
         attributesBySeekerId[id].clan
       ); 
     attributesBySeekerId[id] = winningAttributes;
@@ -498,7 +499,7 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
   }
 
   function getFullCloak(uint256 id) external view returns (uint32[32] memory) {
-    require(!isSeekerCloaked[id], "E012");
+    require(!isSeekerCloaked[id], "E-001-012");
     uint16 _dethscales = attributesBySeekerId[id].dethscales;
 
     // Set noise based on alignment
@@ -583,7 +584,7 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
         fullCloak[i] = rows[i % 4]; 
     }
     // Deterministically add noise 
-    uint16 noiseBits = _getRandomNumber16((maxNoiseBits - minNoiseBits), _dethscales, maxNoiseBits) + minNoiseBits;
+    uint16 noiseBits = _getRandomNumber16((maxNoiseBits - minNoiseBits + 1), _dethscales, maxNoiseBits) + minNoiseBits;
     for (uint16 i = 0; i < noiseBits; i++) {
       uint16 noiseCol = _getRandomNumber16(32, _dethscales, i);
       uint16 noiseRow = _getRandomNumber16(32, noiseCol, i);
@@ -631,7 +632,7 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
 
   function _getMinIdx(uint8[4] memory vals) internal pure returns (uint8) {
     uint8 minIdx;
-    for (uint8 i; i<3; i++) {
+    for (uint8 i; i < 4; i++) {
       if (vals[i] < vals[minIdx]) {
         minIdx = i;
       }
@@ -647,22 +648,22 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
 
   modifier onlyGame() {
     require(
-      hasRole(GAME_ROLE, msg.sender), "E017");
+      hasRole(GAME_ROLE, msg.sender), "E-001-017");
     _;
   }
 
   modifier onlyKeepers() {
     require(
-      hasRole(KEEPERS_ROLE, msg.sender), "E018");
+      hasRole(KEEPERS_ROLE, msg.sender), "E-001-018");
     _;
   }
 
   function ownerWithdraw() external payable onlyKeepers{
-    require(reserve > 0, "E019");
+    require(reserve > 0, "E-001-019");
     uint256 amount = reserve;
     reserve = 0;
     (bool success, ) = msg.sender.call{value:amount}("");
-    require(success, "E020");
+    require(success, "E-001-020");
   }
 
   function addGameContract(address gameContract) public onlyKeepers {
@@ -684,6 +685,6 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
   }
 
   receive() external payable {
-    revert("E020");
+    revert("E-001-020");
   }
 }

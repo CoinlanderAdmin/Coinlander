@@ -70,12 +70,13 @@ export async function checkState() {
     console.log('SHARD: ', await (await seasonOne.balanceOf(user.address, 1)).toNumber())
     let numSeekers = await (await seekers.balanceOf(user.address)).toNumber()
     console.log('Seekers: ', numSeekers)
-    // let seekerIds = []
-    // for (var i = 0; i < numSeekers; i++){
-    //   var id = await (await seekers.tokenOfOwnerByIndex(user.address, i)).toNumber()
-    //   seekerIds.push(id)
-    // }
-    // console.log('Seeker Ids: ', seekerIds)
+    //let seekerIds = []
+    for (var i = 0; i < numSeekers; i++){
+      var id = await (await seekers.tokenOfOwnerByIndex(user.address, i)).toNumber()
+      console.log(id)
+      //seekerIds.push(id)
+    }
+    //console.log('Seeker Ids: ', seekerIds)
     for (var i = 1; i <= 8; i++){
       var qty = await (await vault.balanceOf(user.address, i)).toNumber()
       console.log('Fragment%d: ', i, qty)

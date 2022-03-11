@@ -326,6 +326,7 @@ interface ISeekersInterface extends ethers.utils.Interface {
     "DethscalesRerolled(uint256)": EventFragment;
     "FirstMintActivated()": EventFragment;
     "PowerAdded(uint256,uint256,uint256)": EventFragment;
+    "PowerBurned(uint256,uint256,uint256)": EventFragment;
     "SecondMintActivated()": EventFragment;
     "SeekerDeclaredToClan(uint256,address)": EventFragment;
     "SeekerUncloaked(uint256)": EventFragment;
@@ -339,6 +340,7 @@ interface ISeekersInterface extends ethers.utils.Interface {
   getEvent(nameOrSignatureOrTopic: "DethscalesRerolled"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "FirstMintActivated"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "PowerAdded"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "PowerBurned"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "SecondMintActivated"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "SeekerDeclaredToClan"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "SeekerUncloaked"): EventFragment;
@@ -373,6 +375,14 @@ export type PowerAddedEvent = TypedEvent<
   [BigNumber, BigNumber, BigNumber] & {
     seekerId: BigNumber;
     powerAdded: BigNumber;
+    newPower: BigNumber;
+  }
+>;
+
+export type PowerBurnedEvent = TypedEvent<
+  [BigNumber, BigNumber, BigNumber] & {
+    seekerId: BigNumber;
+    powerBurned: BigNumber;
     newPower: BigNumber;
   }
 >;
@@ -1113,6 +1123,24 @@ export class ISeekers extends BaseContract {
     ): TypedEventFilter<
       [BigNumber, BigNumber, BigNumber],
       { seekerId: BigNumber; powerAdded: BigNumber; newPower: BigNumber }
+    >;
+
+    "PowerBurned(uint256,uint256,uint256)"(
+      seekerId?: BigNumberish | null,
+      powerBurned?: null,
+      newPower?: null
+    ): TypedEventFilter<
+      [BigNumber, BigNumber, BigNumber],
+      { seekerId: BigNumber; powerBurned: BigNumber; newPower: BigNumber }
+    >;
+
+    PowerBurned(
+      seekerId?: BigNumberish | null,
+      powerBurned?: null,
+      newPower?: null
+    ): TypedEventFilter<
+      [BigNumber, BigNumber, BigNumber],
+      { seekerId: BigNumber; powerBurned: BigNumber; newPower: BigNumber }
     >;
 
     "SecondMintActivated()"(): TypedEventFilter<[], {}>;

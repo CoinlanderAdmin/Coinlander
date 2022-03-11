@@ -118,7 +118,7 @@ describe("Seekers", function () {
 
     it("will not allow someone to summon a seeker before the first mint activates", async () => {
       let summonCost = await seekers.currentPrice()
-      await expect(seekers.summonSeeker(1, { value: summonCost })).to.be.reverted
+      await expect(seekers.summonSeeker(1, { value: summonCost })).to.be.revertedWith("E-001-003")
     })
 
     
@@ -132,7 +132,7 @@ describe("Seekers", function () {
     it("will not let someone purchase a valid number of tokens for an invalid price", async () => {
       await seekers.activateFirstMint()
       let summonCost = await seekers.currentPrice()
-      await expect(seekers.connect(userA).summonSeeker(3, { value: summonCost.mul(2) })).to.be.reverted
+      await expect(seekers.connect(userA).summonSeeker(3, { value: summonCost.mul(2) })).to.be.revertedWith("E-001-002")
     })
 
     it("does not allow someone to mint more than the limit number of tokens", async () => {
@@ -140,7 +140,7 @@ describe("Seekers", function () {
       let summonCost = await seekers.currentPrice()
       let maxMintable = await seekers.MAXMINTABLE()
       let tooMany = maxMintable.add(1)
-      await expect(seekers.connect(userA).summonSeeker(tooMany, { value: summonCost.mul(tooMany) })).to.be.reverted
+      await expect(seekers.connect(userA).summonSeeker(tooMany, { value: summonCost.mul(tooMany) })).to.be.revertedWith("E-001-001")
     })
   })
 
@@ -210,7 +210,7 @@ describe("Seekers", function () {
 
     it("reverts if the first mint has already been activated", async () => {
       await seekers.activateFirstMint()
-      await expect(seekers.activateFirstMint()).to.be.reverted
+      await expect(seekers.activateFirstMint()).to.be.revertedWith("E-001-005")
     })
 
     it("sets the price correctly upon second mint activation", async () => {
@@ -221,7 +221,7 @@ describe("Seekers", function () {
 
     it("reverts if the second mint has already been activated", async () => {
       await seekers.activateSecondMint()
-      await expect(seekers.activateSecondMint()).to.be.reverted
+      await expect(seekers.activateSecondMint()).to.be.revertedWith("E-001-006")
     })
 
     it("sets the price correctly upon third mint activation", async () => {
@@ -232,7 +232,7 @@ describe("Seekers", function () {
 
     it("reverts if the third mint has already been activated", async () => {
       await seekers.activateThirdMint()
-      await expect(seekers.activateThirdMint()).to.be.reverted
+      await expect(seekers.activateThirdMint()).to.be.revertedWith("E-001-007")
     })
   })
 
@@ -250,7 +250,7 @@ describe("Seekers", function () {
 
     it("does not let the method get called more than once", async () => {
       await seekers.sendWinnerSeeker(userA.address)
-      await expect(seekers.sendWinnerSeeker(userB.address)).to.be.reverted
+      await expect(seekers.sendWinnerSeeker(userB.address)).to.be.revertedWith("E-001-008")
     })
 
     it("does not let a non game contract call the method", async () => {
@@ -281,7 +281,7 @@ describe("Seekers", function () {
     })
 
     it("requires the uncloaking ceremony has been reached", async () => {
-      await expect(seekers.connect(userA).uncloakSeeker(id)).to.be.reverted
+      await expect(seekers.connect(userA).uncloakSeeker(id)).to.be.revertedWith("E-001-009")
     })
 
     it("allows the owner of a token to uncloak their own seeker", async () => {
@@ -292,12 +292,12 @@ describe("Seekers", function () {
     it("does not allow a seeker to be uncloaked more than once", async () => {
       await seekers.performUncloaking()
       await seekers.connect(userA).uncloakSeeker(id)
-      await expect(seekers.connect(userA).uncloakSeeker(id)).to.be.reverted
+      await expect(seekers.connect(userA).uncloakSeeker(id)).to.be.revertedWith("E-001-011")
     })
 
     it("does not allow a non-owner to uncloak a seeker", async () => {
       await seekers.performUncloaking()
-      await expect(seekers.connect(userB).uncloakSeeker(id)).to.be.reverted
+      await expect(seekers.connect(userB).uncloakSeeker(id)).to.be.revertedWith("E-001-010")
     })
 
     it("assigns non-zero values to APs", async () =>{
@@ -361,17 +361,17 @@ describe("Seekers", function () {
     })
     
     it("does not let dethscales get rerolled before the uncloaking holiday", async () => {
-      await expect(seekers.connect(userA).rerollDethscales(id)).to.be.reverted
+      await expect(seekers.connect(userA).rerollDethscales(id)).to.be.revertedWith("E-001-009")
     })
 
     it("does not let dethscales get rerolled by a non owner", async () => {
       await seekers.performUncloaking()
-      await expect(seekers.connect(userB).rerollDethscales(id)).to.be.reverted
+      await expect(seekers.connect(userB).rerollDethscales(id)).to.be.revertedWith("E-001-010")
     })
 
     it("requires that the seeker has been uncloaked", async () => {
       await seekers.performUncloaking()
-      await expect(seekers.connect(userA).rerollDethscales(id)).to.be.reverted
+      await expect(seekers.connect(userA).rerollDethscales(id)).to.be.revertedWith("E-001-012")
       await seekers.connect(userA).uncloakSeeker(id)
       expect(await seekers.connect(userA).rerollDethscales(id))
     })
@@ -392,7 +392,7 @@ describe("Seekers", function () {
       for(let i=0; i < scaleCount; i++){
         await seekers.connect(userA).rerollDethscales(id)
       }
-      await expect(seekers.connect(userA).rerollDethscales(id)).to.be.reverted
+      await expect(seekers.connect(userA).rerollDethscales(id)).to.be.revertedWith("E-001-021")
     })
   })
 
@@ -413,11 +413,11 @@ describe("Seekers", function () {
     })
 
     it("reverts if the caller is not the token owner ", async () => {
-      await expect(seekers.burnPower(id, 1)).to.be.revertedWith("E010")
+      await expect(seekers.burnPower(id, 1)).to.be.revertedWith("E-001-010")
     })
 
     it("reverts if the token power is less than the power being burned ", async () => {
-      await expect(seekers.burnPower(ownerId, 10)).to.be.revertedWith("E021")
+      await expect(seekers.burnPower(ownerId, 10)).to.be.revertedWith("E-001-021")
     })
 
     it("allows a token owner to burn power from their seeker", async () => {
@@ -439,7 +439,7 @@ describe("Seekers", function () {
     })
 
     it("reverts for a cloaked seeker", async () => {
-      await expect(seekers.getFullCloak(id)).to.be.reverted
+      await expect(seekers.getFullCloak(id)).to.be.revertedWith("E-001-012")
     })
 
     it("returns an array of the expected length", async () => {
@@ -475,7 +475,7 @@ describe("Seekers", function () {
     })
 
     it("requires a non-zero power amount", async () => {
-      await expect(seekers.addPower(id,0)).to.be.reverted
+      await expect(seekers.addPower(id,0)).to.be.revertedWith("E-001-015")
     })
 
     it("adds the correct amount of power to the seeker", async () => {

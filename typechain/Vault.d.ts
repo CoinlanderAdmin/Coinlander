@@ -52,7 +52,6 @@ interface VaultInterface extends ethers.utils.Interface {
     "renounceOwnership()": FunctionFragment;
     "safeBatchTransferFrom(address,address,uint256[],uint256[],bytes)": FunctionFragment;
     "safeTransferFrom(address,address,uint256,uint256,bytes)": FunctionFragment;
-    "seekers()": FunctionFragment;
     "setApprovalForAll(address,bool)": FunctionFragment;
     "setSweetRelease()": FunctionFragment;
     "supportsInterface(bytes4)": FunctionFragment;
@@ -121,7 +120,6 @@ interface VaultInterface extends ethers.utils.Interface {
     functionFragment: "safeTransferFrom",
     values: [string, string, BigNumberish, BigNumberish, BytesLike]
   ): string;
-  encodeFunctionData(functionFragment: "seekers", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "setApprovalForAll",
     values: [string, boolean]
@@ -201,7 +199,6 @@ interface VaultInterface extends ethers.utils.Interface {
     functionFragment: "safeTransferFrom",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(functionFragment: "seekers", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "setApprovalForAll",
     data: BytesLike
@@ -419,8 +416,6 @@ export class Vault extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
-    seekers(overrides?: CallOverrides): Promise<[string]>;
-
     setApprovalForAll(
       operator: string,
       approved: boolean,
@@ -542,8 +537,6 @@ export class Vault extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-  seekers(overrides?: CallOverrides): Promise<string>;
-
   setApprovalForAll(
     operator: string,
     approved: boolean,
@@ -658,8 +651,6 @@ export class Vault extends BaseContract {
       data: BytesLike,
       overrides?: CallOverrides
     ): Promise<void>;
-
-    seekers(overrides?: CallOverrides): Promise<string>;
 
     setApprovalForAll(
       operator: string,
@@ -903,8 +894,6 @@ export class Vault extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
-    seekers(overrides?: CallOverrides): Promise<BigNumber>;
-
     setApprovalForAll(
       operator: string,
       approved: boolean,
@@ -1026,8 +1015,6 @@ export class Vault extends BaseContract {
       data: BytesLike,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
-
-    seekers(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     setApprovalForAll(
       operator: string,

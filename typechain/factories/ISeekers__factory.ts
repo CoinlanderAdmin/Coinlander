@@ -103,6 +103,31 @@ const _abi = [
   },
   {
     anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: "uint256",
+        name: "seekerId",
+        type: "uint256",
+      },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "powerBurned",
+        type: "uint256",
+      },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "newPower",
+        type: "uint256",
+      },
+    ],
+    name: "PowerBurned",
+    type: "event",
+  },
+  {
+    anonymous: false,
     inputs: [],
     name: "SecondMintActivated",
     type: "event",

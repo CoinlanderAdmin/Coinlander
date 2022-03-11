@@ -19,6 +19,7 @@ interface iSeekers is IERC721Enumerable {
     event SeekerUncloaked(uint256 indexed seekerId);
     event DethscalesRerolled(uint256 id);
     event PowerAdded(uint256 indexed seekerId, uint256 powerAdded, uint256 newPower);
+    event PowerBurned(uint256 indexed seekerId, uint256 powerBurned, uint256 newPower);
     event SeekerDeclaredToClan(uint256 indexed seekerId, address indexed clan);
 
 

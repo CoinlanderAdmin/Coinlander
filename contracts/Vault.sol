@@ -7,7 +7,6 @@ pragma solidity ^0.8.10;
 import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
-import "./interfaces/iSeekers.sol";
 import "./interfaces/iVault.sol";
 
 contract Vault is iVault, ERC1155, Ownable, ReentrancyGuard {
@@ -43,17 +42,12 @@ contract Vault is iVault, ERC1155, Ownable, ReentrancyGuard {
     uint16 public constant numT7 = 222;
     uint16 public constant numT8 = MAXFRAGMENTS - numT1 - numT2 - numT3 - numT4 - numT5 - numT6 - numT7;
 
-    iSeekers public seekers;
     uint256 public prize = 0; 
     bool public gameWon = false;
     bool public sweetRelease = false;
 
     // @TODO we need to figure out what the url schema for metadata looks like and plop that here in the constructor
-    constructor(address seekersContract) ERC1155("https://meta.coinlander.one/keepersVault/{id}.json") {
-        // Create the One Coin and set the deployer as initial COINLANDER
-
-        // Add interface for seekers contract 
-        seekers = iSeekers(seekersContract);
+    constructor() ERC1155("https://meta.coinlander.one/keepersVault/{id}.json") {
 
         // Initialize the fragments array
         for  (uint16 i = 0; i < numT1; i++){
@@ -83,7 +77,7 @@ contract Vault is iVault, ERC1155, Ownable, ReentrancyGuard {
     }
 
     function mintFragments(address _receiver, uint256 amount) external onlyOwner {
-        require(fragments.length >= amount, "E009");
+        require(fragments.length >= amount, "E-002-009");
         for(uint256 i = 0; i < amount; i++){
             uint256 fragmentType = _getRandom(fragments);
             _mint(_receiver, uint256(fragmentType), 1, "0x0");
@@ -96,18 +90,17 @@ contract Vault is iVault, ERC1155, Ownable, ReentrancyGuard {
     }
 
     function claimKeepersVault() external nonReentrant {
-        require(sweetRelease, "E010");
-        require(!gameWon, "E011");
-        require(prize > 0, "E012");
-        require(seekers.balanceOf(msg.sender) > 0, "E013");
-        require(balanceOf(msg.sender, FRAGMENT1) > 0, "E001");
-        require(balanceOf(msg.sender, FRAGMENT2) > 0, "E002");
-        require(balanceOf(msg.sender, FRAGMENT3) > 0, "E003");
-        require(balanceOf(msg.sender, FRAGMENT4) > 0, "E004");
-        require(balanceOf(msg.sender, FRAGMENT5) > 0, "E005");
-        require(balanceOf(msg.sender, FRAGMENT6) > 0, "E006");
-        require(balanceOf(msg.sender, FRAGMENT7) > 0, "E007");
-        require(balanceOf(msg.sender, FRAGMENT8) > 0, "E008");
+        require(sweetRelease, "E-002-010");
+        require(!gameWon, "E-002-011");
+        require(prize > 0, "E-002-012");
+        require(balanceOf(msg.sender, FRAGMENT1) > 0, "E-002-001");
+        require(balanceOf(msg.sender, FRAGMENT2) > 0, "E-002-002");
+        require(balanceOf(msg.sender, FRAGMENT3) > 0, "E-002-003");
+        require(balanceOf(msg.sender, FRAGMENT4) > 0, "E-002-004");
+        require(balanceOf(msg.sender, FRAGMENT5) > 0, "E-002-005");
+        require(balanceOf(msg.sender, FRAGMENT6) > 0, "E-002-006");
+        require(balanceOf(msg.sender, FRAGMENT7) > 0, "E-002-007");
+        require(balanceOf(msg.sender, FRAGMENT8) > 0, "E-002-008");
 
         // Assemble the Key 
         _burn(msg.sender, FRAGMENT1, 1);
@@ -126,10 +119,10 @@ contract Vault is iVault, ERC1155, Ownable, ReentrancyGuard {
         uint256 _prize = prize;
         prize = 0;
         (bool success, ) = msg.sender.call{value:_prize}("");
-        require(success, "E014");
+        require(success, "E-002-014");
     }
     
-    function fundPrizePurse() payable external {
+    function fundPrizePurse() payable public {
         prize += msg.value;
     }
 
@@ -159,7 +152,8 @@ contract Vault is iVault, ERC1155, Ownable, ReentrancyGuard {
 		return (random % _arr.length);
 	}
 
+    // All fund allocations should be going thru fund prize purse
     receive() external payable {
-        revert("E014");
+        revert("E-002-014");
     }
 }

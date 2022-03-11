@@ -47,7 +47,7 @@ describe("SeasonOne", function () {
 
   beforeEach(async function () {
     seekers = await Seekers.deploy()
-    vault = await Vault.deploy(seekers.address)
+    vault = await Vault.deploy()
     seasonOne = await SeasonOne.deploy(seekers.address, vault.address)
     await seekers.addGameContract(seasonOne.address)
     await seasonOne.startGame()
@@ -76,12 +76,12 @@ describe("SeasonOne", function () {
 
     it("does not allow the owner to steal", async () => {
       SS = await seasonOne.seizureStake()
-      await expect(seasonOne.connect(userA).seize({ value: SS })).to.be.reverted
+      await expect(seasonOne.connect(userA).seize({ value: SS })).to.be.revertedWith("E-000-003")
     })
 
     it("requires the value is exactly the SS", async () => {
       SS = await seasonOne.seizureStake()
-      await expect(seasonOne.connect(userB).seize({ value: SS.sub(1) })).to.be.reverted
+      await expect(seasonOne.connect(userB).seize({ value: SS.sub(1) })).to.be.revertedWith("E-000-002")
     })
   })
   
@@ -93,7 +93,7 @@ describe("SeasonOne", function () {
     })
 
     it("does not let the holder send the One Coin", async () => {
-      await expect(seasonOne.connect(userA).safeTransferFrom(userA.address,userB.address, 0, 1, "0x00")).to.be.revertedWith("")
+      await expect(seasonOne.connect(userA).safeTransferFrom(userA.address,userB.address, 0, 1, "0x00")).to.be.revertedWith("E-000-004")
     })
 
     it("Coinlander belongs to the stealer", async () => {
@@ -153,7 +153,7 @@ describe("SeasonOne", function () {
     })
 
     it("reverts if there isn't anything to withdraw", async () => {
-      await expect(seasonOne.connect(userB).claimAll()).to.be.revertedWith("E010")
+      await expect(seasonOne.connect(userB).claimAll()).to.be.revertedWith("E-000-010")
     })
 
     it("pays the user their deposit", async () => {
@@ -183,7 +183,7 @@ describe("SeasonOne", function () {
 
     it("does not let them withdraw again", async ()=> {
       await seasonOne.connect(userA).claimAll()
-      await expect(seasonOne.connect(userA).claimAll()).to.be.revertedWith("E010")
+      await expect(seasonOne.connect(userA).claimAll()).to.be.revertedWith("E-000-010")
     })
   })
 
