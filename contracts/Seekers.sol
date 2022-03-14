@@ -262,24 +262,24 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
     require(uncloaking, "E-001-009");
     require(msg.sender == ownerOf(id), "E-001-010");
     require(!isSeekerCloaked[id], "E-001-012");
-    
+
     _burnPower(id, DETHSCALEREROLLCOST);
     attributesBySeekerId[id].dethscales = _getDethscales(id, true);
 
     emit DethscalesRerolled(id);
   }
 
-  function addPower(uint256 id, uint256 power) external onlyGame {
+  function addPower(uint256 id, uint256 powerToAdd) external onlyGame {
     require(ownerOf(id) != address(0), "E-001-014");
-    require(power > 0, "E-001-015");
+    require(powerToAdd > 0, "E-001-015");
     uint16 _power = attributesBySeekerId[id].power;
-    if ((_power + power) >  MAXPOWER) {
+    if ((_power + powerToAdd) >  MAXPOWER) {
         attributesBySeekerId[id].power = MAXPOWER;
     }
     else {
-        attributesBySeekerId[id].power += uint16(power);
+        attributesBySeekerId[id].power += uint16(powerToAdd);
     }
-    emit PowerAdded(id, power, attributesBySeekerId[id].power);
+    emit PowerAdded(id, powerToAdd, attributesBySeekerId[id].power);
   }
 
   function burnPower(uint256 id, uint16 powerToBurn) external onlyGame {

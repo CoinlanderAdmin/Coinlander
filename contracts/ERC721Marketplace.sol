@@ -14,6 +14,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 /// @title An Auction Contract for bidding and selling single and batched NFTs, based on Avo Labs impl
 /// @author Avo Labs GmbH, @stevieraykatz
 /// @notice This contract can be used for auctioning NFTs from ERC721 contracts 
+
 contract ERC721Marketplace is Ownable {
     mapping(address => mapping(uint256 => Auction)) public nftContractAuctions;
     mapping(address => uint256) failedTransferCredits;
@@ -863,10 +864,7 @@ contract ERC721Marketplace is Ownable {
 
     function _payout(address _recipient, uint256 _amount) internal {
         // attempt to send the funds to the recipient
-        (bool success, ) = payable(_recipient).call{
-            value: _amount,
-            gas: 20000
-        }("");
+        (bool success, ) = payable(_recipient).call{value: _amount}("");
         // if it failed, update their credit balance so they can pull it later
         if (!success) {
             failedTransferCredits[_recipient] = failedTransferCredits[_recipient] +_amount;
@@ -887,7 +885,7 @@ contract ERC721Marketplace is Ownable {
     function withdrawAuction(address _nftContractAddress, uint256 _tokenId)
         external
     {
-        //only the NFT owner can prematurely close and auction
+        //only the NFT owner can prematurely close an auction
         require(
             IERC721(_nftContractAddress).ownerOf(_tokenId) == msg.sender,
             "Not NFT owner"
