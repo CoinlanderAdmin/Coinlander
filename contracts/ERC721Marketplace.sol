@@ -10,6 +10,8 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 
 // @Todo add pausable to whole contract
 // @todo add pausing for new contract creation
+// @todo need to add an approval step for the makeAuction/make 
+
 
 /// @title An Auction Contract for bidding and selling single and batched NFTs, based on Avo Labs impl
 /// @author Avo Labs GmbH, @stevieraykatz

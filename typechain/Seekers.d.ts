@@ -797,7 +797,7 @@ export class Seekers extends BaseContract {
 
     addPower(
       id: BigNumberish,
-      power: BigNumberish,
+      powerToAdd: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
@@ -1127,7 +1127,7 @@ export class Seekers extends BaseContract {
 
   addPower(
     id: BigNumberish,
-    power: BigNumberish,
+    powerToAdd: BigNumberish,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
@@ -1437,7 +1437,7 @@ export class Seekers extends BaseContract {
 
     addPower(
       id: BigNumberish,
-      power: BigNumberish,
+      powerToAdd: BigNumberish,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -1931,7 +1931,7 @@ export class Seekers extends BaseContract {
 
     addPower(
       id: BigNumberish,
-      power: BigNumberish,
+      powerToAdd: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
@@ -2236,7 +2236,7 @@ export class Seekers extends BaseContract {
 
     addPower(
       id: BigNumberish,
-      power: BigNumberish,
+      powerToAdd: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 

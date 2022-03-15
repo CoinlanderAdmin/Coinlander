@@ -315,10 +315,6 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
     return _baseTokenURI;
   }
 
-  function setBaseURI(string memory baseTokenURI) public onlyKeepers {
-    _baseTokenURI = baseTokenURI;
-  }
-
   function _getAlignment() internal view returns (string memory) {
     if(goodsOnly) {
       string[] memory goodAlignments = new string[](3);
@@ -396,7 +392,7 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
     (uint256 x, ) = _getAlignmentAxes(_id); // Only need good/evil axis
     uint16 minDethscales;
     uint16 maxDethscales;
-    if(x ==1) {
+    if(x == 1) {
       minDethscales = 7; // Neutral case
       maxDethscales = 12;
     }
@@ -420,20 +416,20 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
 
     uint16 rarityFlip = uint16(_getRandomNumber(100, rand));
 
-    if(x==2){
-      if(rarityFlip < 5 && !reroll){ // dont change rarity on reroll
-        return _dethscales; // dont invert for rare evil
+    if(x == 2) {
+      if(rarityFlip < 5 && !reroll) { // dont allow rarity flip on reroll
+        return ~ _dethscales; // invert for rare evil
       }
       else {
-        return ~_dethscales; // Invert for Evil
+        return _dethscales; // dont invert for evil
       }
     }
-    if(x==0) {
-      if(rarityFlip < 5 && !reroll) { // dont change rarity on reroll 
-        return ~_dethscales; // invert for rare good
+    else if(x == 0) {
+      if(rarityFlip < 5 && !reroll) { // dont allow rarity flip on reroll
+        return _dethscales; // dont invert for rare good
       }
       else{
-        return _dethscales;
+        return ~ _dethscales; // invert for good 
       }
     }
     else {
@@ -672,6 +668,10 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
 
   function addKeeper(address newKeeper) public onlyKeepers {
     grantRole(KEEPERS_ROLE, newKeeper);
+  }
+
+  function setBaseURI(string memory baseTokenURI) public onlyKeepers {
+    _baseTokenURI = baseTokenURI;
   }
 
   function supportsInterface(bytes4 interfaceId)
