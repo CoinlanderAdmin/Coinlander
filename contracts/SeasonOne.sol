@@ -57,12 +57,11 @@ contract SeasonOne is ERC1155, Ownable, ReentrancyGuard {
     uint256 public constant SECONDSEEKERMINTTHRESH = 666;
     uint256 public constant THIRDSEEKERMINTTHRESH = 777;
     uint256 public constant GOODSONLYEND = 888;
-    uint256 public constant SWEETRELEASE = 1111; 
+    uint256 public constant SWEETRELEASE = 1111;
 
     // ECONOMIC CONSTANTS  
-    uint256 public constant PERCENTRATEINCREASE = 80; // 0.8% increase for each successive seizure 
-    uint256 public constant PERCENTTAKE = 50; // 0.50% take for prize and reserve 
-    uint256 constant PERCENTPRIZE = 5000; // 50.00% of take goes to prize pool     
+    uint256 public constant PERCENTRATEINCREASE = 60; // 0.6% increase for each successive seizure 
+    uint256 public constant PERCENTPRIZE = 100; // 1.0% of take goes to prize pool     
     uint256 constant PERCENTBASIS = 10000;
     
     // ECONOMIC STATE VARS 
@@ -70,7 +69,6 @@ contract SeasonOne is ERC1155, Ownable, ReentrancyGuard {
     uint256 public seizureStake = 5 * 10**12; // test value
     uint256 private previousSeizureStake = 0; 
     uint256 public prize = 0; // Prize pool balance
-    uint256 private reserve = 0; // Treasury balance 
     uint256 private keeperShardsMinted = 0;
 
     // SHARD CONSTANTS
@@ -80,7 +78,7 @@ contract SeasonOne is ERC1155, Ownable, ReentrancyGuard {
     uint256 constant POWERPERSHARD = 8; // Eight power units per Shard 
     uint256 public constant SHARDTOFRAGMENTMULTIPLIER = 5; // One fragment per 5 Shards 
     uint256 constant BASESHARDREWARD = 1; // 1 Shard guaranteed per seizure
-    uint256 constant INCRSHARDREWARD = 30; // 3 Eth/Shard
+    uint256 constant INCRSHARDREWARD = 5; // .5 Eth/Shard
     uint256 constant INCRBASIS = 10; //
 
     // BALANCES AND ECONOMIC PARAMETERS 
@@ -202,13 +200,11 @@ contract SeasonOne is ERC1155, Ownable, ReentrancyGuard {
     function _processPaymentsAndRewards(address previousOwner, uint256 value) internal {
         // Exclude first seizure since deployer doesnt get rewards
         if (seizureCount.current() != 1) {
-            // Set aside funds for treasury and prize pool
-            uint256 _take = (value * PERCENTTAKE) / PERCENTBASIS;
-            uint256 _prize = (_take * PERCENTPRIZE) / PERCENTBASIS;
-            reserve += (_take - _prize); 
+            // Set aside funds for prize pool
+            uint256 _prize = (value * PERCENTPRIZE) / PERCENTBASIS;
             prize += _prize; 
 
-            uint256 deposit = value - _take;
+            uint256 deposit = value - _prize;
             pendingWithdrawals[previousOwner]._withdrawValue += uint224(deposit);
 
             uint16 shardReward = _calculateShardReward(previousSeizureStake);
@@ -219,7 +215,6 @@ contract SeasonOne is ERC1155, Ownable, ReentrancyGuard {
         if (!released) {
             // We allocate a seeker for every previous Coinlander. The winner is special cased
             pendingWithdrawals[previousOwner]._seekersOwed += 1;
-
             // Store current seizure as previous
             previousSeizureStake = seizureStake;
             // Determine what it will cost to seize next time
@@ -392,13 +387,6 @@ contract SeasonOne is ERC1155, Ownable, ReentrancyGuard {
 
         keeperShardsMinted += amount; 
         _mint(msg.sender, SHARD, amount, "0x0");
-    }
-
-    function ownerWithdraw() external payable onlyOwner{
-        require(reserve > 0);
-        uint256 amount = reserve;
-        reserve = 0;
-        payable(msg.sender).transfer(amount);
     }
 
     function startGame() external onlyOwner {

@@ -3,6 +3,7 @@ import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers"
 import { Vault__factory, Vault } from "../typechain"
 import { Seekers__factory, Seekers } from "../typechain"
 import { expect } from "chai"
+import { BigNumber } from "ethers"
 
 describe("Vault", function () {
   let owner: SignerWithAddress
@@ -116,25 +117,23 @@ describe("Vault", function () {
   })
 
   describe("upon fundPrizePurse", () => {
-    const v = ethers.utils.parseUnits("1", "ether").toHexString()
+    const v = ethers.utils.parseUnits("1", "ether")
 
     it("accepts payments of ether into the prize balance", async () => {
       await kv.fundPrizePurse( { value: v } )
-      expect(await kv.prize()).to.equal(ethers.utils.parseEther(v))
-    })
-
-    it("accepts payments of ether into the contract balance", async () => {
-      await kv.fundPrizePurse( { value: v } )
-      expect(await kv.provider.getBalance(kv.address)).to.equal(v)
+      expect(await kv.prize()).to.equal(v)
     })
 
     it("does not receive ether without calling the fund method", async () => {
-      await expect(owner.sendTransaction({ to: kv.address, value: v })).to.be.revertedWith("E-002-014")
+      await expect(owner.sendTransaction({ 
+        to: kv.address, 
+        value: v }))
+        .to.be.revertedWith("E-002-014")
     })
   })
 
   describe("upon claimVault", () => {
-    let v: string
+    let v: BigNumber
     before( async function() {
       kv = await Vault.deploy() // get a fresh contract instance 
       // Mint all the fragments for userA 
@@ -143,7 +142,7 @@ describe("Vault", function () {
         await kv.mintFragments(userA.address, 1)
       }
       // Fund the prize purse
-      v = ethers.utils.parseUnits("1", "ether").toHexString()
+      v = ethers.utils.parseUnits("1", "ether")
       await kv.fundPrizePurse( { value: v } )
     })
 
@@ -158,10 +157,11 @@ describe("Vault", function () {
     })
 
     it("allows a holder of all fragments to claim", async () => {
-      await kv.connect(userA).claimKeepersVault()
       let beforeBalance = await userA.getBalance()
-      expect(await kv.balanceOf(userA.address, 0)).to.equal(1)
-      expect((await userA.getBalance()).gt(beforeBalance)).to.be.true
+      await kv.connect(userA).claimKeepersVault()
+      expect(await kv.balanceOf(userA.address, 0)).to.equal(1) // has key 
+      let afterBalance = await userA.getBalance()
+      expect(afterBalance.gt(beforeBalance)).to.be.true // received prize pool funds 
     })
 
     it("does not allow a holder of all fragments to claim after the first winner has claimed", async () => {

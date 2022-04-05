@@ -121,7 +121,7 @@ describe("SeasonOne", function () {
 
     it("sets the withdraw ammt according to the seizure price less platform take", async () => {
       let w = await seasonOne.getPendingWithdrawal(userA.address)
-      let takeRate = await seasonOne.PERCENTTAKE()
+      let takeRate = await seasonOne.PERCENTPRIZE()
       let take = oldSS.mul(takeRate).div(10000)
       await expect(w[0]).to.equal(oldSS.sub(take))
     })
@@ -187,36 +187,37 @@ describe("SeasonOne", function () {
     })
   })
 
-  describe("upon ownerWithdraw", () => {
-    beforeEach(async function () {
-      SS = await seasonOne.seizureStake()
-      await seasonOne.connect(userA).seize({ value: SS })
-      SS = await seasonOne.seizureStake()
-      await seasonOne.connect(userB).seize({ value: SS })
-      SS = await seasonOne.seizureStake()
-      await seasonOne.connect(userA).seize({ value: SS })
-      SS = await seasonOne.seizureStake()
-      await seasonOne.connect(userB).seize({ value: SS })
-    })
+  // This test was disabled as we removed a treasury take from the Season One contract
+  // describe("upon ownerWithdraw", () => {
+  //   beforeEach(async function () {
+  //     SS = await seasonOne.seizureStake()
+  //     await seasonOne.connect(userA).seize({ value: SS })
+  //     SS = await seasonOne.seizureStake()
+  //     await seasonOne.connect(userB).seize({ value: SS })
+  //     SS = await seasonOne.seizureStake()
+  //     await seasonOne.connect(userA).seize({ value: SS })
+  //     SS = await seasonOne.seizureStake()
+  //     await seasonOne.connect(userB).seize({ value: SS })
+  //   })
 
-    it("allows the owner to withdraw the reserve balance", async ()=> {
-      let beforeBalance = await owner.getBalance()
-      let tx = await seasonOne.ownerWithdraw()
-      let receipt = await tx.wait()
-      let gasFee = receipt.cumulativeGasUsed.mul(receipt.effectiveGasPrice)
-      let afterBalance = await owner.getBalance()
-      expect(afterBalance).to.be.gt(beforeBalance.sub(gasFee))
-    })
+  //   // it("allows the owner to withdraw the reserve balance", async ()=> {
+  //   //   let beforeBalance = await owner.getBalance()
+  //   //   let tx = await seasonOne.ownerWithdraw()
+  //   //   let receipt = await tx.wait()
+  //   //   let gasFee = receipt.cumulativeGasUsed.mul(receipt.effectiveGasPrice)
+  //   //   let afterBalance = await owner.getBalance()
+  //   //   expect(afterBalance).to.be.gt(beforeBalance.sub(gasFee))
+  //   // })
 
-    it("does not allow a non-owner to withdraw the reserve balance", async ()=> {
-      await expect(seasonOne.connect(userA).ownerWithdraw()).to.be.reverted
-    })
+  //   it("does not allow a non-owner to withdraw the reserve balance", async ()=> {
+  //     await expect(seasonOne.connect(userA).ownerWithdraw()).to.be.reverted
+  //   })
 
-    it("does not allow the owner to withdraw more than the reserve", async ()=> {
-      await seasonOne.ownerWithdraw()
-      await expect(seasonOne.ownerWithdraw()).to.be.reverted
-    })
-  })
+  //   it("does not allow the owner to withdraw more than the reserve", async ()=> {
+  //     await seasonOne.ownerWithdraw()
+  //     await expect(seasonOne.ownerWithdraw()).to.be.reverted
+  //   })
+  // })
 
 // The following tests have been moved into their respective tests for E3/E7 due to the shard spendable event
 
