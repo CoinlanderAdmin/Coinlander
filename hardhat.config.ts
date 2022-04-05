@@ -36,6 +36,7 @@ const config: HardhatUserConfig = {
       chainId: 31337,
     },
     RinkArby: {
+      allowUnlimitedContractSize: true,
       url: envConfig.RinkArbyKey,
       chainId: 421611,
       //gas: 900000,

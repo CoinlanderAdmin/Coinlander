@@ -24,11 +24,16 @@ export async function deploy() {
     const [deployer] = await ethers.getSigners()
     const deployBlock = await (await ethers.provider.getBlock("latest")).number
 
+    logger.out(deployBlock)
+
     // Deploy the NFT contract
     const Seekers = await ethers.getContractFactory("Seekers")
+    logger.out("Got contract factory")
     const seekers = await Seekers.deploy()
+    logger.out("Sent deployment to chain")
     await seekers.deployed()
     logger.pad(30, 'Seekers contract:', seekers.address)
+ 
 
     // Deploy the Keepers Vault contract 
     const Vault = await ethers.getContractFactory("Vault")

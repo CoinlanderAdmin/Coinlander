@@ -26,8 +26,8 @@ interface SeasonOneInterface extends ethers.utils.Interface {
     "FIRSTSEEKERMINTTHRESH()": FunctionFragment;
     "GOODSONLYEND()": FunctionFragment;
     "ONECOIN()": FunctionFragment;
+    "PERCENTPRIZE()": FunctionFragment;
     "PERCENTRATEINCREASE()": FunctionFragment;
-    "PERCENTTAKE()": FunctionFragment;
     "SECONDSEEKERMINTTHRESH()": FunctionFragment;
     "SHARD()": FunctionFragment;
     "SHARDSPENDABLE()": FunctionFragment;
@@ -51,7 +51,6 @@ interface SeasonOneInterface extends ethers.utils.Interface {
     "isApprovedForAll(address,address)": FunctionFragment;
     "keeperShardMint(uint256)": FunctionFragment;
     "owner()": FunctionFragment;
-    "ownerWithdraw()": FunctionFragment;
     "pendingWithdrawals(address)": FunctionFragment;
     "prize()": FunctionFragment;
     "released()": FunctionFragment;
@@ -85,11 +84,11 @@ interface SeasonOneInterface extends ethers.utils.Interface {
   ): string;
   encodeFunctionData(functionFragment: "ONECOIN", values?: undefined): string;
   encodeFunctionData(
-    functionFragment: "PERCENTRATEINCREASE",
+    functionFragment: "PERCENTPRIZE",
     values?: undefined
   ): string;
   encodeFunctionData(
-    functionFragment: "PERCENTTAKE",
+    functionFragment: "PERCENTRATEINCREASE",
     values?: undefined
   ): string;
   encodeFunctionData(
@@ -173,10 +172,6 @@ interface SeasonOneInterface extends ethers.utils.Interface {
   ): string;
   encodeFunctionData(functionFragment: "owner", values?: undefined): string;
   encodeFunctionData(
-    functionFragment: "ownerWithdraw",
-    values?: undefined
-  ): string;
-  encodeFunctionData(
     functionFragment: "pendingWithdrawals",
     values: [string]
   ): string;
@@ -238,11 +233,11 @@ interface SeasonOneInterface extends ethers.utils.Interface {
   ): Result;
   decodeFunctionResult(functionFragment: "ONECOIN", data: BytesLike): Result;
   decodeFunctionResult(
-    functionFragment: "PERCENTRATEINCREASE",
+    functionFragment: "PERCENTPRIZE",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "PERCENTTAKE",
+    functionFragment: "PERCENTRATEINCREASE",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -322,10 +317,6 @@ interface SeasonOneInterface extends ethers.utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "owner", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "ownerWithdraw",
-    data: BytesLike
-  ): Result;
   decodeFunctionResult(
     functionFragment: "pendingWithdrawals",
     data: BytesLike
@@ -519,9 +510,9 @@ export class SeasonOne extends BaseContract {
 
     ONECOIN(overrides?: CallOverrides): Promise<[BigNumber]>;
 
-    PERCENTRATEINCREASE(overrides?: CallOverrides): Promise<[BigNumber]>;
+    PERCENTPRIZE(overrides?: CallOverrides): Promise<[BigNumber]>;
 
-    PERCENTTAKE(overrides?: CallOverrides): Promise<[BigNumber]>;
+    PERCENTRATEINCREASE(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     SECONDSEEKERMINTTHRESH(overrides?: CallOverrides): Promise<[BigNumber]>;
 
@@ -617,10 +608,6 @@ export class SeasonOne extends BaseContract {
 
     owner(overrides?: CallOverrides): Promise<[string]>;
 
-    ownerWithdraw(
-      overrides?: PayableOverrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
-
     pendingWithdrawals(
       arg0: string,
       overrides?: CallOverrides
@@ -708,9 +695,9 @@ export class SeasonOne extends BaseContract {
 
   ONECOIN(overrides?: CallOverrides): Promise<BigNumber>;
 
-  PERCENTRATEINCREASE(overrides?: CallOverrides): Promise<BigNumber>;
+  PERCENTPRIZE(overrides?: CallOverrides): Promise<BigNumber>;
 
-  PERCENTTAKE(overrides?: CallOverrides): Promise<BigNumber>;
+  PERCENTRATEINCREASE(overrides?: CallOverrides): Promise<BigNumber>;
 
   SECONDSEEKERMINTTHRESH(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -806,10 +793,6 @@ export class SeasonOne extends BaseContract {
 
   owner(overrides?: CallOverrides): Promise<string>;
 
-  ownerWithdraw(
-    overrides?: PayableOverrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
-
   pendingWithdrawals(
     arg0: string,
     overrides?: CallOverrides
@@ -895,9 +878,9 @@ export class SeasonOne extends BaseContract {
 
     ONECOIN(overrides?: CallOverrides): Promise<BigNumber>;
 
-    PERCENTRATEINCREASE(overrides?: CallOverrides): Promise<BigNumber>;
+    PERCENTPRIZE(overrides?: CallOverrides): Promise<BigNumber>;
 
-    PERCENTTAKE(overrides?: CallOverrides): Promise<BigNumber>;
+    PERCENTRATEINCREASE(overrides?: CallOverrides): Promise<BigNumber>;
 
     SECONDSEEKERMINTTHRESH(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -987,8 +970,6 @@ export class SeasonOne extends BaseContract {
     ): Promise<void>;
 
     owner(overrides?: CallOverrides): Promise<string>;
-
-    ownerWithdraw(overrides?: CallOverrides): Promise<void>;
 
     pendingWithdrawals(
       arg0: string,
@@ -1262,9 +1243,9 @@ export class SeasonOne extends BaseContract {
 
     ONECOIN(overrides?: CallOverrides): Promise<BigNumber>;
 
-    PERCENTRATEINCREASE(overrides?: CallOverrides): Promise<BigNumber>;
+    PERCENTPRIZE(overrides?: CallOverrides): Promise<BigNumber>;
 
-    PERCENTTAKE(overrides?: CallOverrides): Promise<BigNumber>;
+    PERCENTRATEINCREASE(overrides?: CallOverrides): Promise<BigNumber>;
 
     SECONDSEEKERMINTTHRESH(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -1354,10 +1335,6 @@ export class SeasonOne extends BaseContract {
 
     owner(overrides?: CallOverrides): Promise<BigNumber>;
 
-    ownerWithdraw(
-      overrides?: PayableOverrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
-
     pendingWithdrawals(
       arg0: string,
       overrides?: CallOverrides
@@ -1440,11 +1417,11 @@ export class SeasonOne extends BaseContract {
 
     ONECOIN(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
+    PERCENTPRIZE(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
     PERCENTRATEINCREASE(
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
-
-    PERCENTTAKE(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     SECONDSEEKERMINTTHRESH(
       overrides?: CallOverrides
@@ -1539,10 +1516,6 @@ export class SeasonOne extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     owner(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    ownerWithdraw(
-      overrides?: PayableOverrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
 
     pendingWithdrawals(
       arg0: string,
