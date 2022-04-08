@@ -30,11 +30,17 @@ export async function checkState() {
   const [owner, ...accounts] = await ethers.getSigners()
 
   // Check if each event triggered successfully
+
+  console.log('Origin: ')
+  console.log(await seekers.getOriginById(114))
+  console.log('Cloak status: ')
+  console.log(await seekers.getCloakStatusById(114))  
+  
   console.log("Seizure number: ", await (await seasonOne.seizureCount()).toNumber())
   console.log("Prize: ", await (await seasonOne.prize()).div(1E12).toNumber())
 
-  let uncloaking = await seekers.uncloaking()
-  console.log("Uncloaking: ", uncloaking) 
+  let uncloaking = await seekers.cloakingAvailable()
+  console.log("Cloaking Available: ", uncloaking) 
   
   let shardSpendable = await seasonOne.shardSpendable()
   console.log("Shard spendable: ", shardSpendable)

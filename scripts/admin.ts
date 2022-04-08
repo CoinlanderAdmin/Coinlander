@@ -9,7 +9,7 @@ export async function checkState() {
   logger.out('Attaching to contracts to check state', logger.Level.Info)
   logger.divider()
 
-  const index: string = '1'
+  const index: string = '2'
   const addressesJson = fs.readFileSync('addresses.json', 'utf8');
   const deployData = JSON.parse(addressesJson);
   const addresses = deployData[index]
@@ -32,31 +32,55 @@ export async function checkState() {
 
   // Claim funds / finance
 
-  // logger.out('Pulling funds from Seeker Contract...')
-  // let contractBal: BigNumber = await seekers.provider.getBalance(seekers.address)
-  // console.log(contractBal)
-  // if(!contractBal.isZero()) {
-  //   let ownerBal: BigNumber = await ethers.provider.getBalance(owner.address) 
-  //   logger.pad(30, 'Account current balance:', ethers.utils.formatEther(ownerBal))
-  //   logger.pad(30, 'Claiming contract balance:', ethers.utils.formatEther(contractBal))
-  //   await seekers.ownerWithdraw()
-  //   ownerBal = await owner.getBalance(owner.address) 
-  //   logger.pad(30, 'Account new balance:', ethers.utils.formatEther(ownerBal))
-  //   logger.divider()
-  // }
-  // else {
-  //   logger.out('Contract has no funds to claim')
-  // }
+  logger.out('Pulling funds from Seeker Contract...')
+  let contractBal: BigNumber = await seekers.provider.getBalance(seekers.address)
+  if(!contractBal.isZero()) {
+    let ownerBal: BigNumber = await ethers.provider.getBalance(owner.address) 
+    logger.pad(30, 'Account current balance:', ethers.utils.formatEther(ownerBal))
+    logger.pad(30, 'Claiming contract balance:', ethers.utils.formatEther(contractBal))
+    await seekers.ownerWithdraw()
+    ownerBal = await owner.getBalance(owner.address) 
+    logger.pad(30, 'Account new balance:', ethers.utils.formatEther(ownerBal))
+  }
+  else {
+    logger.out('Contract has no funds to claim')
+  }
+  logger.divider()
   
   // Metadata Controls
 
+  // Change Seeker metadata URI 
   logger.out('Checking seeker _baseURI...')
-  let currentURI = await seekers.tokenURI(1) // there will always be a token id: 1
-  logger.pad(30, 'Current URI for token 1:', currentURI)
-  let newBaseURI = 'https://api.coinlander.dev/meta/seekers/'
-  await seekers.setBaseURI(newBaseURI)
-  currentURI = await seekers.tokenURI(1) 
-  logger.pad(30, 'New URI for token 1:', currentURI)
+  let newSeekerBaseURI = 'https://api.coinlander.dev/meta/seekers/'
+  let seekersCurrentURI = await seekers.tokenURI(1) // there will always be a token id: 1
+  logger.pad(30, 'Current URI for token 1:', seekersCurrentURI)
+  if(seekersCurrentURI != (newSeekerBaseURI + "1")) {
+    await seekers.setBaseURI(newSeekerBaseURI)
+    seekersCurrentURI = await seekers.tokenURI(1) 
+    logger.pad(30, 'New URI for token 1:', seekersCurrentURI)
+  }
+  else {
+    logger.out('URI already set correctly')
+  }
+  logger.divider()
+
+  // Change SeasonOne contract URI 
+  logger.out('Checking Season One _baseURI...')
+  let newSOneBaseURI = 'https://api.coinlander.dev/meta/season-one/'
+  let sOneCurrentURI = await seasonOne.contractURI() // there will always be a token id: 1
+  logger.pad(30, 'Current URI for season one contract:', sOneCurrentURI)
+  if(sOneCurrentURI != newSOneBaseURI) {
+    await seasonOne.setContractURI(newSOneBaseURI)
+    sOneCurrentURI = await seasonOne.contractURI() 
+    logger.pad(30, 'New contract URI for season one contract:', sOneCurrentURI)
+  }
+  else {
+    logger.out('URI already set correctly')
+  }
+
+  logger.divider()
+
+
   // if(!contractBal.isZero()) {
   //   let ownerBal: BigNumber = await owner.getBalance(owner.address) 
   //   logger.pad(30, 'Account current balance:', ownerBal.div(1E18).toString())

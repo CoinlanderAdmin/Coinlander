@@ -36,6 +36,7 @@ interface VaultInterface extends ethers.utils.Interface {
     "balanceOfBatch(address[],uint256[])": FunctionFragment;
     "changeURI(string)": FunctionFragment;
     "claimKeepersVault()": FunctionFragment;
+    "contractURI()": FunctionFragment;
     "fundPrizePurse()": FunctionFragment;
     "gameContract()": FunctionFragment;
     "gameWon()": FunctionFragment;
@@ -55,6 +56,7 @@ interface VaultInterface extends ethers.utils.Interface {
     "safeBatchTransferFrom(address,address,uint256[],uint256[],bytes)": FunctionFragment;
     "safeTransferFrom(address,address,uint256,uint256,bytes)": FunctionFragment;
     "setApprovalForAll(address,bool)": FunctionFragment;
+    "setContractURI(string)": FunctionFragment;
     "setGameContract(address)": FunctionFragment;
     "setSweetRelease()": FunctionFragment;
     "supportsInterface(bytes4)": FunctionFragment;
@@ -87,6 +89,10 @@ interface VaultInterface extends ethers.utils.Interface {
   encodeFunctionData(functionFragment: "changeURI", values: [string]): string;
   encodeFunctionData(
     functionFragment: "claimKeepersVault",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "contractURI",
     values?: undefined
   ): string;
   encodeFunctionData(
@@ -131,6 +137,10 @@ interface VaultInterface extends ethers.utils.Interface {
   encodeFunctionData(
     functionFragment: "setApprovalForAll",
     values: [string, boolean]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "setContractURI",
+    values: [string]
   ): string;
   encodeFunctionData(
     functionFragment: "setGameContract",
@@ -178,6 +188,10 @@ interface VaultInterface extends ethers.utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
+    functionFragment: "contractURI",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "fundPrizePurse",
     data: BytesLike
   ): Result;
@@ -218,6 +232,10 @@ interface VaultInterface extends ethers.utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "setApprovalForAll",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "setContractURI",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -382,6 +400,8 @@ export class Vault extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
+    contractURI(overrides?: CallOverrides): Promise<[string]>;
+
     fundPrizePurse(
       overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
@@ -450,6 +470,11 @@ export class Vault extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
+    setContractURI(
+      newContractURI: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
     setGameContract(
       _gameContract: string,
       overrides?: Overrides & { from?: string | Promise<string> }
@@ -514,6 +539,8 @@ export class Vault extends BaseContract {
   claimKeepersVault(
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
+
+  contractURI(overrides?: CallOverrides): Promise<string>;
 
   fundPrizePurse(
     overrides?: PayableOverrides & { from?: string | Promise<string> }
@@ -583,6 +610,11 @@ export class Vault extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
+  setContractURI(
+    newContractURI: string,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
   setGameContract(
     _gameContract: string,
     overrides?: Overrides & { from?: string | Promise<string> }
@@ -642,6 +674,8 @@ export class Vault extends BaseContract {
     changeURI(_newURI: string, overrides?: CallOverrides): Promise<void>;
 
     claimKeepersVault(overrides?: CallOverrides): Promise<void>;
+
+    contractURI(overrides?: CallOverrides): Promise<string>;
 
     fundPrizePurse(overrides?: CallOverrides): Promise<void>;
 
@@ -704,6 +738,11 @@ export class Vault extends BaseContract {
     setApprovalForAll(
       operator: string,
       approved: boolean,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    setContractURI(
+      newContractURI: string,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -893,6 +932,8 @@ export class Vault extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
+    contractURI(overrides?: CallOverrides): Promise<BigNumber>;
+
     fundPrizePurse(
       overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
@@ -958,6 +999,11 @@ export class Vault extends BaseContract {
     setApprovalForAll(
       operator: string,
       approved: boolean,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    setContractURI(
+      newContractURI: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
@@ -1027,6 +1073,8 @@ export class Vault extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
+    contractURI(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
     fundPrizePurse(
       overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
@@ -1092,6 +1140,11 @@ export class Vault extends BaseContract {
     setApprovalForAll(
       operator: string,
       approved: boolean,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    setContractURI(
+      newContractURI: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
