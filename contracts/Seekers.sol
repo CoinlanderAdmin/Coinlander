@@ -76,7 +76,10 @@ contract Seekers is ERC721Enumerable, ISeekers, AccessControl, ReentrancyGuard {
 
   // Off-chain metadata
   // @todo need to put a valid endpoint here 
+  string private _contractURI  = "https://api.coinlander.dev/meta/seekers";
   string private _baseTokenURI = "https://api.coinlander.dev/meta/seekers/";
+
+
 
   // Alignment
   string[] private alignments = [

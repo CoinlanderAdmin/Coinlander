@@ -124,8 +124,8 @@ contract SeasonOne is ERC1155, Ownable, ReentrancyGuard {
         vault = IVault(keepeersVault);
 
         // Set contract uri 
-        //@Todo change this 
-        _contractURI = "blahblah";
+        //@Todo change this to a real endpoint
+        _contractURI = "https://api.coinlander.dev/meta/season-one";
     }
 
 
