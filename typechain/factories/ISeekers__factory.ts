@@ -59,6 +59,12 @@ const _abi = [
   },
   {
     anonymous: false,
+    inputs: [],
+    name: "CloakingAvailable",
+    type: "event",
+  },
+  {
+    anonymous: false,
     inputs: [
       {
         indexed: false,
@@ -141,14 +147,8 @@ const _abi = [
         name: "seekerId",
         type: "uint256",
       },
-      {
-        indexed: true,
-        internalType: "address",
-        name: "clan",
-        type: "address",
-      },
     ],
-    name: "SeekerDeclaredToClan",
+    name: "SeekerCloaked",
     type: "event",
   },
   {
@@ -160,8 +160,14 @@ const _abi = [
         name: "seekerId",
         type: "uint256",
       },
+      {
+        indexed: true,
+        internalType: "address",
+        name: "clan",
+        type: "address",
+      },
     ],
-    name: "SeekerUncloaked",
+    name: "SeekerDeclaredToClan",
     type: "event",
   },
   {
@@ -193,12 +199,6 @@ const _abi = [
       },
     ],
     name: "Transfer",
-    type: "event",
-  },
-  {
-    anonymous: false,
-    inputs: [],
-    name: "UncloakingAvailable",
     type: "event",
   },
   {
@@ -303,6 +303,19 @@ const _abi = [
         name: "id",
         type: "uint256",
       },
+    ],
+    name: "cloakSeeker",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "id",
+        type: "uint256",
+      },
       {
         internalType: "address",
         name: "clanAddress",
@@ -373,25 +386,6 @@ const _abi = [
         internalType: "address",
         name: "operator",
         type: "address",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "uint256",
-        name: "id",
-        type: "uint256",
-      },
-    ],
-    name: "getBirthStatusById",
-    outputs: [
-      {
-        internalType: "bool",
-        name: "",
-        type: "bool",
       },
     ],
     stateMutability: "view",
@@ -481,6 +475,25 @@ const _abi = [
         type: "uint256",
       },
     ],
+    name: "getOriginById",
+    outputs: [
+      {
+        internalType: "bool",
+        name: "",
+        type: "bool",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "id",
+        type: "uint256",
+      },
+    ],
     name: "getPowerById",
     outputs: [
       {
@@ -557,7 +570,7 @@ const _abi = [
   },
   {
     inputs: [],
-    name: "performUncloaking",
+    name: "performCloakingCeremony",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
@@ -771,19 +784,6 @@ const _abi = [
       },
     ],
     name: "transferFrom",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "uint256",
-        name: "id",
-        type: "uint256",
-      },
-    ],
-    name: "uncloakSeeker",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",

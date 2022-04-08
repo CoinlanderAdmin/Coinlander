@@ -68,6 +68,17 @@ describe("SeasonOne", function () {
     })
   })
 
+
+  describe("during contractURI change", () => {
+    it("lets the owner change the contract URI", async () => {
+      let currentURI = await seasonOne.contractURI()
+      console.log(currentURI)
+      await seasonOne.setContractURI("testuri")
+      let newURI = await seasonOne.contractURI()
+      console.log(newURI)
+    })
+  })
+
   describe("before stealing", () => {
     beforeEach(async function () {
       SS = await seasonOne.seizureStake()

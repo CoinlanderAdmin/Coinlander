@@ -1,7 +1,7 @@
 import {ethers} from "hardhat"
 import {HardhatEthersHelpers} from "hardhat/types"
 import * as fs from "fs";
-import * as logger from "./logger"
+import * as logger from "../utils/logger"
 
 export async function testAuction() {
   logger.divider()

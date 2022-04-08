@@ -35,7 +35,7 @@ describe("Seekers", function () {
 
   describe("during construction", () => {
     it("sets the name to Seekers", async () => {
-      expect(await seekers.name()).to.equal("Seekers")
+      expect(await seekers.name()).to.equal("Coinlander: Seekers")
     })
 
     it("sets the symbol to SEEK", async () => {
@@ -106,7 +106,7 @@ describe("Seekers", function () {
     it("assigns a birthed seeker the bornFromCoin attribute", async () => {
       await seekers.birthSeeker(userA.address)
       let id = await seekers.tokenOfOwnerByIndex(userA.address,0)
-      expect(await seekers.getBirthStatusById(id)).to.be.true
+      expect(await seekers.getOriginById(id)).to.be.true
     })
   })
 
@@ -258,20 +258,20 @@ describe("Seekers", function () {
     })
   })
 
-  describe("upon performUncloaking", () => {
+  describe("upon performCloakingCeremony", () => {
     beforeEach(async function () {
       seekers = await Seekers.deploy()
       await seekers.addGameContract(owner.address) // to simulate OneCoin contract 
     })
 
-    it("set the uncloaking boolean to true", async () => {
-      expect(await seekers.uncloaking()).to.be.false
-      await seekers.performUncloaking()
-      expect(await seekers.uncloaking()).to.be.true
+    it("set the cloaking boolean to true", async () => {
+      expect(await seekers.cloakingAvailable()).to.be.false
+      await seekers.performCloakingCeremony()
+      expect(await seekers.cloakingAvailable()).to.be.true
     })
   })
 
-  describe("upon uncloakSeeker", () => {
+  describe("upon cloakSeeker", () => {
     let id: BigNumber 
     beforeEach(async function () {
       seekers = await Seekers.deploy()
@@ -280,29 +280,29 @@ describe("Seekers", function () {
       id = await seekers.tokenOfOwnerByIndex(userA.address,0)
     })
 
-    it("requires the uncloaking ceremony has been reached", async () => {
-      await expect(seekers.connect(userA).uncloakSeeker(id)).to.be.revertedWith("E-001-009")
+    it("requires the cloaking ceremony has been reached", async () => {
+      await expect(seekers.connect(userA).cloakSeeker(id)).to.be.revertedWith("E-001-009")
     })
 
-    it("allows the owner of a token to uncloak their own seeker", async () => {
-      await seekers.performUncloaking()
-      await expect(seekers.connect(userA).uncloakSeeker(id))
+    it("allows the owner of a token to cloak their own seeker", async () => {
+      await seekers.performCloakingCeremony()
+      await expect(seekers.connect(userA).cloakSeeker(id))
     })
 
-    it("does not allow a seeker to be uncloaked more than once", async () => {
-      await seekers.performUncloaking()
-      await seekers.connect(userA).uncloakSeeker(id)
-      await expect(seekers.connect(userA).uncloakSeeker(id)).to.be.revertedWith("E-001-011")
+    it("does not allow a seeker to be cloaked more than once", async () => {
+      await seekers.performCloakingCeremony()
+      await seekers.connect(userA).cloakSeeker(id)
+      await expect(seekers.connect(userA).cloakSeeker(id)).to.be.revertedWith("E-001-011")
     })
 
-    it("does not allow a non-owner to uncloak a seeker", async () => {
-      await seekers.performUncloaking()
-      await expect(seekers.connect(userB).uncloakSeeker(id)).to.be.revertedWith("E-001-010")
+    it("does not allow a non-owner to cloak a seeker", async () => {
+      await seekers.performCloakingCeremony()
+      await expect(seekers.connect(userB).cloakSeeker(id)).to.be.revertedWith("E-001-010")
     })
 
     it("assigns non-zero values to APs", async () =>{
-      await seekers.performUncloaking()
-      await seekers.connect(userA).uncloakSeeker(id)
+      await seekers.performCloakingCeremony()
+      await seekers.connect(userA).cloakSeeker(id)
       let APs = await seekers.getApById(id)
       expect(APs[0]).to.be.gt(0)
       expect(APs[1]).to.be.gt(0)
@@ -311,41 +311,41 @@ describe("Seekers", function () {
     })
 
     it("assigns an alignment", async () => {
-      await seekers.performUncloaking()
-      await seekers.connect(userA).uncloakSeeker(id)
+      await seekers.performCloakingCeremony()
+      await seekers.connect(userA).cloakSeeker(id)
       let alignment = await seekers.getAlignmentById(id)
       expect(alignment).to.not.equal("")
     })
 
     it("does not change the born from coin attribute", async () => {
-      await seekers.performUncloaking()
-      const beforeBirth = await seekers.getBirthStatusById(id)
-      await seekers.connect(userA).uncloakSeeker(id)
-      const afterBirth = await seekers.getBirthStatusById(id)
+      await seekers.performCloakingCeremony()
+      const beforeBirth = await seekers.getOriginById(id)
+      await seekers.connect(userA).cloakSeeker(id)
+      const afterBirth = await seekers.getOriginById(id)
       expect(afterBirth).to.equal(beforeBirth)
     })
 
     it("does not change the amount of power", async () => {
-      await seekers.performUncloaking()
+      await seekers.performCloakingCeremony()
       const beforeScales = await seekers.getPowerById(id)
-      await seekers.connect(userA).uncloakSeeker(id)
+      await seekers.connect(userA).cloakSeeker(id)
       const afterScales = await seekers.getPowerById(id)
       expect(afterScales).to.equal(beforeScales)
     })
 
     it("does not change a seekers clan assignment", async () => {
-      await seekers.performUncloaking()
+      await seekers.performCloakingCeremony()
       const beforeClan = await seekers.getClanById(id)
-      await seekers.connect(userA).uncloakSeeker(id)
+      await seekers.connect(userA).cloakSeeker(id)
       const afterClan = await seekers.getClanById(id)
       expect(afterClan).to.equal(beforeClan)
     })
 
     it("assigns a dethscale pattern", async () => {
-      await seekers.performUncloaking()
+      await seekers.performCloakingCeremony()
       let dethscalesBefore = await seekers.getDethscalesById(id)
       expect(dethscalesBefore).to.equal(0);
-      await seekers.connect(userA).uncloakSeeker(id)
+      await seekers.connect(userA).cloakSeeker(id)
       let dethscalesAfter = await seekers.getDethscalesById(id)
       expect(dethscalesAfter).to.be.greaterThan(0);
     })
@@ -360,25 +360,25 @@ describe("Seekers", function () {
       id = await seekers.tokenOfOwnerByIndex(userA.address,0)
     })
     
-    it("does not let dethscales get rerolled before the uncloaking holiday", async () => {
+    it("does not let dethscales get rerolled before the cloaking holiday", async () => {
       await expect(seekers.connect(userA).rerollDethscales(id)).to.be.revertedWith("E-001-009")
     })
 
     it("does not let dethscales get rerolled by a non owner", async () => {
-      await seekers.performUncloaking()
+      await seekers.performCloakingCeremony()
       await expect(seekers.connect(userB).rerollDethscales(id)).to.be.revertedWith("E-001-010")
     })
 
-    it("requires that the seeker has been uncloaked", async () => {
-      await seekers.performUncloaking()
+    it("requires that the seeker has been cloaked", async () => {
+      await seekers.performCloakingCeremony()
       await expect(seekers.connect(userA).rerollDethscales(id)).to.be.revertedWith("E-001-012")
-      await seekers.connect(userA).uncloakSeeker(id)
+      await seekers.connect(userA).cloakSeeker(id)
       expect(await seekers.connect(userA).rerollDethscales(id))
     })
 
     it("actually rerolls dethscales", async () => {
-      await seekers.performUncloaking()
-      await seekers.connect(userA).uncloakSeeker(id)
+      await seekers.performCloakingCeremony()
+      await seekers.connect(userA).cloakSeeker(id)
       let beforeDethscales = await seekers.getDethscalesById(id)
       await seekers.connect(userA).rerollDethscales(id)
       let afterDethscales = await seekers.getDethscalesById(id)
@@ -386,8 +386,8 @@ describe("Seekers", function () {
     })
 
     it("requires that the seeker has scales to burn", async () => {
-      await seekers.performUncloaking()
-      await seekers.connect(userA).uncloakSeeker(id)
+      await seekers.performCloakingCeremony()
+      await seekers.connect(userA).cloakSeeker(id)
       let scaleCount = (await seekers.getPowerById(id))
       for(let i=0; i < scaleCount; i++){
         await seekers.connect(userA).rerollDethscales(id)
@@ -443,15 +443,15 @@ describe("Seekers", function () {
     })
 
     it("returns an array of the expected length", async () => {
-      await seekers.performUncloaking()
-      await seekers.connect(userA).uncloakSeeker(id)
+      await seekers.performCloakingCeremony()
+      await seekers.connect(userA).cloakSeeker(id)
       let fullCloak = await seekers.getFullCloak(id)
       expect(fullCloak.length).to.equal(32)
     })
 
     it("returns the same cloak across multiple calls", async () => {
-      await seekers.performUncloaking()
-      await seekers.connect(userA).uncloakSeeker(id)
+      await seekers.performCloakingCeremony()
+      await seekers.connect(userA).cloakSeeker(id)
       let firstFullCloak = await seekers.getFullCloak(id)
       let secondFullCloak = await seekers.getFullCloak(id)
       function arrayEquiv(element: number, index: number, array: Array<number>) {

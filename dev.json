@@ -1,0 +1,56 @@
+{
+    "name": "Coinlander: Seeker (#1)",
+    "decimals": 0,
+    "description": "1 seed descriptions of seeker.",
+    "image": "https://via.placeholder.com/1000x1000?text=Seeker%201",
+    "attributes": [
+        {
+            "trait_type": "Cloaked",
+            "value": true
+        },
+        {
+            "trait_type": "Creation",
+            "value": "sale"
+        },
+        {
+            "trait_type": "Power",
+            "value": 3
+        },
+        {
+            "trait_type": "Alignment",
+            "value": "True Neutral"
+        },
+        {
+            "trait_type": "Alpha",
+            "value": 25
+        },
+        {
+            "trait_type": "Beta",
+            "value": 24
+        },
+        {
+            "trait_type": "Gamma",
+            "value": 23
+        },
+        {
+            "trait_type": "Delta",
+            "value": 22
+        },
+        {
+            "trait_type": "Dethscales",
+            "value": 0
+        },
+        {
+            "trait_type": "Cloaked",
+            "value": true
+        }
+    ],
+    "external_url": "https:/coinlander.dev",
+    "background_color": "0000000",
+    "animation_url": null,
+    "block": {
+        "name": "Block",
+        "value": 10294405,
+        "display_type": "number"
+    }
+}

@@ -6,7 +6,7 @@ import { Vault__factory, Vault } from "../typechain"
 import { expect } from "chai"
 import { BigNumber, utils } from "ethers"
 import * as fs from "fs";
-import * as logger from '../scripts/logger'
+import * as logger from '../utils/logger'
 
 
 

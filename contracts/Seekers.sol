@@ -7,10 +7,10 @@ pragma solidity ^0.8.10;
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
-import "./interfaces/iSeekers.sol";
+import "./interfaces/ISeekers.sol";
 //import "hardhat/console.sol";
 
-contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
+contract Seekers is ERC721Enumerable, ISeekers, AccessControl, ReentrancyGuard {
   // Access control setup
   bytes32 public constant KEEPERS_ROLE = keccak256("KEEPERS_ROLE"); // Role for Keepers
   bytes32 public constant GAME_ROLE = keccak256("GAME_ROLE"); // Role for approved Coinlander game contracts
@@ -23,7 +23,6 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
   uint256 public constant MAXSEEKERS = 11111; 
   uint256 public currentBuyableSeekers = 0;
   uint256 public currentPrice = 0;
-  uint256 private reserve = 0; // Contracts treasury balance
   uint256 private constant KEEPERSEEKERS = 64; // Number of Seekers that Keepers can mint for themselves
   uint256 private keepersSeekersMinted = 0;
   uint256 public constant MAXMINTABLE = 10; // Max seekers that can be purchased in one tx
@@ -54,7 +53,7 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
 
   // On-chain game parameters
   bool public released = false;
-  bool public uncloaking = false;
+  bool public cloakingAvailable = false;
   uint16 public constant MAXPOWER = 1024; // 32x32 pixel grid
   uint16 public constant SUMMONSEEKERPOWERSTART = 3;
   uint16 public constant BIRTHSEEKERPOWERSTART = 5;
@@ -77,7 +76,7 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
 
   // Off-chain metadata
   // @todo need to put a valid endpoint here 
-  string private _baseTokenURI = "https://meta.coinlander.one/seekers/";
+  string private _baseTokenURI = "https://api.coinlander.dev/meta/seekers/";
 
   // Alignment
   string[] private alignments = [
@@ -92,7 +91,7 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
     "Chaotic Evil"
   ];
 
-  constructor() ERC721("Seekers", "SEEK") {
+  constructor() ERC721("Coinlander: Seekers", "SEEK") {
     // Give the Keeper deploying this contract the Keeper role and set them as admin
     _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
     _setupRole(KEEPERS_ROLE, msg.sender);
@@ -162,7 +161,7 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
     
     attributesBySeekerId[id] = cloakedAttributes;
 
-    isSeekerCloaked[id] = true; // All Seekers begin cloaked
+    isSeekerCloaked[id] = false; // All Seekers begin uncloaked
 
     _safeMint(to, id);
   }
@@ -208,9 +207,9 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
     goodsOnly = false;
   }
 
-  function performUncloaking() external onlyGame {
-    uncloaking = true;
-    emit UncloakingAvailable();
+  function performCloakingCeremony() external onlyGame {
+    cloakingAvailable = true;
+    emit CloakingAvailable();
   }
 
   function sendWinnerSeeker(address winner) external onlyGame {
@@ -228,16 +227,16 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
   //                                                                                              //
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
-  function uncloakSeeker(uint256 id) external {
-    require(uncloaking, "E-001-009");
+  function cloakSeeker(uint256 id) external {
+    require(cloakingAvailable, "E-001-009");
     require(msg.sender == ownerOf(id), "E-001-010");
-    require(isSeekerCloaked[id], "E-001-011");
+    require(!isSeekerCloaked[id], "E-001-011");
 
     string memory _alignment = _getAlignment();
 
     uint8[4] memory _APs = _getAP(id);
 
-    isSeekerCloaked[id] = false; // Uncloaks the Seeker permanently
+    isSeekerCloaked[id] = true; // Cloaks the Seeker permanently
 
     Attributes memory revealedAttributes = Attributes(
         _alignment, // Sets the alignment
@@ -255,13 +254,13 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
     uint16 _dethscales = _getDethscales(id, false);
     attributesBySeekerId[id].dethscales = _dethscales;
 
-    emit SeekerUncloaked(id);
+    emit SeekerCloaked(id);
   }
 
   function rerollDethscales(uint256 id) external {
-    require(uncloaking, "E-001-009");
+    require(cloakingAvailable, "E-001-009");
     require(msg.sender == ownerOf(id), "E-001-010");
-    require(!isSeekerCloaked[id], "E-001-012");
+    require(isSeekerCloaked[id], "E-001-012");
 
     _burnPower(id, DETHSCALEREROLLCOST);
     attributesBySeekerId[id].dethscales = _getDethscales(id, true);
@@ -438,7 +437,7 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
   }
  
   function _setWinnerSeekerAttributes(uint256 id) internal {
-    isSeekerCloaked[id] = false; // Uncloaks the Seeker permanently
+    isSeekerCloaked[id] = true; // Cloaks the Seeker permanently
     Attributes memory winningAttributes = Attributes(
         "True Neutral",
         true,
@@ -459,7 +458,7 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
   //                                                                                              //
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
-  function getBirthStatusById(uint256 id) external view returns (bool) {
+  function getOriginById(uint256 id) external view returns (bool) {
     return attributesBySeekerId[id].bornFromCoin;
   }
 
@@ -495,7 +494,7 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
   }
 
   function getFullCloak(uint256 id) external view returns (uint32[32] memory) {
-    require(!isSeekerCloaked[id], "E-001-012");
+    require(isSeekerCloaked[id], "E-001-012");
     uint16 _dethscales = attributesBySeekerId[id].dethscales;
 
     // Set noise based on alignment
@@ -655,11 +654,8 @@ contract Seekers is ERC721Enumerable, iSeekers, AccessControl, ReentrancyGuard {
   }
 
   function ownerWithdraw() external payable onlyKeepers{
-    require(reserve > 0, "E-001-019");
-    uint256 amount = reserve;
-    reserve = 0;
-    (bool success, ) = msg.sender.call{value:amount}("");
-    require(success, "E-001-020");
+    uint256 balance = address(this).balance;
+    payable(msg.sender).transfer(balance);
   }
 
   function addGameContract(address gameContract) public onlyKeepers {

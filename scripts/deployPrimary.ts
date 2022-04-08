@@ -1,6 +1,6 @@
 import {ethers} from "hardhat"
 import * as fs from "fs";
-import * as logger from "./logger"
+import * as logger from "../utils/logger"
 import simpleGit, { SimpleGit, CleanOptions } from 'simple-git';
 import { hrtime } from "process";
 
@@ -50,8 +50,8 @@ export async function deploy() {
     // Establish permissions for SeasonOne contract within Seekers contract
     await seekers.addGameContract(seasonOne.address)
 
-    // Set SeasonOne contract as owner of vault contract
-    await vault.transferOwnership(seasonOne.address)
+    // Set SeasonOne contract as minter for vault contract
+    await vault.setGameContract(seasonOne.address)
 
     data[i] = {
       "deployBlock": deployBlock,

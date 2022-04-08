@@ -29,22 +29,23 @@ interface ISeekersInterface extends ethers.utils.Interface {
     "approve(address,uint256)": FunctionFragment;
     "balanceOf(address)": FunctionFragment;
     "birthSeeker(address)": FunctionFragment;
+    "cloakSeeker(uint256)": FunctionFragment;
     "declareForClan(uint256,address)": FunctionFragment;
     "endGoodsOnly()": FunctionFragment;
     "getAlignmentById(uint256)": FunctionFragment;
     "getApById(uint256)": FunctionFragment;
     "getApproved(uint256)": FunctionFragment;
-    "getBirthStatusById(uint256)": FunctionFragment;
     "getClanById(uint256)": FunctionFragment;
     "getCloakStatusById(uint256)": FunctionFragment;
     "getDethscalesById(uint256)": FunctionFragment;
     "getFullCloak(uint256)": FunctionFragment;
+    "getOriginById(uint256)": FunctionFragment;
     "getPowerById(uint256)": FunctionFragment;
     "isApprovedForAll(address,address)": FunctionFragment;
     "keepersSummonSeeker(uint256)": FunctionFragment;
     "ownerOf(uint256)": FunctionFragment;
     "ownerWithdraw()": FunctionFragment;
-    "performUncloaking()": FunctionFragment;
+    "performCloakingCeremony()": FunctionFragment;
     "rerollDethscales(uint256)": FunctionFragment;
     "safeTransferFrom(address,address,uint256)": FunctionFragment;
     "seizureMintIncrement()": FunctionFragment;
@@ -56,7 +57,6 @@ interface ISeekersInterface extends ethers.utils.Interface {
     "tokenOfOwnerByIndex(address,uint256)": FunctionFragment;
     "totalSupply()": FunctionFragment;
     "transferFrom(address,address,uint256)": FunctionFragment;
-    "uncloakSeeker(uint256)": FunctionFragment;
   };
 
   encodeFunctionData(
@@ -82,6 +82,10 @@ interface ISeekersInterface extends ethers.utils.Interface {
   encodeFunctionData(functionFragment: "balanceOf", values: [string]): string;
   encodeFunctionData(functionFragment: "birthSeeker", values: [string]): string;
   encodeFunctionData(
+    functionFragment: "cloakSeeker",
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
     functionFragment: "declareForClan",
     values: [BigNumberish, string]
   ): string;
@@ -102,10 +106,6 @@ interface ISeekersInterface extends ethers.utils.Interface {
     values: [BigNumberish]
   ): string;
   encodeFunctionData(
-    functionFragment: "getBirthStatusById",
-    values: [BigNumberish]
-  ): string;
-  encodeFunctionData(
     functionFragment: "getClanById",
     values: [BigNumberish]
   ): string;
@@ -119,6 +119,10 @@ interface ISeekersInterface extends ethers.utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "getFullCloak",
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getOriginById",
     values: [BigNumberish]
   ): string;
   encodeFunctionData(
@@ -142,7 +146,7 @@ interface ISeekersInterface extends ethers.utils.Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
-    functionFragment: "performUncloaking",
+    functionFragment: "performCloakingCeremony",
     values?: undefined
   ): string;
   encodeFunctionData(
@@ -189,10 +193,6 @@ interface ISeekersInterface extends ethers.utils.Interface {
     functionFragment: "transferFrom",
     values: [string, string, BigNumberish]
   ): string;
-  encodeFunctionData(
-    functionFragment: "uncloakSeeker",
-    values: [BigNumberish]
-  ): string;
 
   decodeFunctionResult(
     functionFragment: "activateFirstMint",
@@ -214,6 +214,10 @@ interface ISeekersInterface extends ethers.utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
+    functionFragment: "cloakSeeker",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "declareForClan",
     data: BytesLike
   ): Result;
@@ -231,10 +235,6 @@ interface ISeekersInterface extends ethers.utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "getBirthStatusById",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
     functionFragment: "getClanById",
     data: BytesLike
   ): Result;
@@ -248,6 +248,10 @@ interface ISeekersInterface extends ethers.utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "getFullCloak",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getOriginById",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -268,7 +272,7 @@ interface ISeekersInterface extends ethers.utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "performUncloaking",
+    functionFragment: "performCloakingCeremony",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -315,38 +319,34 @@ interface ISeekersInterface extends ethers.utils.Interface {
     functionFragment: "transferFrom",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(
-    functionFragment: "uncloakSeeker",
-    data: BytesLike
-  ): Result;
 
   events: {
     "Approval(address,address,uint256)": EventFragment;
     "ApprovalForAll(address,address,bool)": EventFragment;
+    "CloakingAvailable()": EventFragment;
     "DethscalesRerolled(uint256)": EventFragment;
     "FirstMintActivated()": EventFragment;
     "PowerAdded(uint256,uint256,uint256)": EventFragment;
     "PowerBurned(uint256,uint256,uint256)": EventFragment;
     "SecondMintActivated()": EventFragment;
+    "SeekerCloaked(uint256)": EventFragment;
     "SeekerDeclaredToClan(uint256,address)": EventFragment;
-    "SeekerUncloaked(uint256)": EventFragment;
     "ThirdMintActivated()": EventFragment;
     "Transfer(address,address,uint256)": EventFragment;
-    "UncloakingAvailable()": EventFragment;
   };
 
   getEvent(nameOrSignatureOrTopic: "Approval"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "ApprovalForAll"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "CloakingAvailable"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "DethscalesRerolled"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "FirstMintActivated"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "PowerAdded"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "PowerBurned"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "SecondMintActivated"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "SeekerCloaked"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "SeekerDeclaredToClan"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "SeekerUncloaked"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "ThirdMintActivated"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Transfer"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "UncloakingAvailable"): EventFragment;
 }
 
 export type ApprovalEvent = TypedEvent<
@@ -364,6 +364,8 @@ export type ApprovalForAllEvent = TypedEvent<
     approved: boolean;
   }
 >;
+
+export type CloakingAvailableEvent = TypedEvent<[] & {}>;
 
 export type DethscalesRerolledEvent = TypedEvent<
   [BigNumber] & { id: BigNumber }
@@ -389,12 +391,12 @@ export type PowerBurnedEvent = TypedEvent<
 
 export type SecondMintActivatedEvent = TypedEvent<[] & {}>;
 
-export type SeekerDeclaredToClanEvent = TypedEvent<
-  [BigNumber, string] & { seekerId: BigNumber; clan: string }
+export type SeekerCloakedEvent = TypedEvent<
+  [BigNumber] & { seekerId: BigNumber }
 >;
 
-export type SeekerUncloakedEvent = TypedEvent<
-  [BigNumber] & { seekerId: BigNumber }
+export type SeekerDeclaredToClanEvent = TypedEvent<
+  [BigNumber, string] & { seekerId: BigNumber; clan: string }
 >;
 
 export type ThirdMintActivatedEvent = TypedEvent<[] & {}>;
@@ -402,8 +404,6 @@ export type ThirdMintActivatedEvent = TypedEvent<[] & {}>;
 export type TransferEvent = TypedEvent<
   [string, string, BigNumber] & { from: string; to: string; tokenId: BigNumber }
 >;
-
-export type UncloakingAvailableEvent = TypedEvent<[] & {}>;
 
 export class ISeekers extends BaseContract {
   connect(signerOrProvider: Signer | Provider | string): this;
@@ -483,6 +483,11 @@ export class ISeekers extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
+    cloakSeeker(
+      id: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
     declareForClan(
       id: BigNumberish,
       clanAddress: string,
@@ -507,11 +512,6 @@ export class ISeekers extends BaseContract {
       tokenId: BigNumberish,
       overrides?: CallOverrides
     ): Promise<[string] & { operator: string }>;
-
-    getBirthStatusById(
-      id: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<[boolean]>;
 
     getClanById(id: BigNumberish, overrides?: CallOverrides): Promise<[string]>;
 
@@ -567,6 +567,11 @@ export class ISeekers extends BaseContract {
       ]
     >;
 
+    getOriginById(
+      id: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[boolean]>;
+
     getPowerById(
       id: BigNumberish,
       overrides?: CallOverrides
@@ -592,7 +597,7 @@ export class ISeekers extends BaseContract {
       overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
-    performUncloaking(
+    performCloakingCeremony(
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
@@ -660,11 +665,6 @@ export class ISeekers extends BaseContract {
       tokenId: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
-
-    uncloakSeeker(
-      id: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
   };
 
   activateFirstMint(
@@ -698,6 +698,11 @@ export class ISeekers extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
+  cloakSeeker(
+    id: BigNumberish,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
   declareForClan(
     id: BigNumberish,
     clanAddress: string,
@@ -722,11 +727,6 @@ export class ISeekers extends BaseContract {
     tokenId: BigNumberish,
     overrides?: CallOverrides
   ): Promise<string>;
-
-  getBirthStatusById(
-    id: BigNumberish,
-    overrides?: CallOverrides
-  ): Promise<boolean>;
 
   getClanById(id: BigNumberish, overrides?: CallOverrides): Promise<string>;
 
@@ -780,6 +780,8 @@ export class ISeekers extends BaseContract {
     ]
   >;
 
+  getOriginById(id: BigNumberish, overrides?: CallOverrides): Promise<boolean>;
+
   getPowerById(id: BigNumberish, overrides?: CallOverrides): Promise<number>;
 
   isApprovedForAll(
@@ -799,7 +801,7 @@ export class ISeekers extends BaseContract {
     overrides?: PayableOverrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-  performUncloaking(
+  performCloakingCeremony(
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
@@ -868,11 +870,6 @@ export class ISeekers extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-  uncloakSeeker(
-    id: BigNumberish,
-    overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
-
   callStatic: {
     activateFirstMint(overrides?: CallOverrides): Promise<void>;
 
@@ -896,6 +893,8 @@ export class ISeekers extends BaseContract {
 
     birthSeeker(to: string, overrides?: CallOverrides): Promise<BigNumber>;
 
+    cloakSeeker(id: BigNumberish, overrides?: CallOverrides): Promise<void>;
+
     declareForClan(
       id: BigNumberish,
       clanAddress: string,
@@ -918,11 +917,6 @@ export class ISeekers extends BaseContract {
       tokenId: BigNumberish,
       overrides?: CallOverrides
     ): Promise<string>;
-
-    getBirthStatusById(
-      id: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<boolean>;
 
     getClanById(id: BigNumberish, overrides?: CallOverrides): Promise<string>;
 
@@ -976,6 +970,11 @@ export class ISeekers extends BaseContract {
       ]
     >;
 
+    getOriginById(
+      id: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<boolean>;
+
     getPowerById(id: BigNumberish, overrides?: CallOverrides): Promise<number>;
 
     isApprovedForAll(
@@ -993,7 +992,7 @@ export class ISeekers extends BaseContract {
 
     ownerWithdraw(overrides?: CallOverrides): Promise<void>;
 
-    performUncloaking(overrides?: CallOverrides): Promise<void>;
+    performCloakingCeremony(overrides?: CallOverrides): Promise<void>;
 
     rerollDethscales(
       id: BigNumberish,
@@ -1054,8 +1053,6 @@ export class ISeekers extends BaseContract {
       tokenId: BigNumberish,
       overrides?: CallOverrides
     ): Promise<void>;
-
-    uncloakSeeker(id: BigNumberish, overrides?: CallOverrides): Promise<void>;
   };
 
   filters: {
@@ -1094,6 +1091,10 @@ export class ISeekers extends BaseContract {
       [string, string, boolean],
       { owner: string; operator: string; approved: boolean }
     >;
+
+    "CloakingAvailable()"(): TypedEventFilter<[], {}>;
+
+    CloakingAvailable(): TypedEventFilter<[], {}>;
 
     "DethscalesRerolled(uint256)"(
       id?: null
@@ -1147,6 +1148,14 @@ export class ISeekers extends BaseContract {
 
     SecondMintActivated(): TypedEventFilter<[], {}>;
 
+    "SeekerCloaked(uint256)"(
+      seekerId?: BigNumberish | null
+    ): TypedEventFilter<[BigNumber], { seekerId: BigNumber }>;
+
+    SeekerCloaked(
+      seekerId?: BigNumberish | null
+    ): TypedEventFilter<[BigNumber], { seekerId: BigNumber }>;
+
     "SeekerDeclaredToClan(uint256,address)"(
       seekerId?: BigNumberish | null,
       clan?: string | null
@@ -1162,14 +1171,6 @@ export class ISeekers extends BaseContract {
       [BigNumber, string],
       { seekerId: BigNumber; clan: string }
     >;
-
-    "SeekerUncloaked(uint256)"(
-      seekerId?: BigNumberish | null
-    ): TypedEventFilter<[BigNumber], { seekerId: BigNumber }>;
-
-    SeekerUncloaked(
-      seekerId?: BigNumberish | null
-    ): TypedEventFilter<[BigNumber], { seekerId: BigNumber }>;
 
     "ThirdMintActivated()"(): TypedEventFilter<[], {}>;
 
@@ -1192,10 +1193,6 @@ export class ISeekers extends BaseContract {
       [string, string, BigNumber],
       { from: string; to: string; tokenId: BigNumber }
     >;
-
-    "UncloakingAvailable()"(): TypedEventFilter<[], {}>;
-
-    UncloakingAvailable(): TypedEventFilter<[], {}>;
   };
 
   estimateGas: {
@@ -1230,6 +1227,11 @@ export class ISeekers extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
+    cloakSeeker(
+      id: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
     declareForClan(
       id: BigNumberish,
       clanAddress: string,
@@ -1252,11 +1254,6 @@ export class ISeekers extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    getBirthStatusById(
-      id: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
     getClanById(
       id: BigNumberish,
       overrides?: CallOverrides
@@ -1273,6 +1270,11 @@ export class ISeekers extends BaseContract {
     ): Promise<BigNumber>;
 
     getFullCloak(
+      id: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    getOriginById(
       id: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
@@ -1302,7 +1304,7 @@ export class ISeekers extends BaseContract {
       overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
-    performUncloaking(
+    performCloakingCeremony(
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
@@ -1370,11 +1372,6 @@ export class ISeekers extends BaseContract {
       tokenId: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
-
-    uncloakSeeker(
-      id: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
   };
 
   populateTransaction: {
@@ -1412,6 +1409,11 @@ export class ISeekers extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
+    cloakSeeker(
+      id: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
     declareForClan(
       id: BigNumberish,
       clanAddress: string,
@@ -1437,11 +1439,6 @@ export class ISeekers extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    getBirthStatusById(
-      id: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
     getClanById(
       id: BigNumberish,
       overrides?: CallOverrides
@@ -1458,6 +1455,11 @@ export class ISeekers extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     getFullCloak(
+      id: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    getOriginById(
       id: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
@@ -1487,7 +1489,7 @@ export class ISeekers extends BaseContract {
       overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
-    performUncloaking(
+    performCloakingCeremony(
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
@@ -1553,11 +1555,6 @@ export class ISeekers extends BaseContract {
       from: string,
       to: string,
       tokenId: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
-
-    uncloakSeeker(
-      id: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
   };

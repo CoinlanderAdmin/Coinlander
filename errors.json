@@ -23,10 +23,10 @@
         "E-001-006" : "Second mint already active", 
         "E-001-007" : "Third mint already active", 
         "E-001-008" : "Only available right at the Sweet Release", 
-        "E-001-009" : "Cant uncloak before uncloaking ceremony", 
+        "E-001-009" : "Cant cloak before the Cloaking Ceremony", 
         "E-001-010" : "You must own the specified seeker", 
-        "E-001-011" : "Seeker has already been uncloaked", 
-        "E-001-012" : "Seeker must be uncloaked", 
+        "E-001-011" : "Seeker has already been cloaked", 
+        "E-001-012" : "Seeker must be cloaked", 
         "E-001-013" : "Seeker does not have enough power to pay for cloak reroll",
         "E-001-014" : "Cant modify nonexistent tokens",
         "E-001-015" : "Must add a nonzero amount of power",
@@ -51,6 +51,7 @@
         "E-002-011" : "Vault has already been claimed",
         "E-002-012" : "There must be something in the vault",
         "E-002-013" : "Only a seeker can open the vault",
-        "E-002-014" : "Transfer unsuccessful"
+        "E-002-014" : "Transfer unsuccessful",
+        "E-002-015" : "Only an approved game contract can mint fragments"
     }
 }

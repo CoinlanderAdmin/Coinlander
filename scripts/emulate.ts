@@ -2,7 +2,7 @@ import {SignerWithAddress} from "@nomiclabs/hardhat-ethers/signers"
 import * as fs from "fs";
 import {BigNumber} from "ethers";
 import {HardhatEthersHelpers} from "hardhat/types"
-import * as logger from './logger'
+import * as logger from '../utils/logger'
 
 // Emulate the game. Before running:
 // 1. CONTRACTS: Run a local node `npm run node`
@@ -18,8 +18,8 @@ async function emulate(seizes: number, ethers: HardhatEthersHelpers) {
   logger.out('Starting contract emulation...', logger.Level.Info)
   logger.divider()
 
-  const index: string = '1'
-  const filename: string = 'E3-meta'
+  const index: string = '2'
+  const filename: string = 'E7-meta'
 
   // We must use the injected hardhat param instead of directly importing because we run this
   // as a hardhat task. https://hardhat.org/advanced/hardhat-runtime-environment.html
@@ -66,9 +66,9 @@ async function emulate(seizes: number, ethers: HardhatEthersHelpers) {
   let firstSeekerMintThresh: number = (await seasonOne.FIRSTSEEKERMINTTHRESH()).toNumber()
   let secondSeekerMintThresh: number = (await seasonOne.SECONDSEEKERMINTTHRESH()).toNumber()
   let thirdSeekerMintThresh: number = (await seasonOne.THIRDSEEKERMINTTHRESH()).toNumber()
-  let uncloakingThresh: number = (await seasonOne.UNCLOAKINGTHRESH()).toNumber()
+  let uncloakingThresh: number = (await seasonOne.CLOAKINGTHRESH()).toNumber()
   let sweetRelease: number = (await seasonOne.SWEETRELEASE()).toNumber()
-  let uncloaking: boolean = await seekers.uncloaking()
+  let uncloaking: boolean = await seekers.cloakingAvailable()
   let released: boolean = await seasonOne.released()
 
   let firstMintActive: boolean = await seekers.firstMintActive()
@@ -161,7 +161,7 @@ async function emulate(seizes: number, ethers: HardhatEthersHelpers) {
         }
         case uncloakingThresh: {
           logger.out("Uncloaking reached...", logger.Level.Info)
-          uncloaking = await seekers.uncloaking()
+          uncloaking = await seekers.cloakingAvailable()
           break;
         }
         case sweetRelease: {
@@ -188,7 +188,7 @@ async function emulate(seizes: number, ethers: HardhatEthersHelpers) {
       if (uncloaking) {
         let userSeekerBalance = (await seekers.balanceOf(user.address)).toNumber() -1
         let lastToken = (await seekers.tokenOfOwnerByIndex(user.address, userSeekerBalance)).toNumber()
-        await seekers.connect(user).uncloakSeeker(lastToken)
+        await seekers.connect(user).cloakSeeker(lastToken)
         logger.pad(30, `Seeker ${lastToken} uncloaked:`, user.address)
       }
     } catch(e){

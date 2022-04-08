@@ -1,7 +1,6 @@
 import { ethers } from "hardhat"
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers"
 import { Vault__factory, Vault } from "../typechain"
-import { Seekers__factory, Seekers } from "../typechain"
 import { expect } from "chai"
 import { BigNumber } from "ethers"
 
@@ -31,10 +30,18 @@ describe("Vault", function () {
     let currentOwner = await kv.owner()
     expect(currentOwner).to.equal(owner.address)
   })
+
+  it("allows the game contract to be set", async function () {
+    // expect that the owner cannot mint at first
+    await expect(kv.mintFragments(userA.address,1)).to.be.revertedWith("E-002-015")
+    await kv.setGameContract(owner.address)
+    expect(kv.mintFragments(userA.address,1))
+  })
   
   describe("upon mintFragments", () => {
     before(async function () {
       kv = await Vault.deploy()
+      await kv.setGameContract(owner.address) // use owner address in lieu of game contract
     })
 
     it("allows the owner to mint", async () => {
@@ -68,6 +75,7 @@ describe("Vault", function () {
   describe("upon minting all Fragments", () => {
     before(async function () {
       kv = await Vault.deploy()
+      await kv.setGameContract(owner.address)
     })
 
     it("creates the correct number of each fragment", async () => {
@@ -136,6 +144,7 @@ describe("Vault", function () {
     let v: BigNumber
     before( async function() {
       kv = await Vault.deploy() // get a fresh contract instance 
+      await kv.setGameContract(owner.address)
       // Mint all the fragments for userA 
       const max = await kv.MAXFRAGMENTS()
       for(let i = 0; i < max; i++) {

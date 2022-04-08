@@ -1,6 +1,6 @@
 import {ethers} from "hardhat"
 import * as fs from "fs";
-import * as logger from "./logger"
+import * as logger from "../utils/logger"
 
 export async function deploy() {
   logger.divider()

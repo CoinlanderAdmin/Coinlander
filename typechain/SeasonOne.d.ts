@@ -22,6 +22,7 @@ import { TypedEventFilter, TypedEvent, TypedListener } from "./commons";
 
 interface SeasonOneInterface extends ethers.utils.Interface {
   functions: {
+    "CLOAKINGTHRESH()": FunctionFragment;
     "COINLANDER()": FunctionFragment;
     "FIRSTSEEKERMINTTHRESH()": FunctionFragment;
     "GOODSONLYEND()": FunctionFragment;
@@ -34,7 +35,6 @@ interface SeasonOneInterface extends ethers.utils.Interface {
     "SHARDTOFRAGMENTMULTIPLIER()": FunctionFragment;
     "SWEETRELEASE()": FunctionFragment;
     "THIRDSEEKERMINTTHRESH()": FunctionFragment;
-    "UNCLOAKINGTHRESH()": FunctionFragment;
     "airdropClaimBySeekerId(uint256)": FunctionFragment;
     "balanceOf(address,uint256)": FunctionFragment;
     "balanceOfBatch(address[],uint256[])": FunctionFragment;
@@ -44,6 +44,7 @@ interface SeasonOneInterface extends ethers.utils.Interface {
     "claimAll()": FunctionFragment;
     "claimedAirdropBySeekerId(uint256)": FunctionFragment;
     "cloinDeposits(uint256)": FunctionFragment;
+    "contractURI()": FunctionFragment;
     "gameStarted()": FunctionFragment;
     "getAirdropStatus(uint256)": FunctionFragment;
     "getPendingWithdrawal(address)": FunctionFragment;
@@ -62,6 +63,7 @@ interface SeasonOneInterface extends ethers.utils.Interface {
     "seizureCount()": FunctionFragment;
     "seizureStake()": FunctionFragment;
     "setApprovalForAll(address,bool)": FunctionFragment;
+    "setContractURI(string)": FunctionFragment;
     "shardSpendable()": FunctionFragment;
     "stakeShardForCloin(uint256)": FunctionFragment;
     "startGame()": FunctionFragment;
@@ -70,6 +72,10 @@ interface SeasonOneInterface extends ethers.utils.Interface {
     "uri(uint256)": FunctionFragment;
   };
 
+  encodeFunctionData(
+    functionFragment: "CLOAKINGTHRESH",
+    values?: undefined
+  ): string;
   encodeFunctionData(
     functionFragment: "COINLANDER",
     values?: undefined
@@ -113,10 +119,6 @@ interface SeasonOneInterface extends ethers.utils.Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
-    functionFragment: "UNCLOAKINGTHRESH",
-    values?: undefined
-  ): string;
-  encodeFunctionData(
     functionFragment: "airdropClaimBySeekerId",
     values: [BigNumberish]
   ): string;
@@ -145,6 +147,10 @@ interface SeasonOneInterface extends ethers.utils.Interface {
   encodeFunctionData(
     functionFragment: "cloinDeposits",
     values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "contractURI",
+    values?: undefined
   ): string;
   encodeFunctionData(
     functionFragment: "gameStarted",
@@ -204,6 +210,10 @@ interface SeasonOneInterface extends ethers.utils.Interface {
     values: [string, boolean]
   ): string;
   encodeFunctionData(
+    functionFragment: "setContractURI",
+    values: [string]
+  ): string;
+  encodeFunctionData(
     functionFragment: "shardSpendable",
     values?: undefined
   ): string;
@@ -222,6 +232,10 @@ interface SeasonOneInterface extends ethers.utils.Interface {
   ): string;
   encodeFunctionData(functionFragment: "uri", values: [BigNumberish]): string;
 
+  decodeFunctionResult(
+    functionFragment: "CLOAKINGTHRESH",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "COINLANDER", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "FIRSTSEEKERMINTTHRESH",
@@ -262,10 +276,6 @@ interface SeasonOneInterface extends ethers.utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "UNCLOAKINGTHRESH",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
     functionFragment: "airdropClaimBySeekerId",
     data: BytesLike
   ): Result;
@@ -290,6 +300,10 @@ interface SeasonOneInterface extends ethers.utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "cloinDeposits",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "contractURI",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -347,6 +361,10 @@ interface SeasonOneInterface extends ethers.utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "setApprovalForAll",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "setContractURI",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -502,6 +520,8 @@ export class SeasonOne extends BaseContract {
   interface: SeasonOneInterface;
 
   functions: {
+    CLOAKINGTHRESH(overrides?: CallOverrides): Promise<[BigNumber]>;
+
     COINLANDER(overrides?: CallOverrides): Promise<[string]>;
 
     FIRSTSEEKERMINTTHRESH(overrides?: CallOverrides): Promise<[BigNumber]>;
@@ -525,8 +545,6 @@ export class SeasonOne extends BaseContract {
     SWEETRELEASE(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     THIRDSEEKERMINTTHRESH(overrides?: CallOverrides): Promise<[BigNumber]>;
-
-    UNCLOAKINGTHRESH(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     airdropClaimBySeekerId(
       id: BigNumberish,
@@ -580,6 +598,8 @@ export class SeasonOne extends BaseContract {
         blockNumber: BigNumber;
       }
     >;
+
+    contractURI(overrides?: CallOverrides): Promise<[string]>;
 
     gameStarted(overrides?: CallOverrides): Promise<[boolean]>;
 
@@ -663,6 +683,11 @@ export class SeasonOne extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
+    setContractURI(
+      newContractURI: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
     shardSpendable(overrides?: CallOverrides): Promise<[boolean]>;
 
     stakeShardForCloin(
@@ -687,6 +712,8 @@ export class SeasonOne extends BaseContract {
     uri(arg0: BigNumberish, overrides?: CallOverrides): Promise<[string]>;
   };
 
+  CLOAKINGTHRESH(overrides?: CallOverrides): Promise<BigNumber>;
+
   COINLANDER(overrides?: CallOverrides): Promise<string>;
 
   FIRSTSEEKERMINTTHRESH(overrides?: CallOverrides): Promise<BigNumber>;
@@ -710,8 +737,6 @@ export class SeasonOne extends BaseContract {
   SWEETRELEASE(overrides?: CallOverrides): Promise<BigNumber>;
 
   THIRDSEEKERMINTTHRESH(overrides?: CallOverrides): Promise<BigNumber>;
-
-  UNCLOAKINGTHRESH(overrides?: CallOverrides): Promise<BigNumber>;
 
   airdropClaimBySeekerId(
     id: BigNumberish,
@@ -765,6 +790,8 @@ export class SeasonOne extends BaseContract {
       blockNumber: BigNumber;
     }
   >;
+
+  contractURI(overrides?: CallOverrides): Promise<string>;
 
   gameStarted(overrides?: CallOverrides): Promise<boolean>;
 
@@ -846,6 +873,11 @@ export class SeasonOne extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
+  setContractURI(
+    newContractURI: string,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
   shardSpendable(overrides?: CallOverrides): Promise<boolean>;
 
   stakeShardForCloin(
@@ -870,6 +902,8 @@ export class SeasonOne extends BaseContract {
   uri(arg0: BigNumberish, overrides?: CallOverrides): Promise<string>;
 
   callStatic: {
+    CLOAKINGTHRESH(overrides?: CallOverrides): Promise<BigNumber>;
+
     COINLANDER(overrides?: CallOverrides): Promise<string>;
 
     FIRSTSEEKERMINTTHRESH(overrides?: CallOverrides): Promise<BigNumber>;
@@ -893,8 +927,6 @@ export class SeasonOne extends BaseContract {
     SWEETRELEASE(overrides?: CallOverrides): Promise<BigNumber>;
 
     THIRDSEEKERMINTTHRESH(overrides?: CallOverrides): Promise<BigNumber>;
-
-    UNCLOAKINGTHRESH(overrides?: CallOverrides): Promise<BigNumber>;
 
     airdropClaimBySeekerId(
       id: BigNumberish,
@@ -943,6 +975,8 @@ export class SeasonOne extends BaseContract {
         blockNumber: BigNumber;
       }
     >;
+
+    contractURI(overrides?: CallOverrides): Promise<string>;
 
     gameStarted(overrides?: CallOverrides): Promise<boolean>;
 
@@ -1017,6 +1051,11 @@ export class SeasonOne extends BaseContract {
     setApprovalForAll(
       operator: string,
       approved: boolean,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    setContractURI(
+      newContractURI: string,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -1235,6 +1274,8 @@ export class SeasonOne extends BaseContract {
   };
 
   estimateGas: {
+    CLOAKINGTHRESH(overrides?: CallOverrides): Promise<BigNumber>;
+
     COINLANDER(overrides?: CallOverrides): Promise<BigNumber>;
 
     FIRSTSEEKERMINTTHRESH(overrides?: CallOverrides): Promise<BigNumber>;
@@ -1258,8 +1299,6 @@ export class SeasonOne extends BaseContract {
     SWEETRELEASE(overrides?: CallOverrides): Promise<BigNumber>;
 
     THIRDSEEKERMINTTHRESH(overrides?: CallOverrides): Promise<BigNumber>;
-
-    UNCLOAKINGTHRESH(overrides?: CallOverrides): Promise<BigNumber>;
 
     airdropClaimBySeekerId(
       id: BigNumberish,
@@ -1307,6 +1346,8 @@ export class SeasonOne extends BaseContract {
       arg0: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
+
+    contractURI(overrides?: CallOverrides): Promise<BigNumber>;
 
     gameStarted(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -1382,6 +1423,11 @@ export class SeasonOne extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
+    setContractURI(
+      newContractURI: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
     shardSpendable(overrides?: CallOverrides): Promise<BigNumber>;
 
     stakeShardForCloin(
@@ -1407,6 +1453,8 @@ export class SeasonOne extends BaseContract {
   };
 
   populateTransaction: {
+    CLOAKINGTHRESH(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
     COINLANDER(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     FIRSTSEEKERMINTTHRESH(
@@ -1440,8 +1488,6 @@ export class SeasonOne extends BaseContract {
     THIRDSEEKERMINTTHRESH(
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
-
-    UNCLOAKINGTHRESH(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     airdropClaimBySeekerId(
       id: BigNumberish,
@@ -1489,6 +1535,8 @@ export class SeasonOne extends BaseContract {
       arg0: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
+
+    contractURI(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     gameStarted(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
@@ -1561,6 +1609,11 @@ export class SeasonOne extends BaseContract {
     setApprovalForAll(
       operator: string,
       approved: boolean,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    setContractURI(
+      newContractURI: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 

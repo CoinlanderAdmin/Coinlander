@@ -7,9 +7,9 @@ pragma solidity ^0.8.10;
 import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
-import "./interfaces/iVault.sol";
+import "./interfaces/IVault.sol";
 
-contract Vault is iVault, ERC1155, Ownable, ReentrancyGuard {
+contract Vault is IVault, ERC1155, Ownable, ReentrancyGuard {
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 //                                                                                              //
@@ -45,9 +45,10 @@ contract Vault is iVault, ERC1155, Ownable, ReentrancyGuard {
     uint256 public prize = 0; 
     bool public gameWon = false;
     bool public sweetRelease = false;
+    address public gameContract = address(0);
 
     // @TODO we need to figure out what the url schema for metadata looks like and plop that here in the constructor
-    constructor() ERC1155("https://meta.coinlander.one/keepersVault/{id}.json") {
+    constructor() ERC1155("https://api.coinlander.dev/meta/vault/{id}") {
 
         // Initialize the fragments array
         for  (uint16 i = 0; i < numT1; i++){
@@ -76,7 +77,7 @@ contract Vault is iVault, ERC1155, Ownable, ReentrancyGuard {
         }
     }
 
-    function mintFragments(address _receiver, uint256 amount) external onlyOwner {
+    function mintFragments(address _receiver, uint256 amount) external onlyGameContract {
         require(fragments.length >= amount, "E-002-009");
         for(uint256 i = 0; i < amount; i++){
             uint256 fragmentType = _getRandom(fragments);
@@ -85,7 +86,7 @@ contract Vault is iVault, ERC1155, Ownable, ReentrancyGuard {
         }
     }
 
-    function setSweetRelease() external onlyOwner {
+    function setSweetRelease() external onlyGameContract {
         sweetRelease = true;
     }
 
@@ -151,6 +152,19 @@ contract Vault is iVault, ERC1155, Ownable, ReentrancyGuard {
 		);
 		return (random % _arr.length);
 	}
+
+    function setGameContract(address _gameContract) external onlyOwner {
+        gameContract = _gameContract; 
+    }
+
+    modifier onlyGameContract {
+        require(msg.sender == gameContract, "E-002-015");
+        _;
+    }
+
+    function changeURI(string calldata _newURI) external onlyOwner {
+        _setURI(_newURI);
+    }
 
     // All fund allocations should be going thru fund prize purse
     receive() external payable {

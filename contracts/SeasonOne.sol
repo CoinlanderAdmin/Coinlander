@@ -8,8 +8,8 @@ import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
-import "./interfaces/iSeekers.sol";
-import "./interfaces/iVault.sol";
+import "./interfaces/ISeekers.sol";
+import "./interfaces/IVault.sol";
 // import "hardhat/console.sol";
 
 /*
@@ -40,6 +40,8 @@ contract SeasonOne is ERC1155, Ownable, ReentrancyGuard {
     uint256 public constant ONECOIN = 0;
     uint256 public constant SHARD = 1;
 
+    string private _contractURI;
+
     // COINLANDER PARAMETERS
     address public COINLANDER;
     bool public released = false;
@@ -52,7 +54,7 @@ contract SeasonOne is ERC1155, Ownable, ReentrancyGuard {
 
     // GAME CONSTANTS
     uint256 public constant FIRSTSEEKERMINTTHRESH = 333;
-    uint256 public constant UNCLOAKINGTHRESH = 444;
+    uint256 public constant CLOAKINGTHRESH = 444;
     uint256 public constant SHARDSPENDABLE = 555;
     uint256 public constant SECONDSEEKERMINTTHRESH = 666;
     uint256 public constant THIRDSEEKERMINTTHRESH = 777;
@@ -99,8 +101,8 @@ contract SeasonOne is ERC1155, Ownable, ReentrancyGuard {
     }
     cloinDeposit[] public cloinDeposits;
 
-    iSeekers public seekers; 
-    iVault private vault;
+    ISeekers public seekers; 
+    IVault private vault;
 
     event SweetRelease(address winner);
     event Seized(address previousOwner, address newOwner, 
@@ -112,14 +114,18 @@ contract SeasonOne is ERC1155, Ownable, ReentrancyGuard {
     event AirdropClaim(uint256 id);
     
     //@TODO we need to figure out what the url schema for metadata looks like and plop that here in the constructor
-    constructor(address seekersContract, address keepeersVault) ERC1155("https://meta.coinlander.one/seasonone/{id}") {
+    constructor(address seekersContract, address keepeersVault) ERC1155("https://api.coinlander.dev/meta/seasonone/{id}") {
         // Create the One Coin and set the deployer as initial COINLANDER
         _mint(msg.sender, ONECOIN, 1, "0x0");
         COINLANDER = msg.sender;
 
         // Add interface for seekers contract 
-        seekers = iSeekers(seekersContract);
-        vault = iVault(keepeersVault);
+        seekers = ISeekers(seekersContract);
+        vault = IVault(keepeersVault);
+
+        // Set contract uri 
+        //@Todo change this 
+        _contractURI = "blahblah";
     }
 
 
@@ -246,8 +252,8 @@ contract SeasonOne is ERC1155, Ownable, ReentrancyGuard {
             seekers.seizureMintIncrement();
         }
 
-        if (count == UNCLOAKINGTHRESH) {
-            seekers.performUncloaking();
+        if (count == CLOAKINGTHRESH) {
+            seekers.performCloakingCeremony();
         }
 
         if (count == SHARDSPENDABLE) {
@@ -391,6 +397,14 @@ contract SeasonOne is ERC1155, Ownable, ReentrancyGuard {
 
     function startGame() external onlyOwner {
         gameStarted = true;
+    }
+
+    function contractURI() public view returns (string memory) {
+        return _contractURI;
+    }
+
+    function setContractURI(string calldata newContractURI) external onlyOwner {
+        _contractURI = newContractURI;
     }
 
     function _calculateShardReward(uint256 _value) private pure returns (uint16) {

@@ -1,6 +1,6 @@
 import {ethers} from "hardhat"
 import * as fs from "fs";
-import * as logger from "./logger"
+import * as logger from "../utils/logger"
 
 export async function deploy() {
   logger.divider()
@@ -42,8 +42,8 @@ export async function deploy() {
   }
 
   // Regen art for id 2
-  await seekers.addScales(2, 10);
-  let scaleCount = await (await seekers.getScaleCountById(2))
+  await seekers.addPower(2, 10);
+  let scaleCount = await (await seekers.getPowerById(2))
   for (let i = 1; i < scaleCount; i++) {
     await seekers.rerollDethscales(2)
     let fullCloak = await seekers.getFullCloak(2)
