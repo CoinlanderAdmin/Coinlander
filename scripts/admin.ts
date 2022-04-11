@@ -65,9 +65,9 @@ export async function checkState() {
   logger.divider()
 
   // Change SeasonOne contract URI 
-  logger.out('Checking Season One _baseURI...')
-  let newSOneBaseURI = 'https://api.coinlander.dev/meta/season-one/'
-  let sOneCurrentURI = await seasonOne.contractURI() // there will always be a token id: 1
+  logger.out('Checking Season One contract URI...')
+  let newSOneBaseURI = 'https://api.coinlander.dev/meta/season-one'
+  let sOneCurrentURI = await seasonOne.contractURI() 
   logger.pad(30, 'Current URI for season one contract:', sOneCurrentURI)
   if(sOneCurrentURI != newSOneBaseURI) {
     await seasonOne.setContractURI(newSOneBaseURI)
@@ -77,9 +77,54 @@ export async function checkState() {
   else {
     logger.out('URI already set correctly')
   }
-
   logger.divider()
 
+  // Change SeasonOne token URI
+  logger.out('Checking Season One token URI...')
+  let newSOneTokenURI = 'https://api.coinlander.dev/meta/season-one/{id}'
+  let sOneTokenURI = await seasonOne.uri(1)
+  logger.pad(30, 'Current URI for season one tokens:', sOneTokenURI)
+  if(sOneTokenURI != newSOneTokenURI) {
+    await seasonOne.changeURI(newSOneTokenURI)
+    sOneTokenURI = await seasonOne.uri(1) 
+    logger.pad(30, 'New token URI for season one contract:', sOneTokenURI)
+  }
+  else {
+    logger.out('URI already set correctly')
+  }
+  logger.divider()
+
+
+  // Change Vault contract URI
+  logger.out('Checking Vault contract URI...')
+  let newVaultContractURI = 'https://api.coinlander.dev/meta/vault'
+  let vaultContractURI = await vault.contractURI() 
+  logger.pad(30, 'Current URI for vault contract:', vaultContractURI)
+  if(vaultContractURI != newVaultContractURI) {
+    await vault.setContractURI(newVaultContractURI)
+    vaultContractURI = await vault.contractURI() 
+    logger.pad(30, 'New contract URI for vault contract:', vaultContractURI)
+  }
+  else {
+    logger.out('URI already set correctly')
+  }
+  logger.divider()
+
+
+  // Change Vault token URI
+  logger.out('Checking Vault token URI...')
+  let newVaultTokenURI = 'https://api.coinlander.dev/meta/vault/{id}'
+  let vaultTokenURI = await vault.uri(1) 
+  logger.pad(30, 'Current URI for vault contract:', vaultTokenURI)
+  if(vaultTokenURI != newVaultTokenURI) {
+    await vault.changeURI(newVaultTokenURI)
+    vaultTokenURI = await vault.uri(1) 
+    logger.pad(30, 'New token URI for vault contract:', vaultTokenURI)
+  }
+  else {
+    logger.out('URI already set correctly')
+  }
+  logger.divider()
 
   // if(!contractBal.isZero()) {
   //   let ownerBal: BigNumber = await owner.getBalance(owner.address) 
