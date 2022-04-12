@@ -9,6 +9,7 @@ export async function deploy() {
   data['Commit'] = ''
 
   const git: SimpleGit = simpleGit().clean(CleanOptions.FORCE);
+  const hre = require("hardhat")
 
   const network = await ethers.provider.getNetwork()
 
@@ -52,6 +53,26 @@ export async function deploy() {
 
     // Set SeasonOne contract as minter for vault contract
     await vault.setGameContract(seasonOne.address)
+
+    // Verify Contracts on etherscan
+    // Season One
+    if(network.chainId == 421611) {
+    await hre.run("verify:verify", {
+      address: seasonOne.address,
+      constructorArguments: [
+        seekers.address,
+        vault.address
+      ],
+    })
+
+    // Seekers
+    await hre.run("verify:verify", {
+      address: seekers.address})
+    
+    // Vault 
+    await hre.run("verify:verify", {
+      address: vault.address})
+    }
 
     data[i] = {
       "deployBlock": deployBlock,
