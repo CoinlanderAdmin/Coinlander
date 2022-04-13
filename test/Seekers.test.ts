@@ -3,7 +3,7 @@ import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers"
 import { Seekers__factory, Seekers } from "../typechain"
 import { expect } from "chai"
 import { BigNumber, utils } from "ethers"
-import { stringify } from "querystring"
+import { toUtf8Bytes } from "@ethersproject/strings";
 import "hardhat-gas-reporter"
 
 describe("Seekers", function () {
@@ -15,6 +15,14 @@ describe("Seekers", function () {
   let accounts: SignerWithAddress[]
   let Seekers: Seekers__factory
   let seekers: Seekers
+
+  let KEEPERS_ROLE = ethers.utils.keccak256(toUtf8Bytes("KEEPERS_ROLE"))
+  let GAME_ROLE = ethers.utils.keccak256(toUtf8Bytes("GAME_ROLE"))
+  let MAX_MINTABLE = 10
+  let FIRST_MINT = 5000
+  let SECOND_MINT = 3333
+  let THIRD_MINT = 1603
+  let KEEPER_SEEKERS = 64
 
   before(async function () {
     ;[owner, userA, userB, userC, ...accounts] = await ethers.getSigners()
@@ -39,7 +47,7 @@ describe("Seekers", function () {
     })
 
     it("sets the symbol to SEEK", async () => {
-      expect(await seekers.symbol()).to.equal("SEEK")
+      expect(await seekers.symbol()).to.equal("SEEKERS")
     })
 
     it("mints the winning seeker and gives it to the deployer", async () => {
@@ -53,17 +61,17 @@ describe("Seekers", function () {
     })
 
     it("creates a Keepers role and assigns it to the deployer", async () => {
-      expect(await seekers.hasRole(await (seekers.KEEPERS_ROLE()), owner.address)).to.be.true
+      expect(await seekers.hasRole(KEEPERS_ROLE, owner.address)).to.be.true
     })
 
     it("an existing Keeper can assign the Keepers role", async () => {
       await seekers.addKeeper(userA.address)
-      expect(await seekers.hasRole(await (seekers.KEEPERS_ROLE()), userA.address)).to.be.true
+      expect(await seekers.hasRole(KEEPERS_ROLE, userA.address)).to.be.true
     })
 
     it("creates a Game Contract role and it can be assigned", async () => {
       await seekers.addGameContract(owner.address)
-      expect(await seekers.hasRole(await (seekers.GAME_ROLE()), owner.address)).to.be.true
+      expect(await seekers.hasRole(GAME_ROLE, owner.address)).to.be.true
     })
   })
 
@@ -138,8 +146,7 @@ describe("Seekers", function () {
     it("does not allow someone to mint more than the limit number of tokens", async () => {
       await seekers.activateFirstMint()
       let summonCost = await seekers.currentPrice()
-      let maxMintable = await seekers.MAXMINTABLE()
-      let tooMany = maxMintable.add(1)
+      let tooMany = MAX_MINTABLE + 1
       await expect(seekers.connect(userA).summonSeeker(tooMany, { value: summonCost.mul(tooMany) })).to.be.revertedWith("E-001-001")
     })
   })
@@ -184,21 +191,18 @@ describe("Seekers", function () {
 
     it("properly incrememnts the buyable seeker count upon mint activations", async () => {
       let counter = await seekers.currentBuyableSeekers()
-      const firstMint = await seekers.FIRSTMINT()
-      const secondMint = await seekers.SECONDMINT()
-      const thirdMint = await seekers.THIRDMINT()
 
       expect(await seekers.currentBuyableSeekers() == counter)
       await seekers.activateFirstMint()
-      counter = counter.add(firstMint)
+      counter = counter.add(FIRST_MINT).add(KEEPER_SEEKERS)
       expect(await seekers.currentBuyableSeekers() == counter)
 
       await seekers.activateSecondMint()
-      counter = counter.add(secondMint)
+      counter = counter.add(SECOND_MINT)
       expect(await seekers.currentBuyableSeekers() == counter)
 
       await seekers.activateThirdMint()
-      counter = counter.add(thirdMint)
+      counter = counter.add(THIRD_MINT)
       expect(await seekers.currentBuyableSeekers() == counter)
     })
 

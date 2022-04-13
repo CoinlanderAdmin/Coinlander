@@ -25,21 +25,13 @@ interface SeekersInterface extends ethers.utils.Interface {
     "BIRTHSEEKERPOWERSTART()": FunctionFragment;
     "DEFAULT_ADMIN_ROLE()": FunctionFragment;
     "DETHSCALEREROLLCOST()": FunctionFragment;
-    "FIRSTMINT()": FunctionFragment;
     "FIRSTMINTPRICE()": FunctionFragment;
-    "GAME_ROLE()": FunctionFragment;
-    "KEEPERS_ROLE()": FunctionFragment;
-    "MAXMINTABLE()": FunctionFragment;
     "MAXPOWER()": FunctionFragment;
     "MAXSEEKERS()": FunctionFragment;
     "SECONDMINT()": FunctionFragment;
     "SECONDMINTPRICE()": FunctionFragment;
     "SUMMONSEEKERPOWERSTART()": FunctionFragment;
-    "THIRDMINT()": FunctionFragment;
     "THIRDMINTPRICE()": FunctionFragment;
-    "THIRDMINT_INCR()": FunctionFragment;
-    "THIRDMINT_TOTAL()": FunctionFragment;
-    "_getRandomNumber16(uint16,uint16,uint16)": FunctionFragment;
     "activateFirstMint()": FunctionFragment;
     "activateSecondMint()": FunctionFragment;
     "activateThirdMint()": FunctionFragment;
@@ -52,6 +44,7 @@ interface SeekersInterface extends ethers.utils.Interface {
     "burnPower(uint256,uint16)": FunctionFragment;
     "cloakSeeker(uint256)": FunctionFragment;
     "cloakingAvailable()": FunctionFragment;
+    "contractURI()": FunctionFragment;
     "currentBuyableSeekers()": FunctionFragment;
     "currentPrice()": FunctionFragment;
     "declareForClan(uint256,address)": FunctionFragment;
@@ -87,6 +80,7 @@ interface SeekersInterface extends ethers.utils.Interface {
     "sendWinnerSeeker(address)": FunctionFragment;
     "setApprovalForAll(address,bool)": FunctionFragment;
     "setBaseURI(string)": FunctionFragment;
+    "setContractURI(string)": FunctionFragment;
     "summonSeeker(uint256)": FunctionFragment;
     "supportsInterface(bytes4)": FunctionFragment;
     "symbol()": FunctionFragment;
@@ -110,18 +104,8 @@ interface SeekersInterface extends ethers.utils.Interface {
     functionFragment: "DETHSCALEREROLLCOST",
     values?: undefined
   ): string;
-  encodeFunctionData(functionFragment: "FIRSTMINT", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "FIRSTMINTPRICE",
-    values?: undefined
-  ): string;
-  encodeFunctionData(functionFragment: "GAME_ROLE", values?: undefined): string;
-  encodeFunctionData(
-    functionFragment: "KEEPERS_ROLE",
-    values?: undefined
-  ): string;
-  encodeFunctionData(
-    functionFragment: "MAXMINTABLE",
     values?: undefined
   ): string;
   encodeFunctionData(functionFragment: "MAXPOWER", values?: undefined): string;
@@ -141,22 +125,9 @@ interface SeekersInterface extends ethers.utils.Interface {
     functionFragment: "SUMMONSEEKERPOWERSTART",
     values?: undefined
   ): string;
-  encodeFunctionData(functionFragment: "THIRDMINT", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "THIRDMINTPRICE",
     values?: undefined
-  ): string;
-  encodeFunctionData(
-    functionFragment: "THIRDMINT_INCR",
-    values?: undefined
-  ): string;
-  encodeFunctionData(
-    functionFragment: "THIRDMINT_TOTAL",
-    values?: undefined
-  ): string;
-  encodeFunctionData(
-    functionFragment: "_getRandomNumber16",
-    values: [BigNumberish, BigNumberish, BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "activateFirstMint",
@@ -195,6 +166,10 @@ interface SeekersInterface extends ethers.utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "cloakingAvailable",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "contractURI",
     values?: undefined
   ): string;
   encodeFunctionData(
@@ -323,6 +298,10 @@ interface SeekersInterface extends ethers.utils.Interface {
   ): string;
   encodeFunctionData(functionFragment: "setBaseURI", values: [string]): string;
   encodeFunctionData(
+    functionFragment: "setContractURI",
+    values: [string]
+  ): string;
+  encodeFunctionData(
     functionFragment: "summonSeeker",
     values: [BigNumberish]
   ): string;
@@ -368,18 +347,8 @@ interface SeekersInterface extends ethers.utils.Interface {
     functionFragment: "DETHSCALEREROLLCOST",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(functionFragment: "FIRSTMINT", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "FIRSTMINTPRICE",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(functionFragment: "GAME_ROLE", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "KEEPERS_ROLE",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "MAXMINTABLE",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "MAXPOWER", data: BytesLike): Result;
@@ -393,21 +362,8 @@ interface SeekersInterface extends ethers.utils.Interface {
     functionFragment: "SUMMONSEEKERPOWERSTART",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(functionFragment: "THIRDMINT", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "THIRDMINTPRICE",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "THIRDMINT_INCR",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "THIRDMINT_TOTAL",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "_getRandomNumber16",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -441,6 +397,10 @@ interface SeekersInterface extends ethers.utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "cloakingAvailable",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "contractURI",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -553,6 +513,10 @@ interface SeekersInterface extends ethers.utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "setBaseURI", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "setContractURI",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "summonSeeker",
     data: BytesLike
@@ -741,15 +705,7 @@ export class Seekers extends BaseContract {
 
     DETHSCALEREROLLCOST(overrides?: CallOverrides): Promise<[number]>;
 
-    FIRSTMINT(overrides?: CallOverrides): Promise<[BigNumber]>;
-
     FIRSTMINTPRICE(overrides?: CallOverrides): Promise<[BigNumber]>;
-
-    GAME_ROLE(overrides?: CallOverrides): Promise<[string]>;
-
-    KEEPERS_ROLE(overrides?: CallOverrides): Promise<[string]>;
-
-    MAXMINTABLE(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     MAXPOWER(overrides?: CallOverrides): Promise<[number]>;
 
@@ -761,20 +717,7 @@ export class Seekers extends BaseContract {
 
     SUMMONSEEKERPOWERSTART(overrides?: CallOverrides): Promise<[number]>;
 
-    THIRDMINT(overrides?: CallOverrides): Promise<[BigNumber]>;
-
     THIRDMINTPRICE(overrides?: CallOverrides): Promise<[BigNumber]>;
-
-    THIRDMINT_INCR(overrides?: CallOverrides): Promise<[BigNumber]>;
-
-    THIRDMINT_TOTAL(overrides?: CallOverrides): Promise<[BigNumber]>;
-
-    _getRandomNumber16(
-      mod: BigNumberish,
-      r1: BigNumberish,
-      r2: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<[number]>;
 
     activateFirstMint(
       overrides?: Overrides & { from?: string | Promise<string> }
@@ -829,6 +772,8 @@ export class Seekers extends BaseContract {
     ): Promise<ContractTransaction>;
 
     cloakingAvailable(overrides?: CallOverrides): Promise<[boolean]>;
+
+    contractURI(overrides?: CallOverrides): Promise<[string]>;
 
     currentBuyableSeekers(overrides?: CallOverrides): Promise<[BigNumber]>;
 
@@ -1025,6 +970,11 @@ export class Seekers extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
+    setContractURI(
+      newContractURI: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
     summonSeeker(
       summonCount: BigNumberish,
       overrides?: PayableOverrides & { from?: string | Promise<string> }
@@ -1071,15 +1021,7 @@ export class Seekers extends BaseContract {
 
   DETHSCALEREROLLCOST(overrides?: CallOverrides): Promise<number>;
 
-  FIRSTMINT(overrides?: CallOverrides): Promise<BigNumber>;
-
   FIRSTMINTPRICE(overrides?: CallOverrides): Promise<BigNumber>;
-
-  GAME_ROLE(overrides?: CallOverrides): Promise<string>;
-
-  KEEPERS_ROLE(overrides?: CallOverrides): Promise<string>;
-
-  MAXMINTABLE(overrides?: CallOverrides): Promise<BigNumber>;
 
   MAXPOWER(overrides?: CallOverrides): Promise<number>;
 
@@ -1091,20 +1033,7 @@ export class Seekers extends BaseContract {
 
   SUMMONSEEKERPOWERSTART(overrides?: CallOverrides): Promise<number>;
 
-  THIRDMINT(overrides?: CallOverrides): Promise<BigNumber>;
-
   THIRDMINTPRICE(overrides?: CallOverrides): Promise<BigNumber>;
-
-  THIRDMINT_INCR(overrides?: CallOverrides): Promise<BigNumber>;
-
-  THIRDMINT_TOTAL(overrides?: CallOverrides): Promise<BigNumber>;
-
-  _getRandomNumber16(
-    mod: BigNumberish,
-    r1: BigNumberish,
-    r2: BigNumberish,
-    overrides?: CallOverrides
-  ): Promise<number>;
 
   activateFirstMint(
     overrides?: Overrides & { from?: string | Promise<string> }
@@ -1159,6 +1088,8 @@ export class Seekers extends BaseContract {
   ): Promise<ContractTransaction>;
 
   cloakingAvailable(overrides?: CallOverrides): Promise<boolean>;
+
+  contractURI(overrides?: CallOverrides): Promise<string>;
 
   currentBuyableSeekers(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -1344,6 +1275,11 @@ export class Seekers extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
+  setContractURI(
+    newContractURI: string,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
   summonSeeker(
     summonCount: BigNumberish,
     overrides?: PayableOverrides & { from?: string | Promise<string> }
@@ -1387,15 +1323,7 @@ export class Seekers extends BaseContract {
 
     DETHSCALEREROLLCOST(overrides?: CallOverrides): Promise<number>;
 
-    FIRSTMINT(overrides?: CallOverrides): Promise<BigNumber>;
-
     FIRSTMINTPRICE(overrides?: CallOverrides): Promise<BigNumber>;
-
-    GAME_ROLE(overrides?: CallOverrides): Promise<string>;
-
-    KEEPERS_ROLE(overrides?: CallOverrides): Promise<string>;
-
-    MAXMINTABLE(overrides?: CallOverrides): Promise<BigNumber>;
 
     MAXPOWER(overrides?: CallOverrides): Promise<number>;
 
@@ -1407,20 +1335,7 @@ export class Seekers extends BaseContract {
 
     SUMMONSEEKERPOWERSTART(overrides?: CallOverrides): Promise<number>;
 
-    THIRDMINT(overrides?: CallOverrides): Promise<BigNumber>;
-
     THIRDMINTPRICE(overrides?: CallOverrides): Promise<BigNumber>;
-
-    THIRDMINT_INCR(overrides?: CallOverrides): Promise<BigNumber>;
-
-    THIRDMINT_TOTAL(overrides?: CallOverrides): Promise<BigNumber>;
-
-    _getRandomNumber16(
-      mod: BigNumberish,
-      r1: BigNumberish,
-      r2: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<number>;
 
     activateFirstMint(overrides?: CallOverrides): Promise<void>;
 
@@ -1460,6 +1375,8 @@ export class Seekers extends BaseContract {
     cloakSeeker(id: BigNumberish, overrides?: CallOverrides): Promise<void>;
 
     cloakingAvailable(overrides?: CallOverrides): Promise<boolean>;
+
+    contractURI(overrides?: CallOverrides): Promise<string>;
 
     currentBuyableSeekers(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -1633,6 +1550,11 @@ export class Seekers extends BaseContract {
     ): Promise<void>;
 
     setBaseURI(baseTokenURI: string, overrides?: CallOverrides): Promise<void>;
+
+    setContractURI(
+      newContractURI: string,
+      overrides?: CallOverrides
+    ): Promise<void>;
 
     summonSeeker(
       summonCount: BigNumberish,
@@ -1872,15 +1794,7 @@ export class Seekers extends BaseContract {
 
     DETHSCALEREROLLCOST(overrides?: CallOverrides): Promise<BigNumber>;
 
-    FIRSTMINT(overrides?: CallOverrides): Promise<BigNumber>;
-
     FIRSTMINTPRICE(overrides?: CallOverrides): Promise<BigNumber>;
-
-    GAME_ROLE(overrides?: CallOverrides): Promise<BigNumber>;
-
-    KEEPERS_ROLE(overrides?: CallOverrides): Promise<BigNumber>;
-
-    MAXMINTABLE(overrides?: CallOverrides): Promise<BigNumber>;
 
     MAXPOWER(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -1892,20 +1806,7 @@ export class Seekers extends BaseContract {
 
     SUMMONSEEKERPOWERSTART(overrides?: CallOverrides): Promise<BigNumber>;
 
-    THIRDMINT(overrides?: CallOverrides): Promise<BigNumber>;
-
     THIRDMINTPRICE(overrides?: CallOverrides): Promise<BigNumber>;
-
-    THIRDMINT_INCR(overrides?: CallOverrides): Promise<BigNumber>;
-
-    THIRDMINT_TOTAL(overrides?: CallOverrides): Promise<BigNumber>;
-
-    _getRandomNumber16(
-      mod: BigNumberish,
-      r1: BigNumberish,
-      r2: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
 
     activateFirstMint(
       overrides?: Overrides & { from?: string | Promise<string> }
@@ -1960,6 +1861,8 @@ export class Seekers extends BaseContract {
     ): Promise<BigNumber>;
 
     cloakingAvailable(overrides?: CallOverrides): Promise<BigNumber>;
+
+    contractURI(overrides?: CallOverrides): Promise<BigNumber>;
 
     currentBuyableSeekers(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -2122,6 +2025,11 @@ export class Seekers extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
+    setContractURI(
+      newContractURI: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
     summonSeeker(
       summonCount: BigNumberish,
       overrides?: PayableOverrides & { from?: string | Promise<string> }
@@ -2175,15 +2083,7 @@ export class Seekers extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    FIRSTMINT(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
     FIRSTMINTPRICE(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    GAME_ROLE(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    KEEPERS_ROLE(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    MAXMINTABLE(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     MAXPOWER(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
@@ -2197,20 +2097,7 @@ export class Seekers extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    THIRDMINT(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
     THIRDMINTPRICE(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    THIRDMINT_INCR(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    THIRDMINT_TOTAL(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    _getRandomNumber16(
-      mod: BigNumberish,
-      r1: BigNumberish,
-      r2: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
 
     activateFirstMint(
       overrides?: Overrides & { from?: string | Promise<string> }
@@ -2268,6 +2155,8 @@ export class Seekers extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     cloakingAvailable(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    contractURI(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     currentBuyableSeekers(
       overrides?: CallOverrides
@@ -2432,6 +2321,11 @@ export class Seekers extends BaseContract {
 
     setBaseURI(
       baseTokenURI: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    setContractURI(
+      newContractURI: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 

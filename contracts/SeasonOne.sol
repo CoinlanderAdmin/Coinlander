@@ -114,7 +114,7 @@ contract SeasonOne is ERC1155, Ownable, ReentrancyGuard {
     event AirdropClaim(uint256 id);
     
     //@TODO we need to figure out what the url schema for metadata looks like and plop that here in the constructor
-    constructor(address seekersContract, address keepeersVault) ERC1155("https://api.coinlander.dev/meta/seasonone/{id}") {
+    constructor(address seekersContract, address keepeersVault) ERC1155("https://api.coinlander.dev/meta/season-one/{id}") {
         // Create the One Coin and set the deployer as initial COINLANDER
         _mint(msg.sender, ONECOIN, 1, "0x0");
         COINLANDER = msg.sender;
@@ -128,6 +128,28 @@ contract SeasonOne is ERC1155, Ownable, ReentrancyGuard {
         _contractURI = "https://api.coinlander.dev/meta/season-one";
     }
 
+//////////////////////////////////////////////////////////////////////////////////////////////////
+//                                                                                              //
+//                                          MODIFIERS                                           //
+//                                                                                              //
+//////////////////////////////////////////////////////////////////////////////////////////////////
+
+    modifier postReleaseOnly() {
+        require(released == true, "E-000-004");
+        _;
+    }
+
+    modifier shardSpendableOnly() {
+        require(shardSpendable == true, "E-000-005");
+        _;
+    }
+
+    modifier validShardQty(uint256 amount) {
+        require(amount > 0, "E-000-006");
+        require(balanceOf(msg.sender, SHARD) >= amount, "E-000-007");
+        _;
+    }
+    
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -171,6 +193,15 @@ contract SeasonOne is ERC1155, Ownable, ReentrancyGuard {
     function changeURI(string calldata _newURI) external onlyOwner {
         _setURI(_newURI);
     }
+
+    function contractURI() public view returns (string memory) {
+        return _contractURI;
+    }
+
+    function setContractURI(string calldata newContractURI) external onlyOwner {
+        _contractURI = newContractURI;
+    }
+
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -282,16 +313,6 @@ contract SeasonOne is ERC1155, Ownable, ReentrancyGuard {
         seekers.sendWinnerSeeker(msg.sender);
     }
 
-    modifier postReleaseOnly() {
-        require(released == true, "E-000-004");
-        _;
-    }
-
-    modifier shardSpendableOnly() {
-        require(shardSpendable == true, "E-000-005");
-        _;
-    }
-    
     function getSeizureCount() external view returns(uint256) {
         return seizureCount.current();
     }
@@ -303,17 +324,23 @@ contract SeasonOne is ERC1155, Ownable, ReentrancyGuard {
 //                                                                                              //
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
-    function burnShardForPower(uint256 seekerId, uint256 amount) external nonReentrant shardSpendableOnly {
-        require(amount > 0, "E-000-006");
-        require(balanceOf(msg.sender, SHARD) >= amount, "E-000-007");
+    function burnShardForPower(uint256 seekerId, uint256 amount) 
+        external 
+        nonReentrant 
+        shardSpendableOnly 
+        validShardQty(amount) {
+
         _burn(msg.sender, SHARD, amount);
         uint256 power = amount * POWERPERSHARD;
         seekers.addPower(seekerId, power);
     }
 
-    function stakeShardForCloin(uint256 amount) external nonReentrant shardSpendableOnly {
-        require(amount > 0, "E-000-006");
-        require(balanceOf(msg.sender, SHARD) >= amount, "E-000-007");
+    function stakeShardForCloin(uint256 amount) 
+        external 
+        nonReentrant 
+        shardSpendableOnly
+        validShardQty(amount) {
+
         _burn(msg.sender, SHARD, amount);
         
         cloinDeposit memory _deposit;
@@ -326,9 +353,12 @@ contract SeasonOne is ERC1155, Ownable, ReentrancyGuard {
         emit NewCloinDeposit(msg.sender, uint16(amount), depositsLength);
     }
 
-    function burnShardForFragments(uint256 amount) external nonReentrant shardSpendableOnly {
-        require(amount > 0, "E-000-006");
-        require(balanceOf(msg.sender, SHARD) >= amount, "E-000-007");
+    function burnShardForFragments(uint256 amount) 
+        external 
+        nonReentrant 
+        shardSpendableOnly 
+        validShardQty(amount) {
+
         require((amount % SHARDTOFRAGMENTMULTIPLIER) == 0, "E-000-008"); // must be even multiple of the exch. rate
     
         uint256 fragmentReward = amount / SHARDTOFRAGMENTMULTIPLIER; 
@@ -397,14 +427,6 @@ contract SeasonOne is ERC1155, Ownable, ReentrancyGuard {
 
     function startGame() external onlyOwner {
         gameStarted = true;
-    }
-
-    function contractURI() public view returns (string memory) {
-        return _contractURI;
-    }
-
-    function setContractURI(string calldata newContractURI) external onlyOwner {
-        _contractURI = newContractURI;
     }
 
     function _calculateShardReward(uint256 _value) private pure returns (uint16) {

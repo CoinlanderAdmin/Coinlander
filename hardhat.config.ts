@@ -29,7 +29,7 @@ const config: HardhatUserConfig = {
   },
   networks: {
     localhost: {
-      allowUnlimitedContractSize: true,
+      allowUnlimitedContractSize: true
     },
     hardhat: {
       allowUnlimitedContractSize: true,
@@ -50,7 +50,8 @@ const config: HardhatUserConfig = {
   },
   etherscan: {
     apiKey: {
-      arbitrumOne: envConfig.ArbiscanAPIKey
+      arbitrumOne: envConfig.ArbiscanAPIKey,
+      arbitrumTestnet: envConfig.RinkebyArbiscanAPIKey
     }
   },
   mocha: {

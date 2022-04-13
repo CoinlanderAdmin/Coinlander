@@ -12,8 +12,8 @@ import "./interfaces/ISeekers.sol";
 
 contract Seekers is ERC721Enumerable, ISeekers, AccessControl, ReentrancyGuard {
   // Access control setup
-  bytes32 public constant KEEPERS_ROLE = keccak256("KEEPERS_ROLE"); // Role for Keepers
-  bytes32 public constant GAME_ROLE = keccak256("GAME_ROLE"); // Role for approved Coinlander game contracts
+  bytes32 constant KEEPERS_ROLE = keccak256("KEEPERS_ROLE"); // Role for Keepers
+  bytes32 constant GAME_ROLE = keccak256("GAME_ROLE"); // Role for approved Coinlander game contracts
 
   // Counter inits
   uint256 private _summonSeekerId = 0; // Sale id tracker
@@ -25,24 +25,24 @@ contract Seekers is ERC721Enumerable, ISeekers, AccessControl, ReentrancyGuard {
   uint256 public currentPrice = 0;
   uint256 private constant KEEPERSEEKERS = 64; // Number of Seekers that Keepers can mint for themselves
   uint256 private keepersSeekersMinted = 0;
-  uint256 public constant MAXMINTABLE = 10; // Max seekers that can be purchased in one tx
+  uint256 constant MAXMINTABLE = 10; // Max seekers that can be purchased in one tx
 
   // Seeker release schedule
   // Activation for each will be called externally by the season 1 Coinlander contract
-  uint256 public constant FIRSTMINT = 5000;
+  uint256 constant FIRSTMINT = 5000;
   bool public firstMintActive = false;
   uint256 public constant FIRSTMINTPRICE = 0.00002 ether; // test value
-  // uint256 public constant FIRSTMINTPRICE = 0.05 ether;
+  // uint256 constant FIRSTMINTPRICE = 0.05 ether;
   uint256 public constant SECONDMINT = 3333;
   bool public secondMintActive = false;
   uint256 public constant SECONDMINTPRICE = 0.00005 ether; // test value
-  // uint256 public constant SECONDMINTPRICE = 0.08 ether;
-  uint256 public constant THIRDMINT = 267; // bulk release at third mint thresh 
-  uint256 public constant THIRDMINT_INCR = 4; // additional release at each seizure after third mint thresh 
-  uint256 public constant THIRDMINT_TOTAL = 1603; // total number of seekers released via third mint 
+  // uint256 constant SECONDMINTPRICE = 0.08 ether;
+  uint256 constant THIRDMINT = 267; // bulk release at third mint thresh 
+  uint256 constant THIRDMINT_INCR = 4; // additional release at each seizure after third mint thresh 
+  uint256 constant THIRDMINT_TOTAL = 1603; // total number of seekers released via third mint 
   bool public thirdMintActive = false;
   uint256 public constant THIRDMINTPRICE = 0.0001 ether; // test value
-  // uint256 public constant THIRDMINTPRICE = 0.1 ether;
+  // uint256 constant THIRDMINTPRICE = 0.1 ether;
 
   // Game params
   bool public evilsOnly = false; 
@@ -94,7 +94,7 @@ contract Seekers is ERC721Enumerable, ISeekers, AccessControl, ReentrancyGuard {
     "Chaotic Evil"
   ];
 
-  constructor() ERC721("Coinlander: Seekers", "SEEK") {
+  constructor() ERC721("Coinlander: Seekers", "SEEKERS") {
     // Give the Keeper deploying this contract the Keeper role and set them as admin
     _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
     _setupRole(KEEPERS_ROLE, msg.sender);
@@ -198,7 +198,7 @@ contract Seekers is ERC721Enumerable, ISeekers, AccessControl, ReentrancyGuard {
     evilsOnly = false;
     goodsOnly = true;
     emit ThirdMintActivated();
-    currentBuyableSeekers += THIRDMINT_INCR + THIRDMINT;
+    currentBuyableSeekers += THIRDMINT;
     currentPrice = THIRDMINTPRICE;
   }
 
@@ -453,6 +453,7 @@ contract Seekers is ERC721Enumerable, ISeekers, AccessControl, ReentrancyGuard {
         attributesBySeekerId[id].clan
       ); 
     attributesBySeekerId[id] = winningAttributes;
+    emit SeekerCloaked(id);
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -460,6 +461,10 @@ contract Seekers is ERC721Enumerable, ISeekers, AccessControl, ReentrancyGuard {
   //                                  EXTERNAL ATTRIBUTES AND METADATA                            //
   //                                                                                              //
   //////////////////////////////////////////////////////////////////////////////////////////////////
+
+  function contractURI() public view returns (string memory) {
+    return _contractURI;
+  }
 
   function getOriginById(uint256 id) external view returns (bool) {
     return attributesBySeekerId[id].bornFromCoin;
@@ -617,7 +622,7 @@ contract Seekers is ERC721Enumerable, ISeekers, AccessControl, ReentrancyGuard {
 
   // Deterministic "random" number picker - used for generating full cloak artwork the same every time
   // while still enabling the injection of randomly assigned noise.
-  function _getRandomNumber16(uint16 mod, uint16 r1, uint16 r2) public pure returns (uint16) {
+  function _getRandomNumber16(uint16 mod, uint16 r1, uint16 r2) internal pure returns (uint16) {
     uint16 seed = uint16(bytes2(keccak256(abi.encodePacked(r1, r2))));
     return seed % mod;
   }
@@ -667,6 +672,10 @@ contract Seekers is ERC721Enumerable, ISeekers, AccessControl, ReentrancyGuard {
 
   function addKeeper(address newKeeper) public onlyKeepers {
     grantRole(KEEPERS_ROLE, newKeeper);
+  }
+
+  function setContractURI(string calldata newContractURI) external onlyKeepers {
+    _contractURI = newContractURI;
   }
 
   function setBaseURI(string memory baseTokenURI) public onlyKeepers {

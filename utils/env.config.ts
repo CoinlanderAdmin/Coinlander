@@ -32,11 +32,18 @@ const ArbiscanAPIKey: string | undefined = process.env.ARBISCAN_API_KEY
 if (!ArbiscanAPIKey) {
   throw new Error("Please add the Arbiscan API key to your .env file")
 }
+
+const RinkebyArbiscanAPIKey: string | undefined = process.env.RINKEBY_ARBISCAN_API_KEY
+if (!RinkebyArbiscanAPIKey) {
+  throw new Error("Please add the Rinkeby Arbiscan API key to your .env file")
+}
+
 export var envConfig = {
     'owner': owner,
     'userA': userA, 
     'userB': userB, 
     'RinkArbyKey': RinkArbyKey,
     'RinkebyKey': RinkebyKey,
-    'ArbiscanAPIKey': ArbiscanAPIKey
+    'ArbiscanAPIKey': ArbiscanAPIKey,
+    'RinkebyArbiscanAPIKey': RinkebyArbiscanAPIKey
 }
