@@ -231,7 +231,7 @@ const _abi = [
       },
       {
         internalType: "uint256",
-        name: "power",
+        name: "powerToAdd",
         type: "uint256",
       },
     ],
@@ -284,6 +284,11 @@ const _abi = [
         name: "to",
         type: "address",
       },
+      {
+        internalType: "uint32",
+        name: "holdTime",
+        type: "uint32",
+      },
     ],
     name: "birthSeeker",
     outputs: [
@@ -293,6 +298,24 @@ const _abi = [
         type: "uint256",
       },
     ],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "id",
+        type: "uint256",
+      },
+      {
+        internalType: "uint16",
+        name: "powerToBurn",
+        type: "uint16",
+      },
+    ],
+    name: "burnPower",
+    outputs: [],
     stateMutability: "nonpayable",
     type: "function",
   },

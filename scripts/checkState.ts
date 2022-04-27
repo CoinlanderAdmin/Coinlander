@@ -88,36 +88,36 @@ export async function checkState() {
       console.log('Fragment%d: ', i, qty)
     }
   } 
-  console.log('Claiming for account 0')
-  try { 
-    await seasonOne.connect(accounts[0]).claimAll()
-  } catch (error) {
-    console.log(error)
-  }
+  // console.log('Claiming for account 0')
+  // try { 
+  //   await seasonOne.connect(accounts[0]).claimAll()
+  // } catch (error) {
+  //   console.log(error)
+  // }
   
-  console.log('Claiming for account 1')
-  try { 
-    await seasonOne.connect(accounts[1]).claimAll()
-  } catch (error) {
-    console.log(error)
-  }
+  // console.log('Claiming for account 1')
+  // try { 
+  //   await seasonOne.connect(accounts[1]).claimAll()
+  // } catch (error) {
+  //   console.log(error)
+  // }
   
   // list deposits
-  logger.divider()
-    try {
-      let i = 0
-      while (true) { 
-        let deposit = await seasonOne.cloinDeposits(i)
-        console.log("Deposit %d: ", i)
-        console.log(deposit.depositor)
-        console.log(deposit.amount)
-        console.log(deposit.blockNumber)
-        logger.divider()
-        i++
-      }
-    }
-    catch (error) {
-    }
+  // logger.divider()
+  //   try {
+  //     let i = 0
+  //     while (true) { 
+  //       let deposit = await seasonOne.cloinDeposits(i)
+  //       console.log("Deposit %d: ", i)
+  //       console.log(deposit.depositor)
+  //       console.log(deposit.amount)
+  //       console.log(deposit.blockNumber)
+  //       logger.divider()
+  //       i++
+  //     }
+  //   }
+  //   catch (error) {
+  //   }
    
   let vaultBal = await vault.prize()
   console.log("Vault balance is: ", vaultBal.div(1E12).toNumber())

@@ -48,7 +48,8 @@ contract SeasonOne is ERC1155, Ownable, ReentrancyGuard {
     bool public shardSpendable = false;
     bool private transferIsSteal = false;
     bool public gameStarted = false;
-    
+    uint32 public lastSeizureTime = 0;
+     
     using Counters for Counters.Counter;
     Counters.Counter public seizureCount; 
 
@@ -84,11 +85,13 @@ contract SeasonOne is ERC1155, Ownable, ReentrancyGuard {
     uint256 constant INCRBASIS = 10; //
 
     // BALANCES AND ECONOMIC PARAMETERS 
-    // Refund structure, tracks both Eth withdraw value and earned Shard 
+    // Refund structure, tracks Eth withdraw value, earned Shard and owed Seekers 
+    // value can be safely stored as a uint120
+    // each seeker owed will have a unique time associated with it
     struct withdrawParams {
-        uint224 _withdrawValue;
+        uint120 _withdrawValue;
         uint16 _shardOwed;
-        uint16 _seekersOwed;
+        uint32[] _timeHeld;
     } 
 
     mapping(address => withdrawParams) public pendingWithdrawals;
@@ -235,23 +238,31 @@ contract SeasonOne is ERC1155, Ownable, ReentrancyGuard {
 
 
     function _processPaymentsAndRewards(address previousOwner, uint256 value) internal {
+
+        // Track time regardless of which count 
+        uint32 holdTime = uint32(block.timestamp) - lastSeizureTime;
+        lastSeizureTime = uint32(block.timestamp);
+
         // Exclude first seizure since deployer doesnt get rewards
         if (seizureCount.current() != 1) {
+
             // Set aside funds for prize pool
             uint256 _prize = (value * PERCENTPRIZE) / PERCENTBASIS;
             prize += _prize; 
 
             uint256 deposit = value - _prize;
-            pendingWithdrawals[previousOwner]._withdrawValue += uint224(deposit);
+            pendingWithdrawals[previousOwner]._withdrawValue += uint120(deposit);
 
             uint16 shardReward = _calculateShardReward(previousSeizureStake);
             pendingWithdrawals[previousOwner]._shardOwed += shardReward;
         }
             
-        // Handle all cases that aren't the last 
+        // Handle all cases except the last; the winner seeker is special cased
         if (!released) {
-            // We allocate a seeker for every previous Coinlander. The winner is special cased
-            pendingWithdrawals[previousOwner]._seekersOwed += 1;
+
+            // We allocate a seeker for every previous Coinlander and track the time of each hold. 
+            pendingWithdrawals[previousOwner]._timeHeld.push(holdTime);
+
             // Store current seizure as previous
             previousSeizureStake = seizureStake;
             // Determine what it will cost to seize next time
@@ -373,11 +384,12 @@ contract SeasonOne is ERC1155, Ownable, ReentrancyGuard {
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
     // Method for claiming all owed rewards and payments: ether refunds, shards and seekers 
+    // @todo change seeks logic to times length 
     function claimAll() external nonReentrant {
 
         uint256 withdrawal = pendingWithdrawals[msg.sender]._withdrawValue;
         uint256 shard = pendingWithdrawals[msg.sender]._shardOwed;
-        uint256 seeks = pendingWithdrawals[msg.sender]._seekersOwed;
+        uint256 seeks = pendingWithdrawals[msg.sender]._timeHeld.length;
 
         if (withdrawal == 0 && shard == 0 && seeks == 0) {
             revert("E-000-010");
@@ -396,13 +408,29 @@ contract SeasonOne is ERC1155, Ownable, ReentrancyGuard {
         }
 
         if (seeks > 0) {
-            pendingWithdrawals[msg.sender]._seekersOwed = 0;
+
+            // Mint seekers 
             for (uint256 i = 0; i < seeks; i++){
-                seekers.birthSeeker(msg.sender);
+                // uint32 holdTime = times[i];
+                uint32 holdTime = pendingWithdrawals[msg.sender]._timeHeld[i];
+                seekers.birthSeeker(msg.sender, holdTime);
             }
+            delete pendingWithdrawals[msg.sender]._timeHeld;
         }
 
         emit ClaimedAll(msg.sender);
+    }
+
+    // Claim seeker release valve if too many in withdraw struct
+    function claimSingleSeeker() external nonReentrant {
+        uint256 seeks = pendingWithdrawals[msg.sender]._timeHeld.length;
+        require(seeks > 0, "E-000-010");
+
+        // Cant pop directly into holdTime since the compiler doesnt know if _timeHeld will have a nonzero length
+        uint32 holdTime = pendingWithdrawals[msg.sender]._timeHeld[seeks - 1];
+        pendingWithdrawals[msg.sender]._timeHeld.pop();
+
+        seekers.birthSeeker(msg.sender, holdTime);
     }
     
     function airdropClaimBySeekerId(uint256 id) external nonReentrant postReleaseOnly {
@@ -451,11 +479,12 @@ contract SeasonOne is ERC1155, Ownable, ReentrancyGuard {
         return random % mod;
     }
 
+// @todo return length of times array 
     function getPendingWithdrawal(address _user) external view returns (uint256[3] memory) {
         return [
             uint256(pendingWithdrawals[_user]._withdrawValue),
             uint256(pendingWithdrawals[_user]._shardOwed),
-            uint256(pendingWithdrawals[_user]._seekersOwed)
+            pendingWithdrawals[_user]._timeHeld.length
         ];
     }
 

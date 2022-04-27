@@ -28,7 +28,8 @@ interface ISeekersInterface extends ethers.utils.Interface {
     "addPower(uint256,uint256)": FunctionFragment;
     "approve(address,uint256)": FunctionFragment;
     "balanceOf(address)": FunctionFragment;
-    "birthSeeker(address)": FunctionFragment;
+    "birthSeeker(address,uint32)": FunctionFragment;
+    "burnPower(uint256,uint16)": FunctionFragment;
     "cloakSeeker(uint256)": FunctionFragment;
     "declareForClan(uint256,address)": FunctionFragment;
     "endGoodsOnly()": FunctionFragment;
@@ -80,7 +81,14 @@ interface ISeekersInterface extends ethers.utils.Interface {
     values: [string, BigNumberish]
   ): string;
   encodeFunctionData(functionFragment: "balanceOf", values: [string]): string;
-  encodeFunctionData(functionFragment: "birthSeeker", values: [string]): string;
+  encodeFunctionData(
+    functionFragment: "birthSeeker",
+    values: [string, BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "burnPower",
+    values: [BigNumberish, BigNumberish]
+  ): string;
   encodeFunctionData(
     functionFragment: "cloakSeeker",
     values: [BigNumberish]
@@ -213,6 +221,7 @@ interface ISeekersInterface extends ethers.utils.Interface {
     functionFragment: "birthSeeker",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "burnPower", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "cloakSeeker",
     data: BytesLike
@@ -463,7 +472,7 @@ export class ISeekers extends BaseContract {
 
     addPower(
       id: BigNumberish,
-      power: BigNumberish,
+      powerToAdd: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
@@ -480,6 +489,13 @@ export class ISeekers extends BaseContract {
 
     birthSeeker(
       to: string,
+      holdTime: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    burnPower(
+      id: BigNumberish,
+      powerToBurn: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
@@ -681,7 +697,7 @@ export class ISeekers extends BaseContract {
 
   addPower(
     id: BigNumberish,
-    power: BigNumberish,
+    powerToAdd: BigNumberish,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
@@ -695,6 +711,13 @@ export class ISeekers extends BaseContract {
 
   birthSeeker(
     to: string,
+    holdTime: BigNumberish,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  burnPower(
+    id: BigNumberish,
+    powerToBurn: BigNumberish,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
@@ -879,7 +902,7 @@ export class ISeekers extends BaseContract {
 
     addPower(
       id: BigNumberish,
-      power: BigNumberish,
+      powerToAdd: BigNumberish,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -891,7 +914,17 @@ export class ISeekers extends BaseContract {
 
     balanceOf(owner: string, overrides?: CallOverrides): Promise<BigNumber>;
 
-    birthSeeker(to: string, overrides?: CallOverrides): Promise<BigNumber>;
+    birthSeeker(
+      to: string,
+      holdTime: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    burnPower(
+      id: BigNumberish,
+      powerToBurn: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
 
     cloakSeeker(id: BigNumberish, overrides?: CallOverrides): Promise<void>;
 
@@ -1210,7 +1243,7 @@ export class ISeekers extends BaseContract {
 
     addPower(
       id: BigNumberish,
-      power: BigNumberish,
+      powerToAdd: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
@@ -1224,6 +1257,13 @@ export class ISeekers extends BaseContract {
 
     birthSeeker(
       to: string,
+      holdTime: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    burnPower(
+      id: BigNumberish,
+      powerToBurn: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
@@ -1389,7 +1429,7 @@ export class ISeekers extends BaseContract {
 
     addPower(
       id: BigNumberish,
-      power: BigNumberish,
+      powerToAdd: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
@@ -1406,6 +1446,13 @@ export class ISeekers extends BaseContract {
 
     birthSeeker(
       to: string,
+      holdTime: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    burnPower(
+      id: BigNumberish,
+      powerToBurn: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 

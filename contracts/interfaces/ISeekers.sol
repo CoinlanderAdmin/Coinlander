@@ -24,7 +24,7 @@ interface ISeekers is IERC721Enumerable {
 
 
     function summonSeeker(uint256 summonCount) external payable;
-    function birthSeeker(address to) external returns (uint256);
+    function birthSeeker(address to, uint32 holdTime) external returns (uint256);
     function keepersSummonSeeker(uint256 summonCount) external;
     function activateFirstMint() external;
     function activateSecondMint() external;
@@ -35,7 +35,8 @@ interface ISeekers is IERC721Enumerable {
     function sendWinnerSeeker(address winner) external;
     function cloakSeeker(uint256 id) external;
     function rerollDethscales(uint256 id) external;
-    function addPower(uint256 id, uint256 power) external;
+    function addPower(uint256 id, uint256 powerToAdd) external;
+    function burnPower(uint256 id, uint16 powerToBurn) external;
     function declareForClan(uint id, address clanAddress) external;
     function ownerWithdraw() external payable;
 

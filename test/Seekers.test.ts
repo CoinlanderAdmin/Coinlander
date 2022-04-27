@@ -80,7 +80,7 @@ describe("Seekers", function () {
     beforeEach(async function () {
       seekers = await Seekers.deploy()
       await seekers.addGameContract(owner.address) // to simulate OneCoin contract
-      await seekers.birthSeeker(userA.address) 
+      await seekers.birthSeeker(userA.address, 3600) 
       id = await seekers.tokenOfOwnerByIndex(userA.address,0)
     })
 
@@ -103,18 +103,46 @@ describe("Seekers", function () {
     })
 
     it("births a seeker for the assigned user", async () => {
-      await seekers.birthSeeker(userA.address)
+      await seekers.birthSeeker(userA.address, 3600)
       expect(await seekers.balanceOf(userA.address)).to.equal(1)
     })
 
     it("does not let an unapproved user birth a seeker", async () => {
-      await expect(seekers.connect(userA).birthSeeker(userA.address)).to.be.reverted
+      await expect(seekers.connect(userA).birthSeeker(userA.address, 3600)).to.be.reverted
     })
     
     it("assigns a birthed seeker the bornFromCoin attribute", async () => {
-      await seekers.birthSeeker(userA.address)
+      await seekers.birthSeeker(userA.address, 3600)
       let id = await seekers.tokenOfOwnerByIndex(userA.address,0)
       expect(await seekers.getOriginById(id)).to.be.true
+    })
+
+    it("assigns power based on the seekers hold time", async () => {
+
+      let pph = await seekers.POWERPERHOUR()
+      let birthPower = await seekers.BIRTHSEEKERPOWERSTART()
+      let maxPower = await seekers.MAXPOWER()
+
+      // 1 hour case
+      let holdTime = 3600 // seconds
+      let powerExpected = (holdTime / 3600) * pph + birthPower
+      await seekers.birthSeeker(userA.address, holdTime)
+      let id = await seekers.tokenOfOwnerByIndex(userA.address,0)
+      expect(await seekers.getPowerById(id)).to.equal(powerExpected)
+
+      // 0 hour case
+      holdTime = 0 // seconds
+      powerExpected = (holdTime / 3600) * pph + birthPower
+      await seekers.birthSeeker(userA.address, holdTime)
+      id = await seekers.tokenOfOwnerByIndex(userA.address,1)
+      expect(await seekers.getPowerById(id)).to.equal(powerExpected)
+
+      // 43 hour case
+      holdTime = 3715200 // seconds
+      powerExpected = maxPower
+      await seekers.birthSeeker(userA.address, holdTime)
+      id = await seekers.tokenOfOwnerByIndex(userA.address,2)
+      expect(await seekers.getPowerById(id)).to.equal(powerExpected)
     })
   })
 
@@ -162,7 +190,7 @@ describe("Seekers", function () {
     })
 
     it("returns 2 after a single seeker has been birthed", async () => {
-      await seekers.birthSeeker(userA.address)
+      await seekers.birthSeeker(userA.address, 3600)
       expect(await seekers.totalSupply()).to.equal(2)
     })
 
@@ -174,7 +202,7 @@ describe("Seekers", function () {
     })
 
     it("returns 3 after one is summoned and one is birthed", async () => {
-      await seekers.birthSeeker(userA.address)
+      await seekers.birthSeeker(userA.address, 3600)
       await seekers.activateFirstMint()
       let price = await seekers.FIRSTMINTPRICE()
       await seekers.connect(userA).summonSeeker(1, {value: price})
@@ -280,7 +308,7 @@ describe("Seekers", function () {
     beforeEach(async function () {
       seekers = await Seekers.deploy()
       await seekers.addGameContract(owner.address) // to simulate OneCoin contract
-      await seekers.birthSeeker(userA.address)
+      await seekers.birthSeeker(userA.address, 3600)
       id = await seekers.tokenOfOwnerByIndex(userA.address,0)
     })
 
@@ -360,7 +388,7 @@ describe("Seekers", function () {
     beforeEach(async function () {
       seekers = await Seekers.deploy()
       await seekers.addGameContract(owner.address) // to simulate OneCoin contract
-      await seekers.birthSeeker(userA.address)
+      await seekers.birthSeeker(userA.address, 3600)
       id = await seekers.tokenOfOwnerByIndex(userA.address,0)
     })
     
@@ -406,18 +434,14 @@ describe("Seekers", function () {
     beforeEach(async function () {
       seekers = await Seekers.deploy()
       await seekers.addGameContract(owner.address) // Give owner "game contract" role
-      await seekers.birthSeeker(userA.address)
-      await seekers.birthSeeker(owner.address)
+      await seekers.birthSeeker(userA.address, 3600)
+      await seekers.birthSeeker(owner.address, 3600)
       id = await seekers.tokenOfOwnerByIndex(userA.address,0)
       ownerId = await seekers.tokenOfOwnerByIndex(owner.address,1)
     })
 
     it("reverts for a non existent token ", async () => {
       await expect(seekers.burnPower(1000, 1)).to.be.reverted
-    })
-
-    it("reverts if the caller is not the token owner ", async () => {
-      await expect(seekers.burnPower(id, 1)).to.be.revertedWith("E-001-010")
     })
 
     it("reverts if the token power is less than the power being burned ", async () => {
@@ -438,7 +462,7 @@ describe("Seekers", function () {
     beforeEach(async function () {
       seekers = await Seekers.deploy()
       await seekers.addGameContract(owner.address) // to simulate OneCoin contract
-      await seekers.birthSeeker(userA.address)
+      await seekers.birthSeeker(userA.address, 3600)
       id = await seekers.tokenOfOwnerByIndex(userA.address,0)
     })
 
@@ -470,7 +494,7 @@ describe("Seekers", function () {
     beforeEach(async function () {
       seekers = await Seekers.deploy()
       await seekers.addGameContract(owner.address) // to simulate OneCoin contract
-      await seekers.birthSeeker(userA.address)
+      await seekers.birthSeeker(userA.address, 3600)
       id = await seekers.tokenOfOwnerByIndex(userA.address,0)
     })
     

@@ -18,15 +18,12 @@ async function emulate(seizes: number, ethers: HardhatEthersHelpers) {
   logger.out('Starting contract emulation...', logger.Level.Info)
   logger.divider()
 
-  const index: string = '2'
-  const filename: string = 'E7-meta'
+  const index: string = '1'
+  const filename: string = 'E3-meta'
 
   // We must use the injected hardhat param instead of directly importing because we run this
   // as a hardhat task. https://hardhat.org/advanced/hardhat-runtime-environment.html
   
-  // Load json config data. We want to use fs here instead of imports because
-  // this data shouldn't be stored in git, and causes bad imports pre-deploy script
-  // TODO: change this to point at the non local addresses file auto-gen'd by primary deploy script
   const addressesJson = fs.readFileSync('addresses.json', 'utf8');
   const deployData = JSON.parse(addressesJson);
   const addresses = deployData[index]

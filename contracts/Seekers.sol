@@ -23,7 +23,7 @@ contract Seekers is ERC721Enumerable, ISeekers, AccessControl, ReentrancyGuard {
   uint256 public constant MAXSEEKERS = 11111; 
   uint256 public currentBuyableSeekers = 0;
   uint256 public currentPrice = 0;
-  uint256 private constant KEEPERSEEKERS = 64; // Number of Seekers that Keepers can mint for themselves
+  uint256 constant KEEPERSEEKERS = 64; // Number of Seekers that Keepers can mint for themselves
   uint256 private keepersSeekersMinted = 0;
   uint256 constant MAXMINTABLE = 10; // Max seekers that can be purchased in one tx
 
@@ -55,6 +55,7 @@ contract Seekers is ERC721Enumerable, ISeekers, AccessControl, ReentrancyGuard {
   bool public released = false;
   bool public cloakingAvailable = false;
   uint16 public constant MAXPOWER = 1024; // 32x32 pixel grid
+  uint16 public constant POWERPERHOUR = 1; // 1 power unit for every hour held
   uint16 public constant SUMMONSEEKERPOWERSTART = 3;
   uint16 public constant BIRTHSEEKERPOWERSTART = 5;
   uint16 public constant DETHSCALEREROLLCOST = 1;
@@ -100,8 +101,10 @@ contract Seekers is ERC721Enumerable, ISeekers, AccessControl, ReentrancyGuard {
     _setupRole(KEEPERS_ROLE, msg.sender);
     _setRoleAdmin(KEEPERS_ROLE, DEFAULT_ADMIN_ROLE);
 
+    // Set aside ID 1 for winner 
     _summonSeekerId += 1;
-    _safeMint(msg.sender, _summonSeekerId); // Set aside id 1 for Season 1 winner
+    _safeMint(msg.sender, _summonSeekerId); 
+    attributesBySeekerId[1].bornFromCoin = true;
 
     _birthSeekerId = INTERNALIDOFFSET;
   }
@@ -119,14 +122,19 @@ contract Seekers is ERC721Enumerable, ISeekers, AccessControl, ReentrancyGuard {
 
     for (uint256 i = 0; i < summonCount; i++) {
         _summonSeekerId += 1;
-        _mintSeeker(msg.sender, _summonSeekerId, false);
+        _mintSeeker(msg.sender, _summonSeekerId, false, SUMMONSEEKERPOWERSTART);
     }
   }
 
-  function birthSeeker(address to) external onlyGame returns (uint256) {
+  function birthSeeker(address to, uint32 holdTime) external onlyGame returns (uint256) {
     require(_birthSeekerId < MAXSEEKERS, "E-001-003");
     _birthSeekerId += 1;
-    _mintSeeker(to, _birthSeekerId, true);
+    uint16 calculatedPower = _getPowerFromTime(holdTime) + BIRTHSEEKERPOWERSTART;
+    // Ensure we dont assign more than max power to a seeker
+    uint16 birthPower = (calculatedPower > MAXPOWER ) ?
+                        MAXPOWER : 
+                        calculatedPower;
+    _mintSeeker(to, _birthSeekerId, true, birthPower);
     return (_birthSeekerId);
   }
 
@@ -137,18 +145,12 @@ contract Seekers is ERC721Enumerable, ISeekers, AccessControl, ReentrancyGuard {
 
     for (uint256 i = 0; i < summonCount; i++) {
         _summonSeekerId += 1;
-        _mintSeeker(msg.sender, _summonSeekerId, false);
+        _mintSeeker(msg.sender, _summonSeekerId, false, SUMMONSEEKERPOWERSTART);
     }
   }
 
-  function _mintSeeker(address to,	uint256 id,	bool bornFromCoin) internal {
+  function _mintSeeker(address to,	uint256 id,	bool bornFromCoin, uint16 startPower) internal {
 
-    // Born from coin grants more power
-    uint16 power = SUMMONSEEKERPOWERSTART;
-    if (bornFromCoin) {
-      power = BIRTHSEEKERPOWERSTART;
-    }
-    
     // Initialize all attributes to "hidden" values
     Attributes memory cloakedAttributes = Attributes(
         "",
@@ -157,7 +159,7 @@ contract Seekers is ERC721Enumerable, ISeekers, AccessControl, ReentrancyGuard {
         0,
         0,
         0,
-        power,
+        startPower,
         uint16(0),
         address(0)
     ); 
@@ -286,7 +288,6 @@ contract Seekers is ERC721Enumerable, ISeekers, AccessControl, ReentrancyGuard {
 
   function burnPower(uint256 id, uint16 powerToBurn) external onlyGame {
     require(ownerOf(id) != address(0), "E-001-014");
-    require(ownerOf(id) == tx.origin, "E-001-010");
     
     _burnPower(id, powerToBurn);
   }
@@ -641,6 +642,12 @@ contract Seekers is ERC721Enumerable, ISeekers, AccessControl, ReentrancyGuard {
       }
     }
     return minIdx;
+  }
+
+  function _getPowerFromTime(uint32 time) internal pure returns (uint16) {
+    // convert time to hours
+    uint32 timeHours = time / (1 hours);
+    return uint16(POWERPERHOUR * timeHours);
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////

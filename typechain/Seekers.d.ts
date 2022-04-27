@@ -28,6 +28,7 @@ interface SeekersInterface extends ethers.utils.Interface {
     "FIRSTMINTPRICE()": FunctionFragment;
     "MAXPOWER()": FunctionFragment;
     "MAXSEEKERS()": FunctionFragment;
+    "POWERPERHOUR()": FunctionFragment;
     "SECONDMINT()": FunctionFragment;
     "SECONDMINTPRICE()": FunctionFragment;
     "SUMMONSEEKERPOWERSTART()": FunctionFragment;
@@ -40,7 +41,7 @@ interface SeekersInterface extends ethers.utils.Interface {
     "addPower(uint256,uint256)": FunctionFragment;
     "approve(address,uint256)": FunctionFragment;
     "balanceOf(address)": FunctionFragment;
-    "birthSeeker(address)": FunctionFragment;
+    "birthSeeker(address,uint32)": FunctionFragment;
     "burnPower(uint256,uint16)": FunctionFragment;
     "cloakSeeker(uint256)": FunctionFragment;
     "cloakingAvailable()": FunctionFragment;
@@ -114,6 +115,10 @@ interface SeekersInterface extends ethers.utils.Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
+    functionFragment: "POWERPERHOUR",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
     functionFragment: "SECONDMINT",
     values?: undefined
   ): string;
@@ -155,7 +160,10 @@ interface SeekersInterface extends ethers.utils.Interface {
     values: [string, BigNumberish]
   ): string;
   encodeFunctionData(functionFragment: "balanceOf", values: [string]): string;
-  encodeFunctionData(functionFragment: "birthSeeker", values: [string]): string;
+  encodeFunctionData(
+    functionFragment: "birthSeeker",
+    values: [string, BigNumberish]
+  ): string;
   encodeFunctionData(
     functionFragment: "burnPower",
     values: [BigNumberish, BigNumberish]
@@ -353,6 +361,10 @@ interface SeekersInterface extends ethers.utils.Interface {
   ): Result;
   decodeFunctionResult(functionFragment: "MAXPOWER", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "MAXSEEKERS", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "POWERPERHOUR",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "SECONDMINT", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "SECONDMINTPRICE",
@@ -711,6 +723,8 @@ export class Seekers extends BaseContract {
 
     MAXSEEKERS(overrides?: CallOverrides): Promise<[BigNumber]>;
 
+    POWERPERHOUR(overrides?: CallOverrides): Promise<[number]>;
+
     SECONDMINT(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     SECONDMINTPRICE(overrides?: CallOverrides): Promise<[BigNumber]>;
@@ -757,6 +771,7 @@ export class Seekers extends BaseContract {
 
     birthSeeker(
       to: string,
+      holdTime: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
@@ -1027,6 +1042,8 @@ export class Seekers extends BaseContract {
 
   MAXSEEKERS(overrides?: CallOverrides): Promise<BigNumber>;
 
+  POWERPERHOUR(overrides?: CallOverrides): Promise<number>;
+
   SECONDMINT(overrides?: CallOverrides): Promise<BigNumber>;
 
   SECONDMINTPRICE(overrides?: CallOverrides): Promise<BigNumber>;
@@ -1073,6 +1090,7 @@ export class Seekers extends BaseContract {
 
   birthSeeker(
     to: string,
+    holdTime: BigNumberish,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
@@ -1329,6 +1347,8 @@ export class Seekers extends BaseContract {
 
     MAXSEEKERS(overrides?: CallOverrides): Promise<BigNumber>;
 
+    POWERPERHOUR(overrides?: CallOverrides): Promise<number>;
+
     SECONDMINT(overrides?: CallOverrides): Promise<BigNumber>;
 
     SECONDMINTPRICE(overrides?: CallOverrides): Promise<BigNumber>;
@@ -1364,7 +1384,11 @@ export class Seekers extends BaseContract {
 
     balanceOf(owner: string, overrides?: CallOverrides): Promise<BigNumber>;
 
-    birthSeeker(to: string, overrides?: CallOverrides): Promise<BigNumber>;
+    birthSeeker(
+      to: string,
+      holdTime: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
 
     burnPower(
       id: BigNumberish,
@@ -1800,6 +1824,8 @@ export class Seekers extends BaseContract {
 
     MAXSEEKERS(overrides?: CallOverrides): Promise<BigNumber>;
 
+    POWERPERHOUR(overrides?: CallOverrides): Promise<BigNumber>;
+
     SECONDMINT(overrides?: CallOverrides): Promise<BigNumber>;
 
     SECONDMINTPRICE(overrides?: CallOverrides): Promise<BigNumber>;
@@ -1846,6 +1872,7 @@ export class Seekers extends BaseContract {
 
     birthSeeker(
       to: string,
+      holdTime: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
@@ -2089,6 +2116,8 @@ export class Seekers extends BaseContract {
 
     MAXSEEKERS(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
+    POWERPERHOUR(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
     SECONDMINT(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     SECONDMINTPRICE(overrides?: CallOverrides): Promise<PopulatedTransaction>;
@@ -2140,6 +2169,7 @@ export class Seekers extends BaseContract {
 
     birthSeeker(
       to: string,
+      holdTime: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 

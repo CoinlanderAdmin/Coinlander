@@ -42,6 +42,7 @@ interface SeasonOneInterface extends ethers.utils.Interface {
     "burnShardForPower(uint256,uint256)": FunctionFragment;
     "changeURI(string)": FunctionFragment;
     "claimAll()": FunctionFragment;
+    "claimSingleSeeker()": FunctionFragment;
     "claimedAirdropBySeekerId(uint256)": FunctionFragment;
     "cloinDeposits(uint256)": FunctionFragment;
     "contractURI()": FunctionFragment;
@@ -51,6 +52,7 @@ interface SeasonOneInterface extends ethers.utils.Interface {
     "getSeizureCount()": FunctionFragment;
     "isApprovedForAll(address,address)": FunctionFragment;
     "keeperShardMint(uint256)": FunctionFragment;
+    "lastSeizureTime()": FunctionFragment;
     "owner()": FunctionFragment;
     "pendingWithdrawals(address)": FunctionFragment;
     "prize()": FunctionFragment;
@@ -141,6 +143,10 @@ interface SeasonOneInterface extends ethers.utils.Interface {
   encodeFunctionData(functionFragment: "changeURI", values: [string]): string;
   encodeFunctionData(functionFragment: "claimAll", values?: undefined): string;
   encodeFunctionData(
+    functionFragment: "claimSingleSeeker",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
     functionFragment: "claimedAirdropBySeekerId",
     values: [BigNumberish]
   ): string;
@@ -175,6 +181,10 @@ interface SeasonOneInterface extends ethers.utils.Interface {
   encodeFunctionData(
     functionFragment: "keeperShardMint",
     values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "lastSeizureTime",
+    values?: undefined
   ): string;
   encodeFunctionData(functionFragment: "owner", values?: undefined): string;
   encodeFunctionData(
@@ -295,6 +305,10 @@ interface SeasonOneInterface extends ethers.utils.Interface {
   decodeFunctionResult(functionFragment: "changeURI", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "claimAll", data: BytesLike): Result;
   decodeFunctionResult(
+    functionFragment: "claimSingleSeeker",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "claimedAirdropBySeekerId",
     data: BytesLike
   ): Result;
@@ -328,6 +342,10 @@ interface SeasonOneInterface extends ethers.utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "keeperShardMint",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "lastSeizureTime",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "owner", data: BytesLike): Result;
@@ -583,6 +601,10 @@ export class SeasonOne extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
+    claimSingleSeeker(
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
     claimedAirdropBySeekerId(
       arg0: BigNumberish,
       overrides?: CallOverrides
@@ -626,17 +648,15 @@ export class SeasonOne extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
+    lastSeizureTime(overrides?: CallOverrides): Promise<[number]>;
+
     owner(overrides?: CallOverrides): Promise<[string]>;
 
     pendingWithdrawals(
       arg0: string,
       overrides?: CallOverrides
     ): Promise<
-      [BigNumber, number, number] & {
-        _withdrawValue: BigNumber;
-        _shardOwed: number;
-        _seekersOwed: number;
-      }
+      [BigNumber, number] & { _withdrawValue: BigNumber; _shardOwed: number }
     >;
 
     prize(overrides?: CallOverrides): Promise<[BigNumber]>;
@@ -775,6 +795,10 @@ export class SeasonOne extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
+  claimSingleSeeker(
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
   claimedAirdropBySeekerId(
     arg0: BigNumberish,
     overrides?: CallOverrides
@@ -818,17 +842,15 @@ export class SeasonOne extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
+  lastSeizureTime(overrides?: CallOverrides): Promise<number>;
+
   owner(overrides?: CallOverrides): Promise<string>;
 
   pendingWithdrawals(
     arg0: string,
     overrides?: CallOverrides
   ): Promise<
-    [BigNumber, number, number] & {
-      _withdrawValue: BigNumber;
-      _shardOwed: number;
-      _seekersOwed: number;
-    }
+    [BigNumber, number] & { _withdrawValue: BigNumber; _shardOwed: number }
   >;
 
   prize(overrides?: CallOverrides): Promise<BigNumber>;
@@ -960,6 +982,8 @@ export class SeasonOne extends BaseContract {
 
     claimAll(overrides?: CallOverrides): Promise<void>;
 
+    claimSingleSeeker(overrides?: CallOverrides): Promise<void>;
+
     claimedAirdropBySeekerId(
       arg0: BigNumberish,
       overrides?: CallOverrides
@@ -1003,17 +1027,15 @@ export class SeasonOne extends BaseContract {
       overrides?: CallOverrides
     ): Promise<void>;
 
+    lastSeizureTime(overrides?: CallOverrides): Promise<number>;
+
     owner(overrides?: CallOverrides): Promise<string>;
 
     pendingWithdrawals(
       arg0: string,
       overrides?: CallOverrides
     ): Promise<
-      [BigNumber, number, number] & {
-        _withdrawValue: BigNumber;
-        _shardOwed: number;
-        _seekersOwed: number;
-      }
+      [BigNumber, number] & { _withdrawValue: BigNumber; _shardOwed: number }
     >;
 
     prize(overrides?: CallOverrides): Promise<BigNumber>;
@@ -1337,6 +1359,10 @@ export class SeasonOne extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
+    claimSingleSeeker(
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
     claimedAirdropBySeekerId(
       arg0: BigNumberish,
       overrides?: CallOverrides
@@ -1373,6 +1399,8 @@ export class SeasonOne extends BaseContract {
       amount: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
+
+    lastSeizureTime(overrides?: CallOverrides): Promise<BigNumber>;
 
     owner(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -1526,6 +1554,10 @@ export class SeasonOne extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
+    claimSingleSeeker(
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
     claimedAirdropBySeekerId(
       arg0: BigNumberish,
       overrides?: CallOverrides
@@ -1562,6 +1594,8 @@ export class SeasonOne extends BaseContract {
       amount: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
+
+    lastSeizureTime(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     owner(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
