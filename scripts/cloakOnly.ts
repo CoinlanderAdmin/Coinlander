@@ -1,6 +1,6 @@
 import {ethers} from "hardhat"
 import * as fs from "fs";
-import * as logger from "./logger"
+import * as logger from "../utils/logger"
 
 export async function deploy() {
   logger.divider()
@@ -32,19 +32,20 @@ export async function deploy() {
     var id = await seekers.tokenOfOwnerByIndex(deployer.address, i)
     logger.out('Uncloaking seeker: ' + id.toNumber())
     await seekers.connect(deployer).uncloakSeeker(id)
-    console.log('Alignment: ' + (await seekers.getAlignmentById(id)))
+    let alignment = await seekers.getAlignmentById(id)
+    console.log('Alignment: ' + alignment)
     let fullCloak = await seekers.getFullCloak(id)
     var json = JSON.stringify(fullCloak);
     var fs = require('fs');
-    fs.writeFileSync('local/data/' + id.toNumber() + '.json', json, 'utf8');
+    fs.writeFileSync('local/data/' + alignment + id.toNumber() + '.json', json, 'utf8');
     logger.divider()
   }
 
   // Regen art for id 2
-  await seekers.addScales(2, 10);
-  let scaleCount = await (await seekers.getScaleCountById(2)).toNumber()
+  await seekers.addPower(2, 10);
+  let scaleCount = await (await seekers.getPowerById(2))
   for (let i = 1; i < scaleCount; i++) {
-    await seekers.rerollDethscales(2,1)
+    await seekers.rerollDethscales(2)
     let fullCloak = await seekers.getFullCloak(2)
     var json = JSON.stringify(fullCloak);
     var fs = require('fs');

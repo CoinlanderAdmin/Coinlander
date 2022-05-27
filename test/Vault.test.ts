@@ -1,8 +1,8 @@
 import { ethers } from "hardhat"
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers"
 import { Vault__factory, Vault } from "../typechain"
-import { Seekers__factory, Seekers } from "../typechain"
 import { expect } from "chai"
+import { BigNumber } from "ethers"
 
 describe("Vault", function () {
   let owner: SignerWithAddress
@@ -10,37 +10,42 @@ describe("Vault", function () {
   let userB: SignerWithAddress
   let userC: SignerWithAddress
   let accounts: SignerWithAddress[]
-  let Seekers: Seekers__factory
-  let seekers: Seekers
   let Vault: Vault__factory
   let kv: Vault
 
   before(async function () {
     ;[owner, userA, userB, userC, ...accounts] = await ethers.getSigners()
-    Seekers = (await ethers.getContractFactory(
-      "Seekers",
-      owner
-    )) as Seekers__factory
     Vault = (await ethers.getContractFactory(
       "Vault",
       owner
     )) as Vault__factory
-  })
-
-  beforeEach(async function () {
-    seekers = await Seekers.deploy()
-    await seekers.addGameContract(owner.address)
-    kv = await Vault.deploy(seekers.address)
+    kv = await Vault.deploy()
   })
 
   it("can be deployed", async function () {
-    const kv = await Vault.deploy(seekers.address)
     await kv.deployed()
   })
   
+  it("sets the deployer as owner", async function () { 
+    let currentOwner = await kv.owner()
+    expect(currentOwner).to.equal(owner.address)
+  })
+
+  it("allows the game contract to be set", async function () {
+    // expect that the owner cannot mint at first
+    await expect(kv.mintFragments(userA.address,1)).to.be.revertedWith("E-002-015")
+    await kv.setGameContract(owner.address)
+    expect(kv.mintFragments(userA.address,1))
+  })
+  
   describe("upon mintFragments", () => {
-    it("sets the deployer to owner", async () => {
-      expect(await kv.mintFragments(userA.address, 1))
+    before(async function () {
+      kv = await Vault.deploy()
+      await kv.setGameContract(owner.address) // use owner address in lieu of game contract
+    })
+
+    it("allows the owner to mint", async () => {
+      expect(await kv.mintFragments(userC.address, 1))
     })
 
     it("does not allow a non owner to mint", async () => {
@@ -53,17 +58,24 @@ describe("Vault", function () {
     })
 
     it("mints the specified number of fragments", async () => {
-      await kv.mintFragments(userA.address, 1)
-      let n1 = await kv.balanceOf(userA.address,1)
-      let n2 = await kv.balanceOf(userA.address,2)
-      let n3 = await kv.balanceOf(userA.address,3)
-      let n4 = await kv.balanceOf(userA.address,4)
-      let n5 = await kv.balanceOf(userA.address,5)
-      let n6 = await kv.balanceOf(userA.address,6)
-      let n7 = await kv.balanceOf(userA.address,7)
-      let n8 = await kv.balanceOf(userA.address,8)
+      await kv.mintFragments(userB.address, 1)
+      let n1 = await kv.balanceOf(userB.address,1)
+      let n2 = await kv.balanceOf(userB.address,2)
+      let n3 = await kv.balanceOf(userB.address,3)
+      let n4 = await kv.balanceOf(userB.address,4)
+      let n5 = await kv.balanceOf(userB.address,5)
+      let n6 = await kv.balanceOf(userB.address,6)
+      let n7 = await kv.balanceOf(userB.address,7)
+      let n8 = await kv.balanceOf(userB.address,8)
       let N = n1.add(n2).add(n3).add(n4).add(n5).add(n6).add(n7).add(n8)
       expect(N).to.be.equal(1)
+    })
+  })
+
+  describe("upon minting all Fragments", () => {
+    before(async function () {
+      kv = await Vault.deploy()
+      await kv.setGameContract(owner.address)
     })
 
     it("creates the correct number of each fragment", async () => {
@@ -113,57 +125,56 @@ describe("Vault", function () {
   })
 
   describe("upon fundPrizePurse", () => {
-    const v = ethers.utils.parseUnits("1", "ether").toHexString()
+    const v = ethers.utils.parseUnits("1", "ether")
 
     it("accepts payments of ether into the prize balance", async () => {
       await kv.fundPrizePurse( { value: v } )
       expect(await kv.prize()).to.equal(v)
     })
 
-    it("accepts payments of ether into the contract balance", async () => {
-      await kv.fundPrizePurse( { value: v } )
-      expect(await kv.provider.getBalance(kv.address)).to.equal(v)
-    })
-
     it("does not receive ether without calling the fund method", async () => {
-      await expect(owner.sendTransaction({ to: kv.address, value: v })).to.be.reverted
+      await expect(owner.sendTransaction({ 
+        to: kv.address, 
+        value: v }))
+        .to.be.revertedWith("E-002-014")
     })
   })
 
   describe("upon claimVault", () => {
-
+    let v: BigNumber
     before( async function() {
+      kv = await Vault.deploy() // get a fresh contract instance 
+      await kv.setGameContract(owner.address)
       // Mint all the fragments for userA 
       const max = await kv.MAXFRAGMENTS()
       for(let i = 0; i < max; i++) {
         await kv.mintFragments(userA.address, 1)
       }
       // Fund the prize purse
-      const v = ethers.utils.parseUnits("1", "ether").toHexString()
+      v = ethers.utils.parseUnits("1", "ether")
       await kv.fundPrizePurse( { value: v } )
     })
 
-    it("does not allow a holder of a seeker without all fragment types to claim", async () => {
-      await seekers.birthSeeker(userB.address)
-      await expect(kv.connect(userB).claimKeepersVault()).to.be.reverted
+    it("does not allow anyone to claim before the sweet release has been triggered", async () => {
+      await expect(kv.connect(userB).claimKeepersVault()).to.be.revertedWith("E-002-010")
     })
 
-    it("does not allow a holder of all fragments without a seeker to claim", async () => {
-      await expect(kv.connect(userA).claimKeepersVault()).to.be.revertedWith("Must have a seeker to open the vault")
+    it("does not allow a user without all fragment types to claim", async () => {
+      await kv.setSweetRelease()
+      await kv.fundPrizePurse( { value: v } )
+      await expect(kv.connect(userB).claimKeepersVault()).to.be.revertedWith("E-002-001")
     })
 
-    it("allows a holder of all fragments with a seeker to claim", async () => {
-      await seekers.birthSeeker(userA.address)
-      await kv.connect(userA).claimKeepersVault()
+    it("allows a holder of all fragments to claim", async () => {
       let beforeBalance = await userA.getBalance()
-      expect(await kv.balanceOf(userA.address, 0)).to.equal(1)
-      expect(await userA.getBalance()).to.be.greaterThan(beforeBalance)
+      await kv.connect(userA).claimKeepersVault()
+      expect(await kv.balanceOf(userA.address, 0)).to.equal(1) // has key 
+      let afterBalance = await userA.getBalance()
+      expect(afterBalance.gt(beforeBalance)).to.be.true // received prize pool funds 
     })
 
-    it("does not allow a holder of all fragments with a seeker to claim after the first winner has claimed", async () => {
-      await seekers.birthSeeker(userA.address)
-      await kv.connect(userA).claimKeepersVault()
-      await expect(kv.connect(userA).claimKeepersVault()).to.be.reverted
+    it("does not allow a holder of all fragments to claim after the first winner has claimed", async () => {
+      await expect(kv.connect(userA).claimKeepersVault()).to.be.revertedWith("E-002-011")
     })
   })
 })

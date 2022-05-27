@@ -1,14 +1,22 @@
 //SPDX-License-Identifier: Unlicense
-pragma solidity ^0.8.8;
+// Author: @stevieraykatz
+// https://github.com/coinlander/Coinlander
+
+pragma solidity ^0.8.10;
 
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
+// @Todo add pausable to whole contract
+// @todo add pausing for new contract creation
+// @todo need to add an approval step for the makeAuction/make 
+
 
 /// @title An Auction Contract for bidding and selling single and batched NFTs, based on Avo Labs impl
 /// @author Avo Labs GmbH, @stevieraykatz
 /// @notice This contract can be used for auctioning NFTs from ERC721 contracts 
+
 contract ERC721Marketplace is Ownable {
     mapping(address => mapping(uint256 => Auction)) public nftContractAuctions;
     mapping(address => uint256) failedTransferCredits;
@@ -241,7 +249,7 @@ contract ERC721Marketplace is Ownable {
         defaultBidIncreasePercentage = 100;
         defaultAuctionBidPeriod = 86400; //1 day in sec
         minimumSettableIncreasePercentage = 100;
-        maximumMinPricePercentage = 8000;
+        maximumMinPricePercentage = 8000; 
         defaultFeePercentage = 200; // 2% 
         defaultFeeCollector = msg.sender;
     }
@@ -517,30 +525,6 @@ contract ERC721Marketplace is Ownable {
         _updateOngoingAuction(_nftContractAddress, _tokenId);
     }
 
-    /**
-     * Create an auction that uses the default bid increase percentage
-     * & the default auction bid period.
-     */
-    function createDefaultNftAuction(
-        address _nftContractAddress,
-        uint256 _tokenId,
-        uint128 _minPrice,
-        uint128 _buyNowPrice
-        )
-        external
-        isAuctionNotStartedByOwner(_nftContractAddress, _tokenId)
-        priceGreaterThanZero(_minPrice)
-    {
-        _createNewNftAuction(
-            _nftContractAddress,
-            _tokenId,
-            _minPrice,
-            _buyNowPrice,
-            defaultFeeCollector,
-            defaultFeePercentage
-        );
-    }
-
     function createNewNftAuction(
         address _nftContractAddress,
         uint256 _tokenId,
@@ -606,10 +590,7 @@ contract ERC721Marketplace is Ownable {
         address _nftContractAddress,
         uint256 _tokenId,
         uint128 _buyNowPrice,
-        address _whitelistedBuyer,
-        address _feeRecipient,
-        uint32 _feePercentage
-    )
+        address _whitelistedBuyer)
         external
         isAuctionNotStartedByOwner(_nftContractAddress, _tokenId)
         priceGreaterThanZero(_buyNowPrice)
@@ -620,8 +601,8 @@ contract ERC721Marketplace is Ownable {
             _tokenId,
             _buyNowPrice,
             _whitelistedBuyer,
-            _feeRecipient,
-            _feePercentage
+            defaultFeeCollector,
+            defaultFeePercentage
         );
 
         emit SaleCreated(
@@ -630,8 +611,8 @@ contract ERC721Marketplace is Ownable {
             msg.sender,
             _buyNowPrice,
             _whitelistedBuyer,
-            _feeRecipient,
-            _feePercentage
+            defaultFeeCollector,
+            defaultFeePercentage
         );
         //check if buyNowPrice is meet and conclude sale, otherwise reverse the early bid
         if (_isABidMade(_nftContractAddress, _tokenId)) {
@@ -885,10 +866,7 @@ contract ERC721Marketplace is Ownable {
 
     function _payout(address _recipient, uint256 _amount) internal {
         // attempt to send the funds to the recipient
-        (bool success, ) = payable(_recipient).call{
-            value: _amount,
-            gas: 20000
-        }("");
+        (bool success, ) = payable(_recipient).call{value: _amount}("");
         // if it failed, update their credit balance so they can pull it later
         if (!success) {
             failedTransferCredits[_recipient] = failedTransferCredits[_recipient] +_amount;
@@ -909,7 +887,7 @@ contract ERC721Marketplace is Ownable {
     function withdrawAuction(address _nftContractAddress, uint256 _tokenId)
         external
     {
-        //only the NFT owner can prematurely close and auction
+        //only the NFT owner can prematurely close an auction
         require(
             IERC721(_nftContractAddress).ownerOf(_tokenId) == msg.sender,
             "Not NFT owner"

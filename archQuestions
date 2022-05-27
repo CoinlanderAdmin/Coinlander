@@ -1,10 +1,22 @@
-Should the airdrop use the existing "withdraws" mapping? 
-Saves us new mapping struct but is maybe a little more convoluted.
 
-UX Constraints
-- Do not need to login with wallet to see: 
-  - Current Coinlander and Shrine Writings 
-  - Feed of Fame
-  - Price to Seize 
-- Assisted connection to the Arbitrum network (if non-arbi network detected)
-- 
+Todo notes for season 1: 
+- Pack structs better 
+X Add seizure number to Seized() event 
+X Add the fields to seekers for the cloak: 
+  X Dethscale pattern bitmask (8x8)
+  X Change to 4x4 grid? Waiting on Lawson
+  X Space for storing the full cloak pattern (full 32px?)
+X Add events for attribute changes
+X Remove redundant events
+X Rework AP (min/max sum vs min/max per)
+X Case consistency for dethscales
+- Error text json {"E1" : "Must send seizure value"} for all requires 
+- Check txfer logic on COINLANDER single coin
+- Check counter logic on Seekers  
+X CapCase event names
+X Research switching off of ERC721Enumerable for smaller ERC721  
+X Research merkle root airdrop method for shards post sweet release https://steveng.medium.com/performing-merkle-airdrop-like-uniswap-85e43543a592
+- Research marketplace pre-approval  https://etherscan.io/address/0x5180db8f5c931aae63c74266b211f580155ecac8#code
+
+marketplace todos: 
+- Add default controls for auction period and update interval in marketplace contracts 

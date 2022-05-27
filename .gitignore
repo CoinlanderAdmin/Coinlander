@@ -4,9 +4,7 @@
 .pnp.js
 
 # hardhat build
-artifacts
 cache
-typechain
 
 # contract deploy
 local/
@@ -27,3 +25,9 @@ local/
 
 # Ds Store
 .DS_Store
+
+# Stashes
+/.*Stash
+
+# local helpers
+*.sh
