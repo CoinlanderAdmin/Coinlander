@@ -1,27 +1,5 @@
 {
-  "0": {
-    "deployBlock": 11113314,
-    "contracts": {
-      "seekers": "0xb74e0954D77119eb6612500362dd4Df0F467Ad14",
-      "vault": "0xe34048e1DB425Cab495B3785092B8CD19C20c371",
-      "seasonOne": "0x380B46A75113d5271f06350E3669c9bd582A0aC4"
-    }
-  },
-  "1": {
-    "deployBlock": 11113334,
-    "contracts": {
-      "seekers": "0x9D2f6A272B228b8945a833f82d2dDc9c7EC953FC",
-      "vault": "0xFBAb3f463823565bD4f6345cB80462E480d12d39",
-      "seasonOne": "0xD46a172b6beeB99DbE3AA059Ed3112903CdF9257"
-    }
-  },
-  "2": {
-    "deployBlock": 11113357,
-    "contracts": {
-      "seekers": "0x2c2CF3390B8cc82453c890d97D48ca81Eee85247",
-      "vault": "0x66802223fe3faB2176e41F896b0094353f6e419C",
-      "seasonOne": "0xA7A3aB978D8c4A48292C1765bb6C8D9B6218588d"
-    }
-  },
-  "Commit": ""
+  "0": {},
+  "1": {},
+  "2": {}
 }

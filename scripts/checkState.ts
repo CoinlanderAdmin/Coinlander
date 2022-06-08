@@ -32,9 +32,9 @@ export async function checkState() {
   // Check if each event triggered successfully
 
   console.log('Origin: ')
-  console.log(await seekers.getOriginById(114))
+  console.log(await seekers.getOriginById(1))
   console.log('Cloak status: ')
-  console.log(await seekers.getCloakStatusById(114))  
+  console.log(await seekers.getCloakStatusById(1))  
   
   console.log("Seizure number: ", await (await seasonOne.seizureCount()).toNumber())
   console.log("Prize: ", await (await seasonOne.prize()).div(1E12).toNumber())

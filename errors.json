@@ -12,7 +12,8 @@
         "E-000-010" : "Nothing to claim",
         "E-000-011" : "Must own Seeker to claim its prize",
         "E-000-012" : "Prize already claimed for this Seeker",
-        "E-000-013" : "Game must be started"
+        "E-000-013" : "Game must be started",
+        "E-000-014" : "You can only be Once"
     },
     "Seekers" : {
         "E-001-001" : "Must specify a valid summon count", 

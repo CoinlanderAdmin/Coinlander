@@ -48,18 +48,23 @@ contract SeasonOne is ERC1155, Ownable, ReentrancyGuard {
     bool public shardSpendable = false;
     bool private transferIsSteal = false;
     bool public gameStarted = false;
+    bool public firstCommunitySoftLock = true;
+    bool public secondCommunitySoftLock = true;
     uint32 public lastSeizureTime = 0;
      
     using Counters for Counters.Counter;
     Counters.Counter public seizureCount; 
 
     // GAME CONSTANTS
+    uint256 public constant FIRSTCOMMUNITYSOFTLOCK = 111; // discord user lock
+    uint256 public constant SECONDCOMMUNITYSOFTLOCK = 222; // twitter follower lock
     uint256 public constant FIRSTSEEKERMINTTHRESH = 333;
     uint256 public constant CLOAKINGTHRESH = 444;
     uint256 public constant SHARDSPENDABLE = 555;
     uint256 public constant SECONDSEEKERMINTTHRESH = 666;
     uint256 public constant THIRDSEEKERMINTTHRESH = 777;
     uint256 public constant GOODSONLYEND = 888;
+    uint256 public constant CLOINRELEASE = 999;
     uint256 public constant SWEETRELEASE = 1111;
 
     // ECONOMIC CONSTANTS  
@@ -96,6 +101,7 @@ contract SeasonOne is ERC1155, Ownable, ReentrancyGuard {
 
     mapping(address => withdrawParams) public pendingWithdrawals;
     mapping(uint256 => bool) public claimedAirdropBySeekerId;
+    mapping(address => bool) public hasBeenCoinlander;
 
     struct cloinDeposit {
         address depositor; 
@@ -218,9 +224,11 @@ contract SeasonOne is ERC1155, Ownable, ReentrancyGuard {
         require(released == false, "E-000-001");
         require(msg.value == seizureStake, "E-000-002");
         require(msg.sender != COINLANDER, "E-000-003");
+        require(!hasBeenCoinlander[msg.sender], "E-000-014");
 
         address previousOwner = COINLANDER;
         address newOwner = msg.sender;
+        hasBeenCoinlander[newOwner] = true;
         
         seizureCount.increment();
 
@@ -273,6 +281,18 @@ contract SeasonOne is ERC1155, Ownable, ReentrancyGuard {
     // Autonomous game events triggered by Coinlander seizure count 
     function _processGameEvents() internal {
         uint256 count = seizureCount.current();
+
+        if (count == FIRSTCOMMUNITYSOFTLOCK) {
+            if (firstCommunitySoftLock) {
+                gameStarted = false;
+            }
+        }
+
+        if (count == SECONDCOMMUNITYSOFTLOCK) {
+            if (secondCommunitySoftLock) {
+                gameStarted = false;
+            }
+        }
 
         if (count == FIRSTSEEKERMINTTHRESH) {
             seekers.activateFirstMint();
@@ -455,6 +475,14 @@ contract SeasonOne is ERC1155, Ownable, ReentrancyGuard {
 
     function startGame() external onlyOwner {
         gameStarted = true;
+    }
+    
+    function disableFirstCommunitySoftLock() external onlyOwner {
+        firstCommunitySoftLock = false;
+    }
+
+    function disableSecondCommunitySoftLock() external onlyOwner {
+        secondCommunitySoftLock = false;
     }
 
     function _calculateShardReward(uint256 _value) private pure returns (uint16) {
