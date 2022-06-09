@@ -1,5 +1,26 @@
 {
-  "0": {},
-  "1": {},
-  "2": {}
+  "0": {
+    "deployBlock": 12730504,
+    "contracts": {
+      "seekers": "0xE8247acbF303b4956664368ad664FF4853CE6480",
+      "vault": "0x153876155D1b654bC6B2A4AB58B02B059969d9B6",
+      "seasonOne": "0x5E8004E2f2207EfA6160564C316Fcd2532d0e53e"
+    }
+  },
+  "1": {
+    "deployBlock": 12730540,
+    "contracts": {
+      "seekers": "0x0943541AC93263fd173F4CBBCd5e14285cAdd7aA",
+      "vault": "0xE553560591Fb3e7bfC5B5bFb09cAa4E1fa6C4083",
+      "seasonOne": "0x59cE4C529DBC7dDc90fB2f94046E1b2a41AC2381"
+    }
+  },
+  "2": {
+    "deployBlock": 12730580,
+    "contracts": {
+      "seekers": "0x42f281F201D1eBDCC5Cb38deaC2C3A83bD0d0de9",
+      "vault": "0xFf487faf6046230df991155E2C5C36288b8cB7D6",
+      "seasonOne": "0x3B89dFa8FE64DB19b064B6A0EeC637f2f3E474D0"
+    }
+  }
 }

@@ -85,6 +85,10 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.IClans__factory>;
     getContractFactory(
+      name: "ICloak",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.ICloak__factory>;
+    getContractFactory(
       name: "ISeekers",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.ISeekers__factory>;
@@ -92,6 +96,10 @@ declare module "hardhat/types/runtime" {
       name: "IVault",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.IVault__factory>;
+    getContractFactory(
+      name: "Cloak",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.Cloak__factory>;
     getContractFactory(
       name: "SeasonOne",
       signerOrOptions?: ethers.Signer | FactoryOptions

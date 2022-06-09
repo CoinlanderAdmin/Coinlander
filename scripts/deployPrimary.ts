@@ -3,6 +3,12 @@ import * as fs from "fs";
 import * as logger from "../utils/logger"
 import simpleGit, { SimpleGit, CleanOptions } from 'simple-git';
 import { hrtime } from "process";
+import { Cloak__factory, Cloak} from "../typechain";
+
+
+// Shared libraries defined in a global scope 
+let CloakLib: Cloak__factory
+let cloak: Cloak
 
 export async function deploy() {
   let data: any = {}
@@ -15,12 +21,18 @@ export async function deploy() {
   logger.divider()
   logger.out("Deploying to: " + network.name, logger.Level.Info)
   logger.out("With chain id: " + network.chainId, logger.Level.Info)
+  
+  logger.divider()
+  logger.out("Deploying libraries...", logger.Level.Info)
+  CloakLib = await ethers.getContractFactory("Cloak")
+  cloak = await CloakLib.deploy() 
+  logger.pad(30, "Cloak library deployed to: " + cloak.address)
 
   // When deploying to RinkArby testnet, make three copies and store the json blob locally for testing 
   if(network.chainId == 421611) {
 
     for(let i = 0; i < 3; i ++){
-      data[i] = deploySeasonOne()
+      data[i] = await deploySeasonOne()
     }
 
     logger.divider()
@@ -46,7 +58,7 @@ export async function deploy() {
 
 }
   else {
-     deploySeasonOne()
+     await deploySeasonOne()
   }
 }
 
@@ -57,7 +69,6 @@ async function deploySeasonOne() {
   logger.out('Starting contract deploy...', logger.Level.Info)
   logger.divider()
 
-  const [deployer] = await ethers.getSigners()
   const deployBlock = await (await ethers.provider.getBlock("latest")).number
 
   logger.out(deployBlock)
@@ -65,7 +76,7 @@ async function deploySeasonOne() {
   // Deploy the NFT contract
   const Seekers = await ethers.getContractFactory("Seekers")
   logger.out("Got contract factory")
-  const seekers = await Seekers.deploy()
+  const seekers = await Seekers.deploy(cloak.address)
   logger.out("Sent deployment to chain")
   await seekers.deployed()
   logger.pad(30, 'Seekers contract:', seekers.address)

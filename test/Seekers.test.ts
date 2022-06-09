@@ -1,6 +1,7 @@
 import { ethers } from "hardhat"
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers"
 import { Seekers__factory, Seekers } from "../typechain"
+import { Cloak__factory, Cloak } from "../typechain"
 import { expect } from "chai"
 import { BigNumber, utils } from "ethers"
 import { toUtf8Bytes } from "@ethersproject/strings";
@@ -15,6 +16,8 @@ describe("Seekers", function () {
   let accounts: SignerWithAddress[]
   let Seekers: Seekers__factory
   let seekers: Seekers
+  let CloakLib: Cloak__factory
+  let cloak: Cloak
 
   let KEEPERS_ROLE = ethers.utils.keccak256(toUtf8Bytes("KEEPERS_ROLE"))
   let GAME_ROLE = ethers.utils.keccak256(toUtf8Bytes("GAME_ROLE"))
@@ -25,19 +28,25 @@ describe("Seekers", function () {
   let KEEPER_SEEKERS = 64
 
   before(async function () {
-    ;[owner, userA, userB, userC, ...accounts] = await ethers.getSigners()
+    [owner, userA, userB, userC, ...accounts] = await ethers.getSigners()
     Seekers = (await ethers.getContractFactory(
       "Seekers",
       owner
     )) as Seekers__factory
+    CloakLib = (await ethers.getContractFactory(
+      "Cloak",
+      owner
+    )) as Cloak__factory
+    
+    cloak = await CloakLib.deploy() 
   })
 
   beforeEach(async function () {
-    seekers = await Seekers.deploy()
+    seekers = await Seekers.deploy(cloak.address)
   })
 
   it("can be deployed", async function () {
-    const seekers = await Seekers.deploy()
+    const seekers = await Seekers.deploy(cloak.address)
     await seekers.deployed()
   })
 
@@ -78,7 +87,7 @@ describe("Seekers", function () {
   describe("upon setting and returning base uri", () => {
     let id: BigNumber
     beforeEach(async function () {
-      seekers = await Seekers.deploy()
+      seekers = await Seekers.deploy(cloak.address)
       await seekers.addGameContract(owner.address) // to simulate OneCoin contract
       await seekers.birthSeeker(userA.address, 3600) 
       id = await seekers.tokenOfOwnerByIndex(userA.address,0)
@@ -98,7 +107,7 @@ describe("Seekers", function () {
 
   describe("upon birthSeeker", () => {
     beforeEach(async function () {
-      seekers = await Seekers.deploy()
+      seekers = await Seekers.deploy(cloak.address)
       await seekers.addGameContract(owner.address) // Give owner "game contract" role in place of OneCoin
     })
 
@@ -148,7 +157,7 @@ describe("Seekers", function () {
 
   describe("upon summonSeeker", () => {
     beforeEach(async function () {
-      seekers = await Seekers.deploy()
+      seekers = await Seekers.deploy(cloak.address)
       await seekers.addGameContract(owner.address) // to simulate OneCoin contract 
     })
 
@@ -181,7 +190,7 @@ describe("Seekers", function () {
 
   describe("upon getSeekerCount", () => {
     beforeEach(async function () {
-      seekers = await Seekers.deploy()
+      seekers = await Seekers.deploy(cloak.address)
       await seekers.addGameContract(owner.address) // to simulate OneCoin contract 
     })
 
@@ -213,7 +222,7 @@ describe("Seekers", function () {
 
   describe("upon activatingMints", () => {
     beforeEach(async function () {
-      seekers = await Seekers.deploy()
+      seekers = await Seekers.deploy(cloak.address)
       await seekers.addGameContract(owner.address) // to simulate OneCoin contract 
     })
 
@@ -270,7 +279,7 @@ describe("Seekers", function () {
 
   describe("upon sendWinnerSeeker", () => {
     beforeEach(async function () {
-      seekers = await Seekers.deploy()
+      seekers = await Seekers.deploy(cloak.address)
       await seekers.addGameContract(owner.address) // to simulate OneCoin contract 
     })
 
@@ -292,7 +301,7 @@ describe("Seekers", function () {
 
   describe("upon performCloakingCeremony", () => {
     beforeEach(async function () {
-      seekers = await Seekers.deploy()
+      seekers = await Seekers.deploy(cloak.address)
       await seekers.addGameContract(owner.address) // to simulate OneCoin contract 
     })
 
@@ -306,7 +315,7 @@ describe("Seekers", function () {
   describe("upon cloakSeeker", () => {
     let id: BigNumber 
     beforeEach(async function () {
-      seekers = await Seekers.deploy()
+      seekers = await Seekers.deploy(cloak.address)
       await seekers.addGameContract(owner.address) // to simulate OneCoin contract
       await seekers.birthSeeker(userA.address, 3600)
       id = await seekers.tokenOfOwnerByIndex(userA.address,0)
@@ -386,7 +395,7 @@ describe("Seekers", function () {
   describe("upon rerollDethscales", () => {
     let id: BigNumber 
     beforeEach(async function () {
-      seekers = await Seekers.deploy()
+      seekers = await Seekers.deploy(cloak.address)
       await seekers.addGameContract(owner.address) // to simulate OneCoin contract
       await seekers.birthSeeker(userA.address, 3600)
       id = await seekers.tokenOfOwnerByIndex(userA.address,0)
@@ -432,7 +441,7 @@ describe("Seekers", function () {
     let id: BigNumber 
     let ownerId: BigNumber
     beforeEach(async function () {
-      seekers = await Seekers.deploy()
+      seekers = await Seekers.deploy(cloak.address)
       await seekers.addGameContract(owner.address) // Give owner "game contract" role
       await seekers.birthSeeker(userA.address, 3600)
       await seekers.birthSeeker(owner.address, 3600)
@@ -460,7 +469,7 @@ describe("Seekers", function () {
   describe("upon getFullCloak", () => {
     let id: BigNumber 
     beforeEach(async function () {
-      seekers = await Seekers.deploy()
+      seekers = await Seekers.deploy(cloak.address)
       await seekers.addGameContract(owner.address) // to simulate OneCoin contract
       await seekers.birthSeeker(userA.address, 3600)
       id = await seekers.tokenOfOwnerByIndex(userA.address,0)
@@ -492,7 +501,7 @@ describe("Seekers", function () {
   describe("upon addPower", () => {
     let id: BigNumber 
     beforeEach(async function () {
-      seekers = await Seekers.deploy()
+      seekers = await Seekers.deploy(cloak.address)
       await seekers.addGameContract(owner.address) // to simulate OneCoin contract
       await seekers.birthSeeker(userA.address, 3600)
       id = await seekers.tokenOfOwnerByIndex(userA.address,0)
