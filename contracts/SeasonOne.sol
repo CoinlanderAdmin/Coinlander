@@ -224,7 +224,8 @@ contract SeasonOne is ERC1155, Ownable, ReentrancyGuard {
         require(released == false, "E-000-001");
         require(msg.value == seizureStake, "E-000-002");
         require(msg.sender != COINLANDER, "E-000-003");
-        require(!hasBeenCoinlander[msg.sender], "E-000-014");
+        //@TODO turn this back on for launch, off for testing 
+        //require(!hasBeenCoinlander[msg.sender], "E-000-014");
 
         address previousOwner = COINLANDER;
         address newOwner = msg.sender;

@@ -190,6 +190,7 @@ async function emulate(seizes: number, ethers: HardhatEthersHelpers) {
       }
     } catch(e){
       console.log(e)
+      i++
       continue
     }
   }

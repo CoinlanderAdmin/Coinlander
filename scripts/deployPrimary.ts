@@ -26,6 +26,7 @@ export async function deploy() {
   logger.out("Deploying libraries...", logger.Level.Info)
   CloakLib = await ethers.getContractFactory("Cloak")
   cloak = await CloakLib.deploy() 
+  data["CloakLib"] = cloak.address
   logger.pad(30, "Cloak library deployed to: " + cloak.address)
 
   // When deploying to RinkArby testnet, make three copies and store the json blob locally for testing 
