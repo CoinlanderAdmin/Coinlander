@@ -18,8 +18,8 @@ async function emulate(seizes: number, ethers: HardhatEthersHelpers) {
   logger.out('Starting contract emulation...', logger.Level.Info)
   logger.divider()
 
-  const index: string = '1'
-  const filename: string = 'E3-meta'
+  const index: string = '2'
+  const filename: string = 'E7-meta'
 
   // We must use the injected hardhat param instead of directly importing because we run this
   // as a hardhat task. https://hardhat.org/advanced/hardhat-runtime-environment.html
@@ -103,6 +103,13 @@ async function emulate(seizes: number, ethers: HardhatEthersHelpers) {
   let coinlanderUser: SignerWithAddress
   coinlanderAddress = await seasonOne.COINLANDER()
   coinlanderUser = await ethers.getSigner(coinlanderAddress)
+
+  // Remove soft locks
+  logger.out("Disabling soft locks", logger.Level.Info)
+  await seasonOne.disableFirstCommunitySoftLock()
+  await seasonOne.disableSecondCommunitySoftLock()
+  await seasonOne.startGame()
+  logger.divider()
   
   // Emulate seizures
   let i = 0;

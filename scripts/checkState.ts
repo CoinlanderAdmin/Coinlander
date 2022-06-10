@@ -8,7 +8,7 @@ export async function checkState() {
   logger.out('Attaching to contracts to check state', logger.Level.Info)
   logger.divider()
 
-  const index: string = '2'
+  const index: string = '1'
   const addressesJson = fs.readFileSync('addresses.json', 'utf8');
   const deployData = JSON.parse(addressesJson);
   const addresses = deployData[index]
