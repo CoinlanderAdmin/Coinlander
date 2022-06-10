@@ -1,6 +1,6 @@
 import {ethers} from "hardhat"
 import * as fs from "fs";
-import * as logger from "./logger"
+import * as logger from "../utils/logger"
 
 export async function deploy() {
   logger.divider()
@@ -17,7 +17,7 @@ export async function deploy() {
 
   // Deploy the Keepers Vault contract 
   const Vault = await ethers.getContractFactory("Vault")
-  const vault = await Vault.deploy(seekers.address)
+  const vault = await Vault.deploy()
   await vault.deployed()
   logger.pad(30, 'Vault contract:', vault.address)
 

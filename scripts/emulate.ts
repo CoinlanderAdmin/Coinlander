@@ -2,7 +2,7 @@ import {SignerWithAddress} from "@nomiclabs/hardhat-ethers/signers"
 import * as fs from "fs";
 import {BigNumber} from "ethers";
 import {HardhatEthersHelpers} from "hardhat/types"
-import * as logger from './logger'
+import * as logger from '../utils/logger'
 
 // Emulate the game. Before running:
 // 1. CONTRACTS: Run a local node `npm run node`
@@ -13,21 +13,20 @@ import * as logger from './logger'
 // 6. CONTRACTS: Run emulation `npm run emulate <seizures>`
 
 
-// seizes = number of seizes you want to run up to on current node, ie. 100 will run up to the 100th seizure
-// hre = HardhatRuntimeEnvironment, passed in via task function in hardhat.config.ts
-
 async function emulate(seizes: number, ethers: HardhatEthersHelpers) {
   logger.divider()
   logger.out('Starting contract emulation...', logger.Level.Info)
   logger.divider()
 
+  const index: string = '2'
+  const filename: string = 'E7-meta'
+
   // We must use the injected hardhat param instead of directly importing because we run this
   // as a hardhat task. https://hardhat.org/advanced/hardhat-runtime-environment.html
   
-  // Load json config data. We want to use fs here instead of imports because
-  // this data shouldn't be stored in git, and causes bad imports pre-deploy script
-  const addressesJson = fs.readFileSync('local/addresses.json', 'utf8');
-  const addresses = JSON.parse(addressesJson);
+  const addressesJson = fs.readFileSync('addresses.json', 'utf8');
+  const deployData = JSON.parse(addressesJson);
+  const addresses = deployData[index]
 
   // Attach to deployed contracts
   const Seekers = await ethers.getContractFactory("Seekers");
@@ -64,9 +63,9 @@ async function emulate(seizes: number, ethers: HardhatEthersHelpers) {
   let firstSeekerMintThresh: number = (await seasonOne.FIRSTSEEKERMINTTHRESH()).toNumber()
   let secondSeekerMintThresh: number = (await seasonOne.SECONDSEEKERMINTTHRESH()).toNumber()
   let thirdSeekerMintThresh: number = (await seasonOne.THIRDSEEKERMINTTHRESH()).toNumber()
-  let uncloakingThresh: number = (await seasonOne.UNCLOAKINGTHRESH()).toNumber()
+  let uncloakingThresh: number = (await seasonOne.CLOAKINGTHRESH()).toNumber()
   let sweetRelease: number = (await seasonOne.SWEETRELEASE()).toNumber()
-  let uncloaking: boolean = await seekers.uncloaking()
+  let uncloaking: boolean = await seekers.cloakingAvailable()
   let released: boolean = await seasonOne.released()
 
   let firstMintActive: boolean = await seekers.firstMintActive()
@@ -81,6 +80,11 @@ async function emulate(seizes: number, ethers: HardhatEthersHelpers) {
 
   // Get current seizure count stored in local data
   seizureCount = (await seasonOne.seizureCount()).toNumber()
+  // Start game if it hasn't started yet
+  if (seizureCount == 0) {
+    await seasonOne.startGame()
+  }
+  
   remainingSeizures = sweetRelease - seizureCount
   logger.pad(30, 'Current seizures:', seizureCount)
   logger.pad(30, 'Remaining seizures:', remainingSeizures)
@@ -100,90 +104,115 @@ async function emulate(seizes: number, ethers: HardhatEthersHelpers) {
   coinlanderAddress = await seasonOne.COINLANDER()
   coinlanderUser = await ethers.getSigner(coinlanderAddress)
 
+  // Remove soft locks
+  logger.out("Disabling soft locks", logger.Level.Info)
+  await seasonOne.disableFirstCommunitySoftLock()
+  await seasonOne.disableSecondCommunitySoftLock()
+  await seasonOne.startGame()
+  logger.divider()
+  
   // Emulate seizures
   let i = 0;
   while (seizureCount < seizes) {
-    // Get stake needed
-    seizureStake = await seasonOne.seizureStake()
+    try {
+        // Get stake needed
+      seizureStake = await seasonOne.seizureStake()
 
-    // Increment thru users
-    let index = i % accounts.length
-    user = accounts[index]
+      // Increment thru users
+      let index = i % accounts.length
+      user = accounts[index]
 
-    // Mke sure we don't try and seize with it when running multiple emulations
-    if (user.address === coinlanderAddress) {
+      // Mke sure we don't try and seize with it when running multiple emulations
+      if (user.address === coinlanderAddress) {
+        i++
+        continue
+      }
+      await seasonOne.connect(user).seize({value: seizureStake})
+      logger.pad(30, `Seizure ${seizureCount + 1}:`, user.address)
+
+      // Immediately claim all
+      if (seizureCount) {
+        await seasonOne.connect(coinlanderUser).claimAll()
+      }
+
+      seizureCount = (await seasonOne.seizureCount()).toNumber()
+      coinlanderUser = user
+      coinlanderAddress = coinlanderUser.address
+      i++
+
+      // Check for any threshold events
+      switch (seizureCount) {
+        case firstSeekerMintThresh: {
+          logger.out("First seeker mint thresh reached...", logger.Level.Info)
+          currentPrice = await seekers.currentPrice()
+          firstMintActive = await seekers.firstMintActive()
+          logger.out("First seeker mint activated...", logger.Level.Info)
+          break;
+        }
+        case secondSeekerMintThresh: {
+          logger.out("Second seeker mint thresh reached...", logger.Level.Info)
+          currentPrice = await seekers.currentPrice()
+          secondMintActive = await seekers.firstMintActive()
+          logger.out("Second seeker mint activated...", logger.Level.Info)
+          break;
+        }
+        case thirdSeekerMintThresh: {
+          logger.out("Third seeker mint thresh reached...", logger.Level.Info)
+          currentPrice = await seekers.currentPrice()
+          thirdMintActive = await seekers.firstMintActive()
+          logger.out("Third seeker mint activated...", logger.Level.Info)
+          break;
+        }
+        case uncloakingThresh: {
+          logger.out("Uncloaking reached...", logger.Level.Info)
+          uncloaking = await seekers.cloakingAvailable()
+          break;
+        }
+        case sweetRelease: {
+          logger.out("Sweet release reached...", logger.Level.Info)
+          released = await seasonOne.released()
+          break;
+        }
+        default: {
+          break;
+        }
+      }
+
+      // First seeker thresh
+      if (firstMintActive) {
+        const currentBuyableSeekers = (await seekers.currentBuyableSeekers()).toNumber()
+        if (currentBuyableSeekers > 1) {
+          let currentPrice = await seekers.currentPrice()
+          await seekers.connect(user).summonSeeker(1, {value: currentPrice})
+          logger.pad(30, `Seeker summoned:`, user.address)
+        }
+      }
+
+      // Trigger uncloaking actions after uncloak thresh
+      if (uncloaking) {
+        let userSeekerBalance = (await seekers.balanceOf(user.address)).toNumber() -1
+        let lastToken = (await seekers.tokenOfOwnerByIndex(user.address, userSeekerBalance)).toNumber()
+        await seekers.connect(user).cloakSeeker(lastToken)
+        logger.pad(30, `Seeker ${lastToken} uncloaked:`, user.address)
+      }
+    } catch(e){
+      console.log(e)
       i++
       continue
     }
-    await seasonOne.connect(user).seize({value: seizureStake})
-    logger.pad(30, `Seizure ${seizureCount + 1}:`, user.address)
+  }
 
-    // Immediately claim all
-    if (seizureCount) {
-      await seasonOne.connect(coinlanderUser).claimAll()
-    }
-
-    seizureCount = (await seasonOne.seizureCount()).toNumber()
-    coinlanderUser = user
-    coinlanderAddress = coinlanderUser.address
-    i++
-
-    // Check for any threshold events
-    switch (seizureCount) {
-      case firstSeekerMintThresh: {
-        logger.out("First seeker mint thresh reached...", logger.Level.Info)
-        currentPrice = await seekers.currentPrice()
-        firstMintActive = await seekers.firstMintActive()
-        logger.out("First seeker mint activated...", logger.Level.Info)
-        break;
-      }
-      case secondSeekerMintThresh: {
-        logger.out("Second seeker mint thresh reached...", logger.Level.Info)
-        currentPrice = await seekers.currentPrice()
-        secondMintActive = await seekers.firstMintActive()
-        logger.out("Second seeker mint activated...", logger.Level.Info)
-        break;
-      }
-      case thirdSeekerMintThresh: {
-        logger.out("Third seeker mint thresh reached...", logger.Level.Info)
-        currentPrice = await seekers.currentPrice()
-        thirdMintActive = await seekers.firstMintActive()
-        logger.out("Third seeker mint activated...", logger.Level.Info)
-        break;
-      }
-      case uncloakingThresh: {
-        logger.out("Uncloaking reached...", logger.Level.Info)
-        uncloaking = await seekers.uncloaking()
-        break;
-      }
-      case sweetRelease: {
-        logger.out("Sweet release reached...", logger.Level.Info)
-        released = await seasonOne.released()
-        break;
-      }
-      default: {
-        break;
-      }
-    }
-
-    // First seeker thresh
-    if (firstMintActive) {
-      const currentBuyableSeekers = (await seekers.currentBuyableSeekers()).toNumber()
-      if (currentBuyableSeekers > 1) {
-        let currentPrice = await seekers.currentPrice()
-        await seekers.connect(user).summonSeeker(1, {value: currentPrice})
-        logger.pad(30, `Seeker summoned:`, user.address)
-      }
-    }
-
-    // Trigger uncloaking actions after uncloak thresh
-    if (uncloaking) {
-      let userSeekerBalance = (await seekers.balanceOf(user.address)).toNumber() -1
-      let lastToken = (await seekers.tokenOfOwnerByIndex(user.address, userSeekerBalance)).toNumber()
-      await seekers.connect(user).uncloakSeeker(lastToken)
-      logger.pad(30, `Seeker ${lastToken} unclocked:`, user.address)
+  // Output file that stores where the emulation happened and how far it got
+  const data = {
+    contracts: {
+      "seekers": seekers.address,
+      "vault": vault.address,
+      "seasonOne": seasonOne.address,
+      "seizureCount": seizureCount
     }
   }
+  const json = JSON.stringify(data, null, 2)
+  fs.writeFileSync('local/'+filename+'.json', json, "utf8")
 
   // TODO post-release validation here
 
