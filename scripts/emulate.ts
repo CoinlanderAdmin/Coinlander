@@ -80,8 +80,14 @@ async function emulate(seizes: number, ethers: HardhatEthersHelpers) {
 
   // Get current seizure count stored in local data
   seizureCount = (await seasonOne.seizureCount()).toNumber()
-  // Start game if it hasn't started yet
+
   if (seizureCount == 0) {
+    // Remove soft locks
+    logger.out("Disabling soft locks", logger.Level.Info)
+    await seasonOne.disableFirstCommunitySoftLock()
+    await seasonOne.disableSecondCommunitySoftLock()
+    // Start game 
+    logger.out("Starting game", logger.Level.Info)
     await seasonOne.startGame()
   }
   
@@ -104,13 +110,6 @@ async function emulate(seizes: number, ethers: HardhatEthersHelpers) {
   coinlanderAddress = await seasonOne.COINLANDER()
   coinlanderUser = await ethers.getSigner(coinlanderAddress)
 
-  // Remove soft locks
-  logger.out("Disabling soft locks", logger.Level.Info)
-  await seasonOne.disableFirstCommunitySoftLock()
-  await seasonOne.disableSecondCommunitySoftLock()
-  await seasonOne.startGame()
-  logger.divider()
-  
   // Emulate seizures
   let i = 0;
   while (seizureCount < seizes) {
@@ -197,7 +196,7 @@ async function emulate(seizes: number, ethers: HardhatEthersHelpers) {
       }
     } catch(e){
       console.log(e)
-      i++
+      // i++
       continue
     }
   }

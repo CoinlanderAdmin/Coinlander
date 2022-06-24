@@ -501,8 +501,8 @@ contract SeasonOne is ERC1155, Ownable, ReentrancyGuard {
                 mod,
                 r,
                 blockhash(block.number - 1),
-                block.coinbase,
-                block.difficulty,
+                gasleft(),
+                block.timestamp,
                 msg.sender
                 )));
         return random % mod;

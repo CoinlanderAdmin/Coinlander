@@ -82,7 +82,7 @@ describe("SeasonOne", function () {
     })
 
     it("disables seizing", async ()=> {
-      await expect(seasonOne.connect(notWinner).seize( {value: 1})).to.be.revertedWith("E001")
+      await expect(seasonOne.connect(notWinner).seize( {value: 1})).to.be.revertedWith("E-000-001")
     })
   })
 
@@ -100,7 +100,7 @@ describe("SeasonOne", function () {
     })
 
     it("does not allow a user that does not own a seeker to claim its airdrop", async () => {
-      await expect(seasonOne.connect(notWinner).airdropClaimBySeekerId(seekerOfWinner)).to.be.revertedWith("E011")
+      await expect(seasonOne.connect(notWinner).airdropClaimBySeekerId(seekerOfWinner)).to.be.revertedWith("E-000-011")
     })
     
     it("allows a seeker owner to claim its airdrop", async ()=> {
@@ -113,7 +113,7 @@ describe("SeasonOne", function () {
     })
 
     it("does not allow a Seekers drop to be claimed more than once", async () => {
-      await expect(seasonOne.connect(winner).airdropClaimBySeekerId(seekerOfWinner)).to.be.revertedWith("E012")
+      await expect(seasonOne.connect(winner).airdropClaimBySeekerId(seekerOfWinner)).to.be.revertedWith("E-000-012")
     })
 
   })

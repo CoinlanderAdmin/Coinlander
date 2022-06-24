@@ -405,10 +405,10 @@ contract Seekers is ERC721Enumerable, ISeekers, AccessControl, ReentrancyGuard {
 
         // Determine 4 random attribute points
         uint256 rangeSingle = maxSingle - minSingle + 1;
-        uint8 ap1 = uint8(minSingle + _getRandomNumber(rangeSingle, 0));
-        uint8 ap2 = uint8(minSingle + _getRandomNumber(rangeSingle, 1));
-        uint8 ap3 = uint8(minSingle + _getRandomNumber(rangeSingle, 2));
-        uint8 ap4 = uint8(minSingle + _getRandomNumber(rangeSingle, 3));
+        uint8 ap1 = uint8(minSingle + _getRandomNumber(rangeSingle, id+1));
+        uint8 ap2 = uint8(minSingle + _getRandomNumber(rangeSingle, id+2));
+        uint8 ap3 = uint8(minSingle + _getRandomNumber(rangeSingle, id+3));
+        uint8 ap4 = uint8(minSingle + _getRandomNumber(rangeSingle, id+4));
 
         // // Set power floor
         uint8 sum = ap1 + ap2 + ap3 + ap4;
@@ -588,8 +588,8 @@ contract Seekers is ERC721Enumerable, ISeekers, AccessControl, ReentrancyGuard {
             keccak256(
                 abi.encodePacked(
                     blockhash(block.number - 1),
-                    block.coinbase,
-                    block.difficulty,
+                    gasleft(),
+                    block.timestamp,
                     msg.sender,
                     mod,
                     r

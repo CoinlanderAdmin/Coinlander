@@ -40,7 +40,7 @@ export async function checkState() {
     logger.pad(30, 'Claiming contract balance:', ethers.utils.formatEther(contractBal))
     await seekers.ownerWithdraw()
     ownerBal = await owner.getBalance(owner.address) 
-    logger.pad(30, 'Account new balance:', ethers.utils.formatEther(ownerBal))
+    // logger.pad(30, 'Account new balance:', ethers.utils.formatEther(ownerBal))
   }
   else {
     logger.out('Contract has no funds to claim')
