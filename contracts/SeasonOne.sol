@@ -395,7 +395,7 @@ contract SeasonOne is ERC1155, Ownable, ReentrancyGuard {
     
         uint256 fragmentReward = amount / SHARDTOFRAGMENTMULTIPLIER; 
         _burn(msg.sender, SHARD, amount);
-        vault.mintFragments(msg.sender, fragmentReward);
+        vault.requestFragments(msg.sender, fragmentReward);
     }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////

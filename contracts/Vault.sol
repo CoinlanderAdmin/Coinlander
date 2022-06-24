@@ -48,8 +48,20 @@ contract Vault is IVault, ERC1155, Ownable, ReentrancyGuard {
     address public gameContract = address(0);
     string private _contractURI;
 
+    // RANDOMNESS ORACLE VARS
+    address randomnessOracle;
+    uint16 requestId;
+    uint16 pendingRequests;
+    struct fulfillmentState {
+        bool fulfilled;
+        address requester;
+    }
+    mapping(address => uint16[]) public claimables;
+    mapping(uint16 => fulfillmentState) public requestFulfillments;
+
+
     // @TODO we need to figure out what the url schema for metadata looks like and plop that here in the constructor
-    constructor() ERC1155("https://api.coinlander.dev/meta/valut/{id}") {
+    constructor(address _randomnessOracle) ERC1155("https://api.coinlander.dev/meta/valut/{id}") {
 
         // Initialize the fragments array
         for  (uint16 i = 0; i < numT1; i++){
@@ -78,15 +90,57 @@ contract Vault is IVault, ERC1155, Ownable, ReentrancyGuard {
         }
 
         _contractURI = "https://api.coinlander.dev/meta/vault";
+        randomnessOracle = _randomnessOracle;
     }
 
-    function mintFragments(address _receiver, uint256 amount) external onlyGameContract {
-        require(fragments.length >= amount, "E-002-009");
+    modifier onlyRandomnessOracle() {
+        require(msg.sender == randomnessOracle, "E-002-0016");
+        _;
+    }
+    
+    modifier onlyGameContract {
+        require(msg.sender == gameContract, "E-002-015");
+        _;
+    }
+
+    function requestFragments(address _requester, uint256 amount) external onlyGameContract {
+        require((fragments.length - pendingRequests) >= amount, "E-002-009");
         for(uint256 i = 0; i < amount; i++){
-            uint256 fragmentType = _getRandom(fragments);
-            _mint(_receiver, uint256(fragmentType), 1, "0x0");
-            
+            requestId++;
+            pendingRequests++;
+            emit RandomnessRequested(_requester, requestId);
+            requestFulfillments[requestId].requester = _requester;
         }
+    }
+
+    function fulfillRequest(uint16 _requestId) external onlyRandomnessOracle {
+        require(!requestFulfillments[_requestId].fulfilled, "E-002-017");
+        require(pendingRequests > 0);
+
+        requestFulfillments[_requestId].fulfilled = true;
+        pendingRequests--;
+
+        uint256 random = _getRandomNumber(fragments);
+        uint16 fragType = fragments[random];
+
+        fragments[random] = fragments[fragments.length - 1]; 
+        fragments.pop();
+
+        address requester = requestFulfillments[_requestId].requester;
+        claimables[requester].push(fragType);
+
+        emit RandomnessFulfilled(_requestId, fragType);
+    }
+
+    function claimFragments() external nonReentrant {
+        require(claimables[msg.sender].length > 0, "E-002-018");
+
+        for(uint256 i = 0; i < claimables[msg.sender].length; i++){
+            uint256 fragmentType = uint256(claimables[msg.sender][i]);
+            _mint(msg.sender, fragmentType, 1, "0x0");
+        }
+
+        delete claimables[msg.sender];
     }
 
     function setSweetRelease() external onlyGameContract {
@@ -130,16 +184,6 @@ contract Vault is IVault, ERC1155, Ownable, ReentrancyGuard {
         prize += msg.value;
     }
 
-    function _getRandom(uint16[] storage _arr) private returns (uint256) {
-        uint256 random = _getRandomNumber(_arr);
-        uint256 fragType = uint256(_arr[random]);
-
-        _arr[random] = _arr[_arr.length - 1]; 
-        _arr.pop();
- 
-        return fragType;
-    }
-
 	// Thanks Manny - entropy is a bitch
 	function _getRandomNumber(uint16[] storage _arr) private view returns (uint256) {
 		uint256 random = uint256(
@@ -147,8 +191,6 @@ contract Vault is IVault, ERC1155, Ownable, ReentrancyGuard {
 				abi.encodePacked(
 					_arr,
 					blockhash(block.number - 1),
-					block.coinbase,
-					block.difficulty,
 					msg.sender
 				)
 			)
@@ -160,11 +202,6 @@ contract Vault is IVault, ERC1155, Ownable, ReentrancyGuard {
         gameContract = _gameContract; 
     }
 
-    modifier onlyGameContract {
-        require(msg.sender == gameContract, "E-002-015");
-        _;
-    }
-
     function contractURI() public view returns (string memory) {
         return _contractURI;
     }
@@ -172,8 +209,14 @@ contract Vault is IVault, ERC1155, Ownable, ReentrancyGuard {
     function setContractURI(string calldata newContractURI) external onlyOwner {
         _contractURI = newContractURI;
     }
+
     function changeURI(string calldata _newURI) external onlyOwner {
         _setURI(_newURI);
+    }
+
+    function setRandomnessOracle(address newOracle) external onlyOwner {
+        emit RandomnessOracleChanged(randomnessOracle, newOracle);
+        randomnessOracle = newOracle;
     }
 
     // All fund allocations should be going thru fund prize purse

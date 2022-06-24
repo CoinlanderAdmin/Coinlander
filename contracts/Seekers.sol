@@ -25,7 +25,7 @@ contract Seekers is ERC721Enumerable, ISeekers, AccessControl, ReentrancyGuard {
     uint256 public constant MAXSEEKERS = 11111;
     uint256 public currentBuyableSeekers = 0;
     uint256 public currentPrice = 0;
-    uint256 constant KEEPERSEEKERS = 64; // Number of Seekers that Keepers can mint for themselves
+    uint256 constant KEEPERSEEKERS = 111; // Number of Seekers that Keepers can mint for themselves
     uint256 private keepersSeekersMinted = 0;
     uint256 constant MAXMINTABLE = 10; // Max seekers that can be purchased in one tx
 
@@ -39,7 +39,7 @@ contract Seekers is ERC721Enumerable, ISeekers, AccessControl, ReentrancyGuard {
     bool public secondMintActive = false;
     uint256 public constant SECONDMINTPRICE = 0.00005 ether; // test value
     // uint256 constant SECONDMINTPRICE = 0.08 ether;
-    uint256 constant THIRDMINT = 267; // bulk release at third mint thresh
+    uint256 constant THIRDMINT = 220; // bulk release at third mint thresh
     uint256 constant THIRDMINT_INCR = 4; // additional release at each seizure after third mint thresh
     uint256 constant THIRDMINT_TOTAL = 1603; // total number of seekers released via third mint
     bool public thirdMintActive = false;
