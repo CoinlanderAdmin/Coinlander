@@ -4,11 +4,13 @@ import * as logger from "../utils/logger"
 import simpleGit, { SimpleGit, CleanOptions } from 'simple-git';
 import { hrtime } from "process";
 import { Cloak__factory, Cloak} from "../typechain";
+import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 
 
 // Shared libraries defined in a global scope 
 let CloakLib: Cloak__factory
 let cloak: Cloak
+let deployer: SignerWithAddress
 
 export async function deploy() {
   let data: any = {}
@@ -17,6 +19,7 @@ export async function deploy() {
   const hre = require("hardhat")
 
   const network = await ethers.provider.getNetwork()
+  const [deployer, ...accounts] = await ethers.getSigners()
 
   logger.divider()
   logger.out("Deploying to: " + network.name, logger.Level.Info)
@@ -85,7 +88,8 @@ async function deploySeasonOne() {
 
   // Deploy the Keepers Vault contract 
   const Vault = await ethers.getContractFactory("Vault")
-  const vault = await Vault.deploy()
+  // @TODO we need to set up our Oracle and add the address to the env
+  const vault = await Vault.deploy(deployer.address)
   await vault.deployed()
   logger.pad(30, 'Vault contract:', vault.address)
 

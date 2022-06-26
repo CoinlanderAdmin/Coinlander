@@ -35,13 +35,15 @@ interface VaultInterface extends ethers.utils.Interface {
     "balanceOf(address,uint256)": FunctionFragment;
     "balanceOfBatch(address[],uint256[])": FunctionFragment;
     "changeURI(string)": FunctionFragment;
+    "claimFragments()": FunctionFragment;
     "claimKeepersVault()": FunctionFragment;
+    "claimables(address,uint256)": FunctionFragment;
     "contractURI()": FunctionFragment;
+    "fulfillRequest(uint16)": FunctionFragment;
     "fundPrizePurse()": FunctionFragment;
     "gameContract()": FunctionFragment;
     "gameWon()": FunctionFragment;
     "isApprovedForAll(address,address)": FunctionFragment;
-    "mintFragments(address,uint256)": FunctionFragment;
     "numT1()": FunctionFragment;
     "numT2()": FunctionFragment;
     "numT3()": FunctionFragment;
@@ -53,11 +55,14 @@ interface VaultInterface extends ethers.utils.Interface {
     "owner()": FunctionFragment;
     "prize()": FunctionFragment;
     "renounceOwnership()": FunctionFragment;
+    "requestFragments(address,uint256)": FunctionFragment;
+    "requestFulfillments(uint16)": FunctionFragment;
     "safeBatchTransferFrom(address,address,uint256[],uint256[],bytes)": FunctionFragment;
     "safeTransferFrom(address,address,uint256,uint256,bytes)": FunctionFragment;
     "setApprovalForAll(address,bool)": FunctionFragment;
     "setContractURI(string)": FunctionFragment;
     "setGameContract(address)": FunctionFragment;
+    "setRandomnessOracle(address)": FunctionFragment;
     "setSweetRelease()": FunctionFragment;
     "supportsInterface(bytes4)": FunctionFragment;
     "sweetRelease()": FunctionFragment;
@@ -88,12 +93,24 @@ interface VaultInterface extends ethers.utils.Interface {
   ): string;
   encodeFunctionData(functionFragment: "changeURI", values: [string]): string;
   encodeFunctionData(
+    functionFragment: "claimFragments",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
     functionFragment: "claimKeepersVault",
     values?: undefined
   ): string;
   encodeFunctionData(
+    functionFragment: "claimables",
+    values: [string, BigNumberish]
+  ): string;
+  encodeFunctionData(
     functionFragment: "contractURI",
     values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "fulfillRequest",
+    values: [BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "fundPrizePurse",
@@ -108,10 +125,6 @@ interface VaultInterface extends ethers.utils.Interface {
     functionFragment: "isApprovedForAll",
     values: [string, string]
   ): string;
-  encodeFunctionData(
-    functionFragment: "mintFragments",
-    values: [string, BigNumberish]
-  ): string;
   encodeFunctionData(functionFragment: "numT1", values?: undefined): string;
   encodeFunctionData(functionFragment: "numT2", values?: undefined): string;
   encodeFunctionData(functionFragment: "numT3", values?: undefined): string;
@@ -125,6 +138,14 @@ interface VaultInterface extends ethers.utils.Interface {
   encodeFunctionData(
     functionFragment: "renounceOwnership",
     values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "requestFragments",
+    values: [string, BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "requestFulfillments",
+    values: [BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "safeBatchTransferFrom",
@@ -144,6 +165,10 @@ interface VaultInterface extends ethers.utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "setGameContract",
+    values: [string]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "setRandomnessOracle",
     values: [string]
   ): string;
   encodeFunctionData(
@@ -184,11 +209,20 @@ interface VaultInterface extends ethers.utils.Interface {
   ): Result;
   decodeFunctionResult(functionFragment: "changeURI", data: BytesLike): Result;
   decodeFunctionResult(
-    functionFragment: "claimKeepersVault",
+    functionFragment: "claimFragments",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
+    functionFragment: "claimKeepersVault",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(functionFragment: "claimables", data: BytesLike): Result;
+  decodeFunctionResult(
     functionFragment: "contractURI",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "fulfillRequest",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -204,10 +238,6 @@ interface VaultInterface extends ethers.utils.Interface {
     functionFragment: "isApprovedForAll",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(
-    functionFragment: "mintFragments",
-    data: BytesLike
-  ): Result;
   decodeFunctionResult(functionFragment: "numT1", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "numT2", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "numT3", data: BytesLike): Result;
@@ -220,6 +250,14 @@ interface VaultInterface extends ethers.utils.Interface {
   decodeFunctionResult(functionFragment: "prize", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "renounceOwnership",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "requestFragments",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "requestFulfillments",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -243,6 +281,10 @@ interface VaultInterface extends ethers.utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
+    functionFragment: "setRandomnessOracle",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "setSweetRelease",
     data: BytesLike
   ): Result;
@@ -263,6 +305,9 @@ interface VaultInterface extends ethers.utils.Interface {
   events: {
     "ApprovalForAll(address,address,bool)": EventFragment;
     "OwnershipTransferred(address,address)": EventFragment;
+    "RandomnessFulfilled(uint16,uint16)": EventFragment;
+    "RandomnessOracleChanged(address,address)": EventFragment;
+    "RandomnessRequested(address,uint16)": EventFragment;
     "TransferBatch(address,address,address,uint256[],uint256[])": EventFragment;
     "TransferSingle(address,address,address,uint256,uint256)": EventFragment;
     "URI(string,uint256)": EventFragment;
@@ -271,6 +316,9 @@ interface VaultInterface extends ethers.utils.Interface {
 
   getEvent(nameOrSignatureOrTopic: "ApprovalForAll"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "OwnershipTransferred"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "RandomnessFulfilled"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "RandomnessOracleChanged"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "RandomnessRequested"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "TransferBatch"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "TransferSingle"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "URI"): EventFragment;
@@ -287,6 +335,18 @@ export type ApprovalForAllEvent = TypedEvent<
 
 export type OwnershipTransferredEvent = TypedEvent<
   [string, string] & { previousOwner: string; newOwner: string }
+>;
+
+export type RandomnessFulfilledEvent = TypedEvent<
+  [number, number] & { requestId: number; result: number }
+>;
+
+export type RandomnessOracleChangedEvent = TypedEvent<
+  [string, string] & { currentOracle: string; newOracle: string }
+>;
+
+export type RandomnessRequestedEvent = TypedEvent<
+  [string, number] & { requester: string; requestId: number }
 >;
 
 export type TransferBatchEvent = TypedEvent<
@@ -396,11 +456,26 @@ export class Vault extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
+    claimFragments(
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
     claimKeepersVault(
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
+    claimables(
+      arg0: string,
+      arg1: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[number]>;
+
     contractURI(overrides?: CallOverrides): Promise<[string]>;
+
+    fulfillRequest(
+      _requestId: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
 
     fundPrizePurse(
       overrides?: PayableOverrides & { from?: string | Promise<string> }
@@ -415,12 +490,6 @@ export class Vault extends BaseContract {
       operator: string,
       overrides?: CallOverrides
     ): Promise<[boolean]>;
-
-    mintFragments(
-      _receiver: string,
-      amount: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
 
     numT1(overrides?: CallOverrides): Promise<[number]>;
 
@@ -445,6 +514,17 @@ export class Vault extends BaseContract {
     renounceOwnership(
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
+
+    requestFragments(
+      _requester: string,
+      amount: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    requestFulfillments(
+      arg0: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[boolean, string] & { fulfilled: boolean; requester: string }>;
 
     safeBatchTransferFrom(
       from: string,
@@ -477,6 +557,11 @@ export class Vault extends BaseContract {
 
     setGameContract(
       _gameContract: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    setRandomnessOracle(
+      newOracle: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
@@ -536,11 +621,26 @@ export class Vault extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
+  claimFragments(
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
   claimKeepersVault(
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
+  claimables(
+    arg0: string,
+    arg1: BigNumberish,
+    overrides?: CallOverrides
+  ): Promise<number>;
+
   contractURI(overrides?: CallOverrides): Promise<string>;
+
+  fulfillRequest(
+    _requestId: BigNumberish,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
 
   fundPrizePurse(
     overrides?: PayableOverrides & { from?: string | Promise<string> }
@@ -555,12 +655,6 @@ export class Vault extends BaseContract {
     operator: string,
     overrides?: CallOverrides
   ): Promise<boolean>;
-
-  mintFragments(
-    _receiver: string,
-    amount: BigNumberish,
-    overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
 
   numT1(overrides?: CallOverrides): Promise<number>;
 
@@ -585,6 +679,17 @@ export class Vault extends BaseContract {
   renounceOwnership(
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
+
+  requestFragments(
+    _requester: string,
+    amount: BigNumberish,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  requestFulfillments(
+    arg0: BigNumberish,
+    overrides?: CallOverrides
+  ): Promise<[boolean, string] & { fulfilled: boolean; requester: string }>;
 
   safeBatchTransferFrom(
     from: string,
@@ -617,6 +722,11 @@ export class Vault extends BaseContract {
 
   setGameContract(
     _gameContract: string,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  setRandomnessOracle(
+    newOracle: string,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
@@ -673,9 +783,22 @@ export class Vault extends BaseContract {
 
     changeURI(_newURI: string, overrides?: CallOverrides): Promise<void>;
 
+    claimFragments(overrides?: CallOverrides): Promise<void>;
+
     claimKeepersVault(overrides?: CallOverrides): Promise<void>;
 
+    claimables(
+      arg0: string,
+      arg1: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<number>;
+
     contractURI(overrides?: CallOverrides): Promise<string>;
+
+    fulfillRequest(
+      _requestId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
 
     fundPrizePurse(overrides?: CallOverrides): Promise<void>;
 
@@ -688,12 +811,6 @@ export class Vault extends BaseContract {
       operator: string,
       overrides?: CallOverrides
     ): Promise<boolean>;
-
-    mintFragments(
-      _receiver: string,
-      amount: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<void>;
 
     numT1(overrides?: CallOverrides): Promise<number>;
 
@@ -716,6 +833,17 @@ export class Vault extends BaseContract {
     prize(overrides?: CallOverrides): Promise<BigNumber>;
 
     renounceOwnership(overrides?: CallOverrides): Promise<void>;
+
+    requestFragments(
+      _requester: string,
+      amount: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    requestFulfillments(
+      arg0: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[boolean, string] & { fulfilled: boolean; requester: string }>;
 
     safeBatchTransferFrom(
       from: string,
@@ -748,6 +876,11 @@ export class Vault extends BaseContract {
 
     setGameContract(
       _gameContract: string,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    setRandomnessOracle(
+      newOracle: string,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -801,6 +934,54 @@ export class Vault extends BaseContract {
     ): TypedEventFilter<
       [string, string],
       { previousOwner: string; newOwner: string }
+    >;
+
+    "RandomnessFulfilled(uint16,uint16)"(
+      requestId?: null,
+      result?: null
+    ): TypedEventFilter<
+      [number, number],
+      { requestId: number; result: number }
+    >;
+
+    RandomnessFulfilled(
+      requestId?: null,
+      result?: null
+    ): TypedEventFilter<
+      [number, number],
+      { requestId: number; result: number }
+    >;
+
+    "RandomnessOracleChanged(address,address)"(
+      currentOracle?: null,
+      newOracle?: null
+    ): TypedEventFilter<
+      [string, string],
+      { currentOracle: string; newOracle: string }
+    >;
+
+    RandomnessOracleChanged(
+      currentOracle?: null,
+      newOracle?: null
+    ): TypedEventFilter<
+      [string, string],
+      { currentOracle: string; newOracle: string }
+    >;
+
+    "RandomnessRequested(address,uint16)"(
+      requester?: null,
+      requestId?: null
+    ): TypedEventFilter<
+      [string, number],
+      { requester: string; requestId: number }
+    >;
+
+    RandomnessRequested(
+      requester?: null,
+      requestId?: null
+    ): TypedEventFilter<
+      [string, number],
+      { requester: string; requestId: number }
     >;
 
     "TransferBatch(address,address,address,uint256[],uint256[])"(
@@ -928,11 +1109,26 @@ export class Vault extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
+    claimFragments(
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
     claimKeepersVault(
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
+    claimables(
+      arg0: string,
+      arg1: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     contractURI(overrides?: CallOverrides): Promise<BigNumber>;
+
+    fulfillRequest(
+      _requestId: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
 
     fundPrizePurse(
       overrides?: PayableOverrides & { from?: string | Promise<string> }
@@ -946,12 +1142,6 @@ export class Vault extends BaseContract {
       account: string,
       operator: string,
       overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    mintFragments(
-      _receiver: string,
-      amount: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
     numT1(overrides?: CallOverrides): Promise<BigNumber>;
@@ -976,6 +1166,17 @@ export class Vault extends BaseContract {
 
     renounceOwnership(
       overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    requestFragments(
+      _requester: string,
+      amount: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    requestFulfillments(
+      arg0: BigNumberish,
+      overrides?: CallOverrides
     ): Promise<BigNumber>;
 
     safeBatchTransferFrom(
@@ -1009,6 +1210,11 @@ export class Vault extends BaseContract {
 
     setGameContract(
       _gameContract: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    setRandomnessOracle(
+      newOracle: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
@@ -1069,11 +1275,26 @@ export class Vault extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
+    claimFragments(
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
     claimKeepersVault(
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
+    claimables(
+      arg0: string,
+      arg1: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
     contractURI(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    fulfillRequest(
+      _requestId: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
 
     fundPrizePurse(
       overrides?: PayableOverrides & { from?: string | Promise<string> }
@@ -1087,12 +1308,6 @@ export class Vault extends BaseContract {
       account: string,
       operator: string,
       overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    mintFragments(
-      _receiver: string,
-      amount: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
     numT1(overrides?: CallOverrides): Promise<PopulatedTransaction>;
@@ -1117,6 +1332,17 @@ export class Vault extends BaseContract {
 
     renounceOwnership(
       overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    requestFragments(
+      _requester: string,
+      amount: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    requestFulfillments(
+      arg0: BigNumberish,
+      overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     safeBatchTransferFrom(
@@ -1150,6 +1376,11 @@ export class Vault extends BaseContract {
 
     setGameContract(
       _gameContract: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    setRandomnessOracle(
+      newOracle: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 

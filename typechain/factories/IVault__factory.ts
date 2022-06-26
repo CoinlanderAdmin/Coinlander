@@ -12,6 +12,63 @@ const _abi = [
     inputs: [
       {
         indexed: false,
+        internalType: "uint16",
+        name: "requestId",
+        type: "uint16",
+      },
+      {
+        indexed: false,
+        internalType: "uint16",
+        name: "result",
+        type: "uint16",
+      },
+    ],
+    name: "RandomnessFulfilled",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: false,
+        internalType: "address",
+        name: "currentOracle",
+        type: "address",
+      },
+      {
+        indexed: false,
+        internalType: "address",
+        name: "newOracle",
+        type: "address",
+      },
+    ],
+    name: "RandomnessOracleChanged",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: false,
+        internalType: "address",
+        name: "requester",
+        type: "address",
+      },
+      {
+        indexed: false,
+        internalType: "uint16",
+        name: "requestId",
+        type: "uint16",
+      },
+    ],
+    name: "RandomnessRequested",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: false,
         internalType: "address",
         name: "winner",
         type: "address",
@@ -38,7 +95,7 @@ const _abi = [
     inputs: [
       {
         internalType: "address",
-        name: "_receiver",
+        name: "_requester",
         type: "address",
       },
       {
@@ -47,7 +104,7 @@ const _abi = [
         type: "uint256",
       },
     ],
-    name: "mintFragments",
+    name: "requestFragments",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
