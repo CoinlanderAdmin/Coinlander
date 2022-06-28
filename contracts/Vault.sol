@@ -50,7 +50,7 @@ contract Vault is IVault, ERC1155, Ownable, ReentrancyGuard {
 
     // RANDOMNESS ORACLE VARS
     address randomnessOracle;
-    uint16 requestId;
+    uint16 public requestId;
     uint16 pendingRequests;
     struct fulfillmentState {
         bool fulfilled;

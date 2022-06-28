@@ -14,12 +14,12 @@ describe("Vault", function () {
   let kv: Vault
 
   before(async function () {
-    ;[owner, userA, userB, userC, ...accounts] = await ethers.getSigners()
+    [owner, userA, userB, userC, ...accounts] = await ethers.getSigners()
     Vault = (await ethers.getContractFactory(
       "Vault",
       owner
     )) as Vault__factory
-    kv = await Vault.deploy()
+    kv = await Vault.deploy(owner.address)
   })
 
   it("can be deployed", async function () {
@@ -33,32 +33,35 @@ describe("Vault", function () {
 
   it("allows the game contract to be set", async function () {
     // expect that the owner cannot mint at first
-    await expect(kv.mintFragments(userA.address,1)).to.be.revertedWith("E-002-015")
-    await kv.setGameContract(owner.address)
-    expect(kv.mintFragments(userA.address,1))
+    await expect(kv.requestFragments(userA.address,1)).to.be.revertedWith("E-002-015")
+    let tx =await kv.setGameContract(owner.address)
+    expect(kv.requestFragments(userA.address,1))
   })
   
-  describe("upon mintFragments", () => {
+  describe("upon requestFragments", () => {
     before(async function () {
-      kv = await Vault.deploy()
+      kv = await Vault.deploy(owner.address)
       await kv.setGameContract(owner.address) // use owner address in lieu of game contract
     })
 
-    it("allows the owner to mint", async () => {
-      expect(await kv.mintFragments(userC.address, 1))
+    it("allows the specified game contract to request fragments", async () => {
+      expect(await kv.requestFragments(userC.address, 1))
     })
 
-    it("does not allow a non owner to mint", async () => {
-      await expect(kv.connect(userA).mintFragments(userA.address, 1)).to.be.reverted
+    it("does not allow a non approved address to mint", async () => {
+      await expect(kv.connect(userA).requestFragments(userA.address, 1)).to.be.revertedWith("E-002-015")
     })
 
     it("does not allow someone to mint more fragments than are available", async () => {
-      let max = (await kv.MAXFRAGMENTS()) + 1
-      await expect(kv.mintFragments(userA.address, max)).to.be.reverted
+      let overMax = (await kv.MAXFRAGMENTS()) + 1
+      await expect(kv.requestFragments(userA.address, overMax)).to.be.revertedWith("E-002-009")
     })
 
     it("mints the specified number of fragments", async () => {
-      await kv.mintFragments(userB.address, 1)
+      await kv.requestFragments(userB.address, 1)
+      let r = await kv.requestId()
+      await kv.fulfillRequest(r)
+      await kv.connect(userB).claimFragments()
       let n1 = await kv.balanceOf(userB.address,1)
       let n2 = await kv.balanceOf(userB.address,2)
       let n3 = await kv.balanceOf(userB.address,3)
@@ -74,7 +77,7 @@ describe("Vault", function () {
 
   describe("upon minting all Fragments", () => {
     before(async function () {
-      kv = await Vault.deploy()
+      kv = await Vault.deploy(owner.address)
       await kv.setGameContract(owner.address)
     })
 
@@ -91,7 +94,10 @@ describe("Vault", function () {
 
       // This runs out of gas if we mint them all at once
       for(let i = 0; i < max; i++) {
-        await kv.mintFragments(userA.address, 1)
+        await kv.requestFragments(userA.address, 1)
+        let r = await kv.requestId()
+        await kv.fulfillRequest(r)
+        await kv.connect(userA).claimFragments()
       }
 
       let n1 = await kv.balanceOf(userA.address,1)
@@ -143,12 +149,15 @@ describe("Vault", function () {
   describe("upon claimVault", () => {
     let v: BigNumber
     before( async function() {
-      kv = await Vault.deploy() // get a fresh contract instance 
+      kv = await Vault.deploy(owner.address) // get a fresh contract instance 
       await kv.setGameContract(owner.address)
       // Mint all the fragments for userA 
       const max = await kv.MAXFRAGMENTS()
       for(let i = 0; i < max; i++) {
-        await kv.mintFragments(userA.address, 1)
+        await kv.requestFragments(userA.address, 1)
+        let r = await kv.requestId()
+        await kv.fulfillRequest(r)
+        await kv.connect(userA).claimFragments()
       }
       // Fund the prize purse
       v = ethers.utils.parseUnits("1", "ether")

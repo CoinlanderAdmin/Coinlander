@@ -57,6 +57,7 @@ interface VaultInterface extends ethers.utils.Interface {
     "renounceOwnership()": FunctionFragment;
     "requestFragments(address,uint256)": FunctionFragment;
     "requestFulfillments(uint16)": FunctionFragment;
+    "requestId()": FunctionFragment;
     "safeBatchTransferFrom(address,address,uint256[],uint256[],bytes)": FunctionFragment;
     "safeTransferFrom(address,address,uint256,uint256,bytes)": FunctionFragment;
     "setApprovalForAll(address,bool)": FunctionFragment;
@@ -147,6 +148,7 @@ interface VaultInterface extends ethers.utils.Interface {
     functionFragment: "requestFulfillments",
     values: [BigNumberish]
   ): string;
+  encodeFunctionData(functionFragment: "requestId", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "safeBatchTransferFrom",
     values: [string, string, BigNumberish[], BigNumberish[], BytesLike]
@@ -260,6 +262,7 @@ interface VaultInterface extends ethers.utils.Interface {
     functionFragment: "requestFulfillments",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "requestId", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "safeBatchTransferFrom",
     data: BytesLike
@@ -526,6 +529,8 @@ export class Vault extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[boolean, string] & { fulfilled: boolean; requester: string }>;
 
+    requestId(overrides?: CallOverrides): Promise<[number]>;
+
     safeBatchTransferFrom(
       from: string,
       to: string,
@@ -691,6 +696,8 @@ export class Vault extends BaseContract {
     overrides?: CallOverrides
   ): Promise<[boolean, string] & { fulfilled: boolean; requester: string }>;
 
+  requestId(overrides?: CallOverrides): Promise<number>;
+
   safeBatchTransferFrom(
     from: string,
     to: string,
@@ -844,6 +851,8 @@ export class Vault extends BaseContract {
       arg0: BigNumberish,
       overrides?: CallOverrides
     ): Promise<[boolean, string] & { fulfilled: boolean; requester: string }>;
+
+    requestId(overrides?: CallOverrides): Promise<number>;
 
     safeBatchTransferFrom(
       from: string,
@@ -1179,6 +1188,8 @@ export class Vault extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
+    requestId(overrides?: CallOverrides): Promise<BigNumber>;
+
     safeBatchTransferFrom(
       from: string,
       to: string,
@@ -1344,6 +1355,8 @@ export class Vault extends BaseContract {
       arg0: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
+
+    requestId(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     safeBatchTransferFrom(
       from: string,
