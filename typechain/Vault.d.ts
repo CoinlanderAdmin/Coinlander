@@ -54,6 +54,7 @@ interface VaultInterface extends ethers.utils.Interface {
     "numT8()": FunctionFragment;
     "owner()": FunctionFragment;
     "prize()": FunctionFragment;
+    "randomnessOracle()": FunctionFragment;
     "renounceOwnership()": FunctionFragment;
     "requestFragments(address,uint256)": FunctionFragment;
     "requestFulfillments(uint16)": FunctionFragment;
@@ -136,6 +137,10 @@ interface VaultInterface extends ethers.utils.Interface {
   encodeFunctionData(functionFragment: "numT8", values?: undefined): string;
   encodeFunctionData(functionFragment: "owner", values?: undefined): string;
   encodeFunctionData(functionFragment: "prize", values?: undefined): string;
+  encodeFunctionData(
+    functionFragment: "randomnessOracle",
+    values?: undefined
+  ): string;
   encodeFunctionData(
     functionFragment: "renounceOwnership",
     values?: undefined
@@ -250,6 +255,10 @@ interface VaultInterface extends ethers.utils.Interface {
   decodeFunctionResult(functionFragment: "numT8", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "owner", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "prize", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "randomnessOracle",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "renounceOwnership",
     data: BytesLike
@@ -514,6 +523,8 @@ export class Vault extends BaseContract {
 
     prize(overrides?: CallOverrides): Promise<[BigNumber]>;
 
+    randomnessOracle(overrides?: CallOverrides): Promise<[string]>;
+
     renounceOwnership(
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
@@ -681,6 +692,8 @@ export class Vault extends BaseContract {
 
   prize(overrides?: CallOverrides): Promise<BigNumber>;
 
+  randomnessOracle(overrides?: CallOverrides): Promise<string>;
+
   renounceOwnership(
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
@@ -838,6 +851,8 @@ export class Vault extends BaseContract {
     owner(overrides?: CallOverrides): Promise<string>;
 
     prize(overrides?: CallOverrides): Promise<BigNumber>;
+
+    randomnessOracle(overrides?: CallOverrides): Promise<string>;
 
     renounceOwnership(overrides?: CallOverrides): Promise<void>;
 
@@ -1173,6 +1188,8 @@ export class Vault extends BaseContract {
 
     prize(overrides?: CallOverrides): Promise<BigNumber>;
 
+    randomnessOracle(overrides?: CallOverrides): Promise<BigNumber>;
+
     renounceOwnership(
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
@@ -1340,6 +1357,8 @@ export class Vault extends BaseContract {
     owner(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     prize(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    randomnessOracle(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     renounceOwnership(
       overrides?: Overrides & { from?: string | Promise<string> }

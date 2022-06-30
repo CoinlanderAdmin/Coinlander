@@ -56,6 +56,8 @@
         "E-002-015" : "Only an approved game contract can mint fragments",
         "E-002-016" : "Only the approved oracle can fulfill randomness",
         "E-002-017" : "Request already fulfilled",
-        "E-002-018" : "Nothing to claim"
+        "E-002-018" : "Nothing to claim",
+        "E-002-019" : "No pending requests",
+        "E-002-020" : "Invalid request id"
     }
 }

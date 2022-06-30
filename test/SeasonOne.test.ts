@@ -56,7 +56,7 @@ describe("SeasonOne", function () {
 
   beforeEach(async function () {
     seekers = await Seekers.deploy(cloak.address)
-    vault = await Vault.deploy()
+    vault = await Vault.deploy(owner.address)
     seasonOne = await SeasonOne.deploy(seekers.address, vault.address)
     await seekers.addGameContract(seasonOne.address)
     await seasonOne.startGame()

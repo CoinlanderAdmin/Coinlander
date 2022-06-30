@@ -49,7 +49,7 @@ contract Vault is IVault, ERC1155, Ownable, ReentrancyGuard {
     string private _contractURI;
 
     // RANDOMNESS ORACLE VARS
-    address randomnessOracle;
+    address public randomnessOracle;
     uint16 public requestId;
     uint16 pendingRequests;
     struct fulfillmentState {
@@ -115,7 +115,8 @@ contract Vault is IVault, ERC1155, Ownable, ReentrancyGuard {
 
     function fulfillRequest(uint16 _requestId) external onlyRandomnessOracle {
         require(!requestFulfillments[_requestId].fulfilled, "E-002-017");
-        require(pendingRequests > 0);
+        require(pendingRequests > 0, "E-002-019");
+        require(_requestId <= requestId, "E-002-020");
 
         requestFulfillments[_requestId].fulfilled = true;
         pendingRequests--;
