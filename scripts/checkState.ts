@@ -3,6 +3,10 @@ import {HardhatEthersHelpers} from "hardhat/types"
 import * as fs from "fs";
 import * as logger from "../utils/logger"
 
+function dec2bin(dec: number) {
+  return (dec >>> 0).toString(2);
+}
+
 export async function checkState() {
   logger.divider()
   logger.out('Attaching to contracts to check state', logger.Level.Info)
@@ -32,9 +36,19 @@ export async function checkState() {
   // Check if each event triggered successfully
 
   console.log('Origin: ')
-  console.log(await seekers.getOriginById(1))
+  console.log(await seekers.getOriginById(216))
   console.log('Cloak status: ')
-  console.log(await seekers.getCloakStatusById(1))  
+  console.log(await seekers.getCloakStatusById(216)) 
+  // let fullCloakBytes = await seekers.getFullCloak(216)
+  // console.log()
+  // let fullCloakBin = []
+  // for(let i=0; i<fullCloakBytes.length; i++){
+  //   let s = dec2bin(fullCloakBytes[i])
+  //   console.log(s)
+  //   fullCloakBin.push(s)
+  // }
+  // console.log(fullCloakBin)
+
   
   console.log("Seizure number: ", await (await seasonOne.seizureCount()).toNumber())
   console.log("Prize: ", await (await seasonOne.prize()).div(1E12).toNumber())
@@ -76,18 +90,26 @@ export async function checkState() {
     console.log('SHARD: ', await (await seasonOne.balanceOf(user.address, 1)).toNumber())
     let numSeekers = await (await seekers.balanceOf(user.address)).toNumber()
     console.log('Seekers: ', numSeekers)
-    // //let seekerIds = []
-    // for (var i = 0; i < numSeekers; i++){
-    //   var id = await (await seekers.tokenOfOwnerByIndex(user.address, i)).toNumber()
-    //   console.log(id)
-    //   //seekerIds.push(id)
-    // }
-    //console.log('Seeker Ids: ', seekerIds)
-    for (var i = 1; i <= 8; i++){
-      var qty = await (await vault.balanceOf(user.address, i)).toNumber()
-      console.log('Fragment%d: ', i, qty)
+    //let seekerIds = []
+    for (var i = 0; i < numSeekers; i++){
+      var id = await (await seekers.tokenOfOwnerByIndex(user.address, i)).toNumber()
+      console.log(id)
+      if(!(await seekers.getCloakStatusById(id))){
+        console.log('cloaking...')
+        await seekers.connect(user).cloakSeeker(id)
+      } else {
+        console.log('already cloaked')
+      }
+      
+      //seekerIds.push(id)
     }
-  } 
+  }
+  //   console.log('Seeker Ids: ', seekerIds)
+  //   for (var i = 1; i <= 8; i++){
+  //     var qty = await (await vault.balanceOf(user.address, i)).toNumber()
+  //     console.log('Fragment%d: ', i, qty)
+  //   }
+  // } 
   // console.log('Claiming for account 0')
   // try { 
   //   await seasonOne.connect(accounts[0]).claimAll()

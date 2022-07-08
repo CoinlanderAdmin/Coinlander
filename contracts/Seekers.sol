@@ -166,10 +166,6 @@ contract Seekers is ERC721Enumerable, ISeekers, AccessControl, ReentrancyGuard {
             (keepersSeekersMinted + summonCount) <= KEEPERSEEKERS,
             "E-001-004"
         );
-        require(
-            (_summonSeekerId + summonCount) <= currentBuyableSeekers,
-            "E-001-003"
-        );
         keepersSeekersMinted += summonCount;
 
         for (uint256 i = 0; i < summonCount; i++) {
