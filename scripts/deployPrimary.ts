@@ -19,7 +19,6 @@ export async function deploy() {
   const hre = require("hardhat")
 
   const network = await ethers.provider.getNetwork()
-  const [deployer, ...accounts] = await ethers.getSigners()
 
   logger.divider()
   logger.out("Deploying to: " + network.name, logger.Level.Info)
@@ -74,6 +73,7 @@ async function deploySeasonOne() {
   logger.divider()
 
   const deployBlock = await (await ethers.provider.getBlock("latest")).number
+  const [deployer, ...accounts] = await ethers.getSigners()
 
   logger.out(deployBlock)
 
