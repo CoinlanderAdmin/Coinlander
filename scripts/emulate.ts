@@ -18,8 +18,8 @@ async function emulate(seizes: number, ethers: HardhatEthersHelpers) {
   logger.out('Starting contract emulation...', logger.Level.Info)
   logger.divider()
 
-  const index: string = '2'
-  const filename: string = 'E7-meta'
+  const index: string = '1'
+  const filename: string = 'E3-meta'
 
   // We must use the injected hardhat param instead of directly importing because we run this
   // as a hardhat task. https://hardhat.org/advanced/hardhat-runtime-environment.html

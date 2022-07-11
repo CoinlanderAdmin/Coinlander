@@ -14,7 +14,11 @@ export async function verify() {
   const index: string = '2'
   const addressesJson = fs.readFileSync('addresses.json', 'utf8');
   const deployData = JSON.parse(addressesJson);
+  const cloakLib = deployData['CloakLib']
   const addresses = deployData[index]
+
+  // Get deployer 
+  const [deployer, ...accounts] = await ethers.getSigners()
 
 
   // Attach to deployed contracts
@@ -30,22 +34,28 @@ export async function verify() {
   logger.divider()
 
   const hre = require("hardhat")
-  // Season One
-  await hre.run("verify:verify", {
-    address: seasonOne.address,
-    constructorArguments: [
-      seekers.address,
-      vault.address
-    ],
-  })
+  // // Season One
+  // await hre.run("verify:verify", {
+  //   address: seasonOne.address,
+  //   constructorArguments: [
+  //     seekers.address,
+  //     vault.address
+  //   ],
+  // })
 
   // Seekers
   await hre.run("verify:verify", {
-    address: seekers.address})
+    address: seekers.address,
+    constructorArguments: [
+      cloakLib
+    ]})
   
   // Vault 
   await hre.run("verify:verify", {
-    address: vault.address})
+    address: vault.address,
+    constructorArguments: [
+      deployer.address
+    ]})
 
 }
 

@@ -185,19 +185,19 @@ contract Vault is IVault, ERC1155, Ownable, ReentrancyGuard {
         prize += msg.value;
     }
 
-	// Thanks Manny - entropy is a bitch
-	function _getRandomNumber(uint16[] storage _arr) private view returns (uint256) {
-		uint256 random = uint256(
-			keccak256(
-				abi.encodePacked(
-					_arr,
-					blockhash(block.number - 1),
-					msg.sender
-				)
-			)
-		);
-		return (random % _arr.length);
-	}
+    // Thanks Manny - entropy is a bitch
+    function _getRandomNumber(uint16[] storage _arr) private view returns (uint256) {
+        uint256 random = uint256(
+            keccak256(
+                abi.encodePacked(
+                    _arr,
+                    blockhash(block.number - 1),
+                    msg.sender
+                )
+            )
+        );
+        return (random % _arr.length);
+    }
 
     function setGameContract(address _gameContract) external onlyOwner {
         gameContract = _gameContract; 
