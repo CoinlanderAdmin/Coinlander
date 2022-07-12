@@ -53,6 +53,11 @@
         "E-002-012" : "There must be something in the vault",
         "E-002-013" : "Only a seeker can open the vault",
         "E-002-014" : "Transfer unsuccessful",
-        "E-002-015" : "Only an approved game contract can mint fragments"
+        "E-002-015" : "Only an approved game contract can mint fragments",
+        "E-002-016" : "Only the approved oracle can fulfill randomness",
+        "E-002-017" : "Request already fulfilled",
+        "E-002-018" : "Nothing to claim",
+        "E-002-019" : "No pending requests",
+        "E-002-020" : "Invalid request id"
     }
 }

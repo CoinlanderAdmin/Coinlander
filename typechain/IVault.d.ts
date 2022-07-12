@@ -24,7 +24,7 @@ interface IVaultInterface extends ethers.utils.Interface {
   functions: {
     "claimKeepersVault()": FunctionFragment;
     "fundPrizePurse()": FunctionFragment;
-    "mintFragments(address,uint256)": FunctionFragment;
+    "requestFragments(address,uint256)": FunctionFragment;
     "setSweetRelease()": FunctionFragment;
   };
 
@@ -37,7 +37,7 @@ interface IVaultInterface extends ethers.utils.Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
-    functionFragment: "mintFragments",
+    functionFragment: "requestFragments",
     values: [string, BigNumberish]
   ): string;
   encodeFunctionData(
@@ -54,7 +54,7 @@ interface IVaultInterface extends ethers.utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "mintFragments",
+    functionFragment: "requestFragments",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -63,11 +63,29 @@ interface IVaultInterface extends ethers.utils.Interface {
   ): Result;
 
   events: {
+    "RandomnessFulfilled(uint16,uint16)": EventFragment;
+    "RandomnessOracleChanged(address,address)": EventFragment;
+    "RandomnessRequested(address,uint16)": EventFragment;
     "VaultUnlocked(address)": EventFragment;
   };
 
+  getEvent(nameOrSignatureOrTopic: "RandomnessFulfilled"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "RandomnessOracleChanged"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "RandomnessRequested"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "VaultUnlocked"): EventFragment;
 }
+
+export type RandomnessFulfilledEvent = TypedEvent<
+  [number, number] & { requestId: number; result: number }
+>;
+
+export type RandomnessOracleChangedEvent = TypedEvent<
+  [string, string] & { currentOracle: string; newOracle: string }
+>;
+
+export type RandomnessRequestedEvent = TypedEvent<
+  [string, number] & { requester: string; requestId: number }
+>;
 
 export type VaultUnlockedEvent = TypedEvent<[string] & { winner: string }>;
 
@@ -123,8 +141,8 @@ export class IVault extends BaseContract {
       overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
-    mintFragments(
-      _receiver: string,
+    requestFragments(
+      _requester: string,
       amount: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
@@ -142,8 +160,8 @@ export class IVault extends BaseContract {
     overrides?: PayableOverrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-  mintFragments(
-    _receiver: string,
+  requestFragments(
+    _requester: string,
     amount: BigNumberish,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
@@ -157,8 +175,8 @@ export class IVault extends BaseContract {
 
     fundPrizePurse(overrides?: CallOverrides): Promise<void>;
 
-    mintFragments(
-      _receiver: string,
+    requestFragments(
+      _requester: string,
       amount: BigNumberish,
       overrides?: CallOverrides
     ): Promise<void>;
@@ -167,6 +185,54 @@ export class IVault extends BaseContract {
   };
 
   filters: {
+    "RandomnessFulfilled(uint16,uint16)"(
+      requestId?: null,
+      result?: null
+    ): TypedEventFilter<
+      [number, number],
+      { requestId: number; result: number }
+    >;
+
+    RandomnessFulfilled(
+      requestId?: null,
+      result?: null
+    ): TypedEventFilter<
+      [number, number],
+      { requestId: number; result: number }
+    >;
+
+    "RandomnessOracleChanged(address,address)"(
+      currentOracle?: null,
+      newOracle?: null
+    ): TypedEventFilter<
+      [string, string],
+      { currentOracle: string; newOracle: string }
+    >;
+
+    RandomnessOracleChanged(
+      currentOracle?: null,
+      newOracle?: null
+    ): TypedEventFilter<
+      [string, string],
+      { currentOracle: string; newOracle: string }
+    >;
+
+    "RandomnessRequested(address,uint16)"(
+      requester?: null,
+      requestId?: null
+    ): TypedEventFilter<
+      [string, number],
+      { requester: string; requestId: number }
+    >;
+
+    RandomnessRequested(
+      requester?: null,
+      requestId?: null
+    ): TypedEventFilter<
+      [string, number],
+      { requester: string; requestId: number }
+    >;
+
     "VaultUnlocked(address)"(
       winner?: null
     ): TypedEventFilter<[string], { winner: string }>;
@@ -185,8 +251,8 @@ export class IVault extends BaseContract {
       overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
-    mintFragments(
-      _receiver: string,
+    requestFragments(
+      _requester: string,
       amount: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
@@ -205,8 +271,8 @@ export class IVault extends BaseContract {
       overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
-    mintFragments(
-      _receiver: string,
+    requestFragments(
+      _requester: string,
       amount: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
