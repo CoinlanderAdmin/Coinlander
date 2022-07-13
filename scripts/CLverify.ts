@@ -20,10 +20,10 @@ async function CLverify(instance: string, ethers: HardhatEthersHelpers) {
   const CloakLib = await ethers.getContractFactory("Cloak")
   const cloak = await CloakLib.attach(cloakLib)
   // Cloak Lib 
-  await hre.run("verify:verify", {
-    address: cloak.address,
-    constructorArguments: []
-  })
+  // await hre.run("verify:verify", {
+  //   address: cloak.address,
+  //   constructorArguments: []
+  // })
 
   let addresses 
   addresses = deployData[instance]

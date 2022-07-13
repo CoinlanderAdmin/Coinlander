@@ -2,7 +2,6 @@ import {ethers} from "hardhat"
 import * as fs from "fs";
 import * as logger from "../utils/logger"
 import * as git from "../utils/gitHelpers"
-import { hrtime } from "process";
 import { Cloak__factory, Cloak} from "../typechain";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 
@@ -41,7 +40,7 @@ export async function deploy() {
 
     writeAddressesJson(data)
 
-    git.commitAndTagRelease(network.chainId)    
+    await git.commitAndTagRelease(network.chainId)    
   }
 
   // When deploying to Arbitrum One, only deploy once
@@ -53,7 +52,7 @@ export async function deploy() {
 
     writeAddressesJson(data)
 
-    git.commitAndTagRelease(network.chainId)  
+    await git.commitAndTagRelease(network.chainId)  
   }
 
   else {
