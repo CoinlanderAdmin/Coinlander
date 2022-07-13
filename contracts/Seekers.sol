@@ -10,8 +10,6 @@ import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "./interfaces/ISeekers.sol";
 import "./interfaces/ICloak.sol";
 
-//import "hardhat/console.sol";
-
 contract Seekers is ERC721Enumerable, ISeekers, AccessControl, ReentrancyGuard {
     // Access control setup
     bytes32 constant KEEPERS_ROLE = keccak256("KEEPERS_ROLE"); // Role for Keepers
@@ -33,18 +31,15 @@ contract Seekers is ERC721Enumerable, ISeekers, AccessControl, ReentrancyGuard {
     // Activation for each will be called externally by the season 1 Coinlander contract
     uint256 constant FIRSTMINT = 5000;
     bool public firstMintActive = false;
-    uint256 public constant FIRSTMINTPRICE = 0.00002 ether; // test value
-    // uint256 constant FIRSTMINTPRICE = 0.05 ether;
+    uint256 constant FIRSTMINTPRICE = 0.05 ether;
     uint256 public constant SECONDMINT = 3333;
     bool public secondMintActive = false;
-    uint256 public constant SECONDMINTPRICE = 0.00005 ether; // test value
-    // uint256 constant SECONDMINTPRICE = 0.08 ether;
+    uint256 constant SECONDMINTPRICE = 0.08 ether;
     uint256 constant THIRDMINT = 220; // bulk release at third mint thresh
     uint256 constant THIRDMINT_INCR = 4; // additional release at each seizure after third mint thresh
     uint256 constant THIRDMINT_TOTAL = 1603; // total number of seekers released via third mint
     bool public thirdMintActive = false;
-    uint256 public constant THIRDMINTPRICE = 0.0001 ether; // test value
-    // uint256 constant THIRDMINTPRICE = 0.1 ether;
+    uint256 constant THIRDMINTPRICE = 0.1 ether;
 
     // Game params
     bool public evilsOnly = false;
@@ -81,9 +76,8 @@ contract Seekers is ERC721Enumerable, ISeekers, AccessControl, ReentrancyGuard {
     ICloak cloak;
 
     // Off-chain metadata
-    // @todo need to put a valid endpoint here
-    string private _contractURI = "https://api.coinlander.dev/meta/seekers";
-    string private _baseTokenURI = "https://api.coinlander.dev/meta/seekers/";
+    string private _contractURI = "https://api.coinlander.one/meta/seekers";
+    string private _baseTokenURI = "https://api.coinlander.one/meta/seekers/";
 
     // Alignment
     string[] private alignments = [
@@ -584,7 +578,6 @@ contract Seekers is ERC721Enumerable, ISeekers, AccessControl, ReentrancyGuard {
             keccak256(
                 abi.encodePacked(
                     blockhash(block.number - 1),
-                    gasleft(),
                     block.timestamp,
                     msg.sender,
                     mod,

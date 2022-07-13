@@ -61,7 +61,7 @@ contract Vault is IVault, ERC1155, Ownable, ReentrancyGuard {
 
 
     // @TODO we need to figure out what the url schema for metadata looks like and plop that here in the constructor
-    constructor(address _randomnessOracle) ERC1155("https://api.coinlander.dev/meta/valut/{id}") {
+    constructor(address _randomnessOracle) ERC1155("https://api.coinlander.one/meta/vault/{id}") {
 
         // Initialize the fragments array
         for  (uint16 i = 0; i < numT1; i++){

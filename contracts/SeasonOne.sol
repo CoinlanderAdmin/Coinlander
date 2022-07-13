@@ -10,7 +10,6 @@ import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "./interfaces/ISeekers.sol";
 import "./interfaces/IVault.sol";
-// import "hardhat/console.sol";
 
 /*
 
@@ -56,8 +55,6 @@ contract SeasonOne is ERC1155, Ownable, ReentrancyGuard {
     Counters.Counter public seizureCount; 
 
     // GAME CONSTANTS
-    uint256 public constant FIRSTCOMMUNITYSOFTLOCK = 111; // discord user lock
-    uint256 public constant SECONDCOMMUNITYSOFTLOCK = 222; // twitter follower lock
     uint256 public constant FIRSTSEEKERMINTTHRESH = 333;
     uint256 public constant CLOAKINGTHRESH = 444;
     uint256 public constant SHARDSPENDABLE = 555;
@@ -101,7 +98,6 @@ contract SeasonOne is ERC1155, Ownable, ReentrancyGuard {
 
     mapping(address => withdrawParams) public pendingWithdrawals;
     mapping(uint256 => bool) public claimedAirdropBySeekerId;
-    mapping(address => bool) public hasBeenCoinlander;
 
     struct cloinDeposit {
         address depositor; 
@@ -122,8 +118,7 @@ contract SeasonOne is ERC1155, Ownable, ReentrancyGuard {
     event ClaimedAll(address claimer);
     event AirdropClaim(uint256 id);
     
-    //@TODO we need to figure out what the url schema for metadata looks like and plop that here in the constructor
-    constructor(address seekersContract, address keepeersVault) ERC1155("https://api.coinlander.dev/meta/season-one/{id}") {
+    constructor(address seekersContract, address keepeersVault) ERC1155("https://api.coinlander.one/meta/season-one/{id}") {
         // Create the One Coin and set the deployer as initial COINLANDER
         _mint(msg.sender, ONECOIN, 1, "0x0");
         COINLANDER = msg.sender;
@@ -133,8 +128,7 @@ contract SeasonOne is ERC1155, Ownable, ReentrancyGuard {
         vault = IVault(keepeersVault);
 
         // Set contract uri 
-        //@Todo change this to a real endpoint
-        _contractURI = "https://api.coinlander.dev/meta/season-one";
+        _contractURI = "https://api.coinlander.one/meta/season-one";
     }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -224,12 +218,9 @@ contract SeasonOne is ERC1155, Ownable, ReentrancyGuard {
         require(released == false, "E-000-001");
         require(msg.value == seizureStake, "E-000-002");
         require(msg.sender != COINLANDER, "E-000-003");
-        //@TODO turn this back on for launch, off for testing 
-        //require(!hasBeenCoinlander[msg.sender], "E-000-014");
 
         address previousOwner = COINLANDER;
         address newOwner = msg.sender;
-        hasBeenCoinlander[newOwner] = true;
         
         seizureCount.increment();
 
@@ -282,18 +273,6 @@ contract SeasonOne is ERC1155, Ownable, ReentrancyGuard {
     // Autonomous game events triggered by Coinlander seizure count 
     function _processGameEvents() internal {
         uint256 count = seizureCount.current();
-
-        if (count == FIRSTCOMMUNITYSOFTLOCK) {
-            if (firstCommunitySoftLock) {
-                gameStarted = false;
-            }
-        }
-
-        if (count == SECONDCOMMUNITYSOFTLOCK) {
-            if (secondCommunitySoftLock) {
-                gameStarted = false;
-            }
-        }
 
         if (count == FIRSTSEEKERMINTTHRESH) {
             seekers.activateFirstMint();
@@ -405,7 +384,6 @@ contract SeasonOne is ERC1155, Ownable, ReentrancyGuard {
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
     // Method for claiming all owed rewards and payments: ether refunds, shards and seekers 
-    // @todo change seeks logic to times length 
     function claimAll() external nonReentrant {
 
         uint256 withdrawal = pendingWithdrawals[msg.sender]._withdrawValue;
@@ -447,7 +425,6 @@ contract SeasonOne is ERC1155, Ownable, ReentrancyGuard {
         uint256 seeks = pendingWithdrawals[msg.sender]._timeHeld.length;
         require(seeks > 0, "E-000-010");
 
-        // Cant pop directly into holdTime since the compiler doesnt know if _timeHeld will have a nonzero length
         uint32 holdTime = pendingWithdrawals[msg.sender]._timeHeld[seeks - 1];
         pendingWithdrawals[msg.sender]._timeHeld.pop();
 
@@ -478,19 +455,9 @@ contract SeasonOne is ERC1155, Ownable, ReentrancyGuard {
         gameStarted = true;
     }
     
-    function disableFirstCommunitySoftLock() external onlyOwner {
-        firstCommunitySoftLock = false;
-    }
-
-    function disableSecondCommunitySoftLock() external onlyOwner {
-        secondCommunitySoftLock = false;
-    }
-
     function _calculateShardReward(uint256 _value) private pure returns (uint16) {
         uint256 reward = BASESHARDREWARD;
-        // @todo need a test multiplier for shard reward
-        reward += ((_value * 10**4)/10**18) * INCRBASIS / INCRSHARDREWARD;
-        // reward += (_value/10**18) * INCRBASIS / INCRSHARDREWARD;
+        reward += (_value/10**18) * INCRBASIS / INCRSHARDREWARD;
         return uint16(reward);  
     }
 
@@ -501,14 +468,12 @@ contract SeasonOne is ERC1155, Ownable, ReentrancyGuard {
                 mod,
                 r,
                 blockhash(block.number - 1),
-                gasleft(),
                 block.timestamp,
                 msg.sender
                 )));
         return random % mod;
     }
 
-// @todo return length of times array 
     function getPendingWithdrawal(address _user) external view returns (uint256[3] memory) {
         return [
             uint256(pendingWithdrawals[_user]._withdrawValue),

@@ -25,14 +25,11 @@ interface SeekersInterface extends ethers.utils.Interface {
     "BIRTHSEEKERPOWERSTART()": FunctionFragment;
     "DEFAULT_ADMIN_ROLE()": FunctionFragment;
     "DETHSCALEREROLLCOST()": FunctionFragment;
-    "FIRSTMINTPRICE()": FunctionFragment;
     "MAXPOWER()": FunctionFragment;
     "MAXSEEKERS()": FunctionFragment;
     "POWERPERHOUR()": FunctionFragment;
     "SECONDMINT()": FunctionFragment;
-    "SECONDMINTPRICE()": FunctionFragment;
     "SUMMONSEEKERPOWERSTART()": FunctionFragment;
-    "THIRDMINTPRICE()": FunctionFragment;
     "activateFirstMint()": FunctionFragment;
     "activateSecondMint()": FunctionFragment;
     "activateThirdMint()": FunctionFragment;
@@ -105,10 +102,6 @@ interface SeekersInterface extends ethers.utils.Interface {
     functionFragment: "DETHSCALEREROLLCOST",
     values?: undefined
   ): string;
-  encodeFunctionData(
-    functionFragment: "FIRSTMINTPRICE",
-    values?: undefined
-  ): string;
   encodeFunctionData(functionFragment: "MAXPOWER", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "MAXSEEKERS",
@@ -123,15 +116,7 @@ interface SeekersInterface extends ethers.utils.Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
-    functionFragment: "SECONDMINTPRICE",
-    values?: undefined
-  ): string;
-  encodeFunctionData(
     functionFragment: "SUMMONSEEKERPOWERSTART",
-    values?: undefined
-  ): string;
-  encodeFunctionData(
-    functionFragment: "THIRDMINTPRICE",
     values?: undefined
   ): string;
   encodeFunctionData(
@@ -355,10 +340,6 @@ interface SeekersInterface extends ethers.utils.Interface {
     functionFragment: "DETHSCALEREROLLCOST",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(
-    functionFragment: "FIRSTMINTPRICE",
-    data: BytesLike
-  ): Result;
   decodeFunctionResult(functionFragment: "MAXPOWER", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "MAXSEEKERS", data: BytesLike): Result;
   decodeFunctionResult(
@@ -367,15 +348,7 @@ interface SeekersInterface extends ethers.utils.Interface {
   ): Result;
   decodeFunctionResult(functionFragment: "SECONDMINT", data: BytesLike): Result;
   decodeFunctionResult(
-    functionFragment: "SECONDMINTPRICE",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
     functionFragment: "SUMMONSEEKERPOWERSTART",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "THIRDMINTPRICE",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -717,8 +690,6 @@ export class Seekers extends BaseContract {
 
     DETHSCALEREROLLCOST(overrides?: CallOverrides): Promise<[number]>;
 
-    FIRSTMINTPRICE(overrides?: CallOverrides): Promise<[BigNumber]>;
-
     MAXPOWER(overrides?: CallOverrides): Promise<[number]>;
 
     MAXSEEKERS(overrides?: CallOverrides): Promise<[BigNumber]>;
@@ -727,11 +698,7 @@ export class Seekers extends BaseContract {
 
     SECONDMINT(overrides?: CallOverrides): Promise<[BigNumber]>;
 
-    SECONDMINTPRICE(overrides?: CallOverrides): Promise<[BigNumber]>;
-
     SUMMONSEEKERPOWERSTART(overrides?: CallOverrides): Promise<[number]>;
-
-    THIRDMINTPRICE(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     activateFirstMint(
       overrides?: Overrides & { from?: string | Promise<string> }
@@ -1036,8 +1003,6 @@ export class Seekers extends BaseContract {
 
   DETHSCALEREROLLCOST(overrides?: CallOverrides): Promise<number>;
 
-  FIRSTMINTPRICE(overrides?: CallOverrides): Promise<BigNumber>;
-
   MAXPOWER(overrides?: CallOverrides): Promise<number>;
 
   MAXSEEKERS(overrides?: CallOverrides): Promise<BigNumber>;
@@ -1046,11 +1011,7 @@ export class Seekers extends BaseContract {
 
   SECONDMINT(overrides?: CallOverrides): Promise<BigNumber>;
 
-  SECONDMINTPRICE(overrides?: CallOverrides): Promise<BigNumber>;
-
   SUMMONSEEKERPOWERSTART(overrides?: CallOverrides): Promise<number>;
-
-  THIRDMINTPRICE(overrides?: CallOverrides): Promise<BigNumber>;
 
   activateFirstMint(
     overrides?: Overrides & { from?: string | Promise<string> }
@@ -1341,8 +1302,6 @@ export class Seekers extends BaseContract {
 
     DETHSCALEREROLLCOST(overrides?: CallOverrides): Promise<number>;
 
-    FIRSTMINTPRICE(overrides?: CallOverrides): Promise<BigNumber>;
-
     MAXPOWER(overrides?: CallOverrides): Promise<number>;
 
     MAXSEEKERS(overrides?: CallOverrides): Promise<BigNumber>;
@@ -1351,11 +1310,7 @@ export class Seekers extends BaseContract {
 
     SECONDMINT(overrides?: CallOverrides): Promise<BigNumber>;
 
-    SECONDMINTPRICE(overrides?: CallOverrides): Promise<BigNumber>;
-
     SUMMONSEEKERPOWERSTART(overrides?: CallOverrides): Promise<number>;
-
-    THIRDMINTPRICE(overrides?: CallOverrides): Promise<BigNumber>;
 
     activateFirstMint(overrides?: CallOverrides): Promise<void>;
 
@@ -1818,8 +1773,6 @@ export class Seekers extends BaseContract {
 
     DETHSCALEREROLLCOST(overrides?: CallOverrides): Promise<BigNumber>;
 
-    FIRSTMINTPRICE(overrides?: CallOverrides): Promise<BigNumber>;
-
     MAXPOWER(overrides?: CallOverrides): Promise<BigNumber>;
 
     MAXSEEKERS(overrides?: CallOverrides): Promise<BigNumber>;
@@ -1828,11 +1781,7 @@ export class Seekers extends BaseContract {
 
     SECONDMINT(overrides?: CallOverrides): Promise<BigNumber>;
 
-    SECONDMINTPRICE(overrides?: CallOverrides): Promise<BigNumber>;
-
     SUMMONSEEKERPOWERSTART(overrides?: CallOverrides): Promise<BigNumber>;
-
-    THIRDMINTPRICE(overrides?: CallOverrides): Promise<BigNumber>;
 
     activateFirstMint(
       overrides?: Overrides & { from?: string | Promise<string> }
@@ -2110,8 +2059,6 @@ export class Seekers extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    FIRSTMINTPRICE(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
     MAXPOWER(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     MAXSEEKERS(overrides?: CallOverrides): Promise<PopulatedTransaction>;
@@ -2120,13 +2067,9 @@ export class Seekers extends BaseContract {
 
     SECONDMINT(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
-    SECONDMINTPRICE(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
     SUMMONSEEKERPOWERSTART(
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
-
-    THIRDMINTPRICE(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     activateFirstMint(
       overrides?: Overrides & { from?: string | Promise<string> }

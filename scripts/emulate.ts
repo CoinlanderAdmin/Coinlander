@@ -82,10 +82,6 @@ async function emulate(seizes: number, ethers: HardhatEthersHelpers) {
   seizureCount = (await seasonOne.seizureCount()).toNumber()
 
   if (seizureCount == 0) {
-    // Remove soft locks
-    logger.out("Disabling soft locks", logger.Level.Info)
-    await seasonOne.disableFirstCommunitySoftLock()
-    await seasonOne.disableSecondCommunitySoftLock()
     // Start game 
     logger.out("Starting game", logger.Level.Info)
     await seasonOne.startGame()

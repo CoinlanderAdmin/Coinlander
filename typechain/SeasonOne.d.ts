@@ -25,13 +25,11 @@ interface SeasonOneInterface extends ethers.utils.Interface {
     "CLOAKINGTHRESH()": FunctionFragment;
     "CLOINRELEASE()": FunctionFragment;
     "COINLANDER()": FunctionFragment;
-    "FIRSTCOMMUNITYSOFTLOCK()": FunctionFragment;
     "FIRSTSEEKERMINTTHRESH()": FunctionFragment;
     "GOODSONLYEND()": FunctionFragment;
     "ONECOIN()": FunctionFragment;
     "PERCENTPRIZE()": FunctionFragment;
     "PERCENTRATEINCREASE()": FunctionFragment;
-    "SECONDCOMMUNITYSOFTLOCK()": FunctionFragment;
     "SECONDSEEKERMINTTHRESH()": FunctionFragment;
     "SHARD()": FunctionFragment;
     "SHARDSPENDABLE()": FunctionFragment;
@@ -49,14 +47,11 @@ interface SeasonOneInterface extends ethers.utils.Interface {
     "claimedAirdropBySeekerId(uint256)": FunctionFragment;
     "cloinDeposits(uint256)": FunctionFragment;
     "contractURI()": FunctionFragment;
-    "disableFirstCommunitySoftLock()": FunctionFragment;
-    "disableSecondCommunitySoftLock()": FunctionFragment;
     "firstCommunitySoftLock()": FunctionFragment;
     "gameStarted()": FunctionFragment;
     "getAirdropStatus(uint256)": FunctionFragment;
     "getPendingWithdrawal(address)": FunctionFragment;
     "getSeizureCount()": FunctionFragment;
-    "hasBeenCoinlander(address)": FunctionFragment;
     "isApprovedForAll(address,address)": FunctionFragment;
     "keeperShardMint(uint256)": FunctionFragment;
     "lastSeizureTime()": FunctionFragment;
@@ -95,10 +90,6 @@ interface SeasonOneInterface extends ethers.utils.Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
-    functionFragment: "FIRSTCOMMUNITYSOFTLOCK",
-    values?: undefined
-  ): string;
-  encodeFunctionData(
     functionFragment: "FIRSTSEEKERMINTTHRESH",
     values?: undefined
   ): string;
@@ -113,10 +104,6 @@ interface SeasonOneInterface extends ethers.utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "PERCENTRATEINCREASE",
-    values?: undefined
-  ): string;
-  encodeFunctionData(
-    functionFragment: "SECONDCOMMUNITYSOFTLOCK",
     values?: undefined
   ): string;
   encodeFunctionData(
@@ -179,14 +166,6 @@ interface SeasonOneInterface extends ethers.utils.Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
-    functionFragment: "disableFirstCommunitySoftLock",
-    values?: undefined
-  ): string;
-  encodeFunctionData(
-    functionFragment: "disableSecondCommunitySoftLock",
-    values?: undefined
-  ): string;
-  encodeFunctionData(
     functionFragment: "firstCommunitySoftLock",
     values?: undefined
   ): string;
@@ -205,10 +184,6 @@ interface SeasonOneInterface extends ethers.utils.Interface {
   encodeFunctionData(
     functionFragment: "getSeizureCount",
     values?: undefined
-  ): string;
-  encodeFunctionData(
-    functionFragment: "hasBeenCoinlander",
-    values: [string]
   ): string;
   encodeFunctionData(
     functionFragment: "isApprovedForAll",
@@ -292,10 +267,6 @@ interface SeasonOneInterface extends ethers.utils.Interface {
   ): Result;
   decodeFunctionResult(functionFragment: "COINLANDER", data: BytesLike): Result;
   decodeFunctionResult(
-    functionFragment: "FIRSTCOMMUNITYSOFTLOCK",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
     functionFragment: "FIRSTSEEKERMINTTHRESH",
     data: BytesLike
   ): Result;
@@ -310,10 +281,6 @@ interface SeasonOneInterface extends ethers.utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "PERCENTRATEINCREASE",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "SECONDCOMMUNITYSOFTLOCK",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -373,14 +340,6 @@ interface SeasonOneInterface extends ethers.utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "disableFirstCommunitySoftLock",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "disableSecondCommunitySoftLock",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
     functionFragment: "firstCommunitySoftLock",
     data: BytesLike
   ): Result;
@@ -398,10 +357,6 @@ interface SeasonOneInterface extends ethers.utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "getSeizureCount",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "hasBeenCoinlander",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -616,8 +571,6 @@ export class SeasonOne extends BaseContract {
 
     COINLANDER(overrides?: CallOverrides): Promise<[string]>;
 
-    FIRSTCOMMUNITYSOFTLOCK(overrides?: CallOverrides): Promise<[BigNumber]>;
-
     FIRSTSEEKERMINTTHRESH(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     GOODSONLYEND(overrides?: CallOverrides): Promise<[BigNumber]>;
@@ -627,8 +580,6 @@ export class SeasonOne extends BaseContract {
     PERCENTPRIZE(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     PERCENTRATEINCREASE(overrides?: CallOverrides): Promise<[BigNumber]>;
-
-    SECONDCOMMUNITYSOFTLOCK(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     SECONDSEEKERMINTTHRESH(overrides?: CallOverrides): Promise<[BigNumber]>;
 
@@ -701,14 +652,6 @@ export class SeasonOne extends BaseContract {
 
     contractURI(overrides?: CallOverrides): Promise<[string]>;
 
-    disableFirstCommunitySoftLock(
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
-
-    disableSecondCommunitySoftLock(
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
-
     firstCommunitySoftLock(overrides?: CallOverrides): Promise<[boolean]>;
 
     gameStarted(overrides?: CallOverrides): Promise<[boolean]>;
@@ -724,11 +667,6 @@ export class SeasonOne extends BaseContract {
     ): Promise<[[BigNumber, BigNumber, BigNumber]]>;
 
     getSeizureCount(overrides?: CallOverrides): Promise<[BigNumber]>;
-
-    hasBeenCoinlander(
-      arg0: string,
-      overrides?: CallOverrides
-    ): Promise<[boolean]>;
 
     isApprovedForAll(
       account: string,
@@ -833,8 +771,6 @@ export class SeasonOne extends BaseContract {
 
   COINLANDER(overrides?: CallOverrides): Promise<string>;
 
-  FIRSTCOMMUNITYSOFTLOCK(overrides?: CallOverrides): Promise<BigNumber>;
-
   FIRSTSEEKERMINTTHRESH(overrides?: CallOverrides): Promise<BigNumber>;
 
   GOODSONLYEND(overrides?: CallOverrides): Promise<BigNumber>;
@@ -844,8 +780,6 @@ export class SeasonOne extends BaseContract {
   PERCENTPRIZE(overrides?: CallOverrides): Promise<BigNumber>;
 
   PERCENTRATEINCREASE(overrides?: CallOverrides): Promise<BigNumber>;
-
-  SECONDCOMMUNITYSOFTLOCK(overrides?: CallOverrides): Promise<BigNumber>;
 
   SECONDSEEKERMINTTHRESH(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -918,14 +852,6 @@ export class SeasonOne extends BaseContract {
 
   contractURI(overrides?: CallOverrides): Promise<string>;
 
-  disableFirstCommunitySoftLock(
-    overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
-
-  disableSecondCommunitySoftLock(
-    overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
-
   firstCommunitySoftLock(overrides?: CallOverrides): Promise<boolean>;
 
   gameStarted(overrides?: CallOverrides): Promise<boolean>;
@@ -941,8 +867,6 @@ export class SeasonOne extends BaseContract {
   ): Promise<[BigNumber, BigNumber, BigNumber]>;
 
   getSeizureCount(overrides?: CallOverrides): Promise<BigNumber>;
-
-  hasBeenCoinlander(arg0: string, overrides?: CallOverrides): Promise<boolean>;
 
   isApprovedForAll(
     account: string,
@@ -1045,8 +969,6 @@ export class SeasonOne extends BaseContract {
 
     COINLANDER(overrides?: CallOverrides): Promise<string>;
 
-    FIRSTCOMMUNITYSOFTLOCK(overrides?: CallOverrides): Promise<BigNumber>;
-
     FIRSTSEEKERMINTTHRESH(overrides?: CallOverrides): Promise<BigNumber>;
 
     GOODSONLYEND(overrides?: CallOverrides): Promise<BigNumber>;
@@ -1056,8 +978,6 @@ export class SeasonOne extends BaseContract {
     PERCENTPRIZE(overrides?: CallOverrides): Promise<BigNumber>;
 
     PERCENTRATEINCREASE(overrides?: CallOverrides): Promise<BigNumber>;
-
-    SECONDCOMMUNITYSOFTLOCK(overrides?: CallOverrides): Promise<BigNumber>;
 
     SECONDSEEKERMINTTHRESH(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -1123,10 +1043,6 @@ export class SeasonOne extends BaseContract {
 
     contractURI(overrides?: CallOverrides): Promise<string>;
 
-    disableFirstCommunitySoftLock(overrides?: CallOverrides): Promise<void>;
-
-    disableSecondCommunitySoftLock(overrides?: CallOverrides): Promise<void>;
-
     firstCommunitySoftLock(overrides?: CallOverrides): Promise<boolean>;
 
     gameStarted(overrides?: CallOverrides): Promise<boolean>;
@@ -1142,11 +1058,6 @@ export class SeasonOne extends BaseContract {
     ): Promise<[BigNumber, BigNumber, BigNumber]>;
 
     getSeizureCount(overrides?: CallOverrides): Promise<BigNumber>;
-
-    hasBeenCoinlander(
-      arg0: string,
-      overrides?: CallOverrides
-    ): Promise<boolean>;
 
     isApprovedForAll(
       account: string,
@@ -1436,8 +1347,6 @@ export class SeasonOne extends BaseContract {
 
     COINLANDER(overrides?: CallOverrides): Promise<BigNumber>;
 
-    FIRSTCOMMUNITYSOFTLOCK(overrides?: CallOverrides): Promise<BigNumber>;
-
     FIRSTSEEKERMINTTHRESH(overrides?: CallOverrides): Promise<BigNumber>;
 
     GOODSONLYEND(overrides?: CallOverrides): Promise<BigNumber>;
@@ -1447,8 +1356,6 @@ export class SeasonOne extends BaseContract {
     PERCENTPRIZE(overrides?: CallOverrides): Promise<BigNumber>;
 
     PERCENTRATEINCREASE(overrides?: CallOverrides): Promise<BigNumber>;
-
-    SECONDCOMMUNITYSOFTLOCK(overrides?: CallOverrides): Promise<BigNumber>;
 
     SECONDSEEKERMINTTHRESH(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -1515,14 +1422,6 @@ export class SeasonOne extends BaseContract {
 
     contractURI(overrides?: CallOverrides): Promise<BigNumber>;
 
-    disableFirstCommunitySoftLock(
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
-
-    disableSecondCommunitySoftLock(
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
-
     firstCommunitySoftLock(overrides?: CallOverrides): Promise<BigNumber>;
 
     gameStarted(overrides?: CallOverrides): Promise<BigNumber>;
@@ -1538,11 +1437,6 @@ export class SeasonOne extends BaseContract {
     ): Promise<BigNumber>;
 
     getSeizureCount(overrides?: CallOverrides): Promise<BigNumber>;
-
-    hasBeenCoinlander(
-      arg0: string,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
 
     isApprovedForAll(
       account: string,
@@ -1644,10 +1538,6 @@ export class SeasonOne extends BaseContract {
 
     COINLANDER(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
-    FIRSTCOMMUNITYSOFTLOCK(
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
     FIRSTSEEKERMINTTHRESH(
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
@@ -1659,10 +1549,6 @@ export class SeasonOne extends BaseContract {
     PERCENTPRIZE(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     PERCENTRATEINCREASE(
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    SECONDCOMMUNITYSOFTLOCK(
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
@@ -1737,14 +1623,6 @@ export class SeasonOne extends BaseContract {
 
     contractURI(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
-    disableFirstCommunitySoftLock(
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
-
-    disableSecondCommunitySoftLock(
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
-
     firstCommunitySoftLock(
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
@@ -1762,11 +1640,6 @@ export class SeasonOne extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     getSeizureCount(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    hasBeenCoinlander(
-      arg0: string,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
 
     isApprovedForAll(
       account: string,
