@@ -1,27 +1,27 @@
 {
   "0": {
-    "deployBlock": 13499142,
+    "deployBlock": 13648544,
     "contracts": {
-      "seekers": "0xa6B92437Ff9F5428779F71A972128A543A357A1E",
-      "vault": "0x4657C4d1555d6a83e3E0217B2f6366cCDB017140",
-      "seasonOne": "0x1c5AeF870e79Ab6F8d258efA3436D74992C7Cf7B"
+      "seekers": "0x4CDeC46c6c934B5d4Ac7f12120d7171295B6F88F",
+      "vault": "0x3b2520a718249158a34bFED159afb364BBdA9aEF",
+      "seasonOne": "0xFB826DeB09f90D97f29d6451315BC193271c5247"
     }
   },
   "1": {
-    "deployBlock": 13499171,
+    "deployBlock": 13648554,
     "contracts": {
-      "seekers": "0x5D38fc17c3b53a1f4789881c9146Bc8B37adc91c",
-      "vault": "0xA3c21a5c25C9CA132f3D8016c1f07e92792F6B59",
-      "seasonOne": "0x09C6041C725c288a149F71aa7Fdb9550e508d6CD"
+      "seekers": "0xC4fe9AE1AfD0416eCa69061Ee03DbA38c29F78E7",
+      "vault": "0xC2993D7c80a24058E2951aF1FBc2600aE67aea30",
+      "seasonOne": "0x31b565443E35725b95B1638b6f41695eeF0fB35E"
     }
   },
   "2": {
-    "deployBlock": 13499197,
+    "deployBlock": 13648561,
     "contracts": {
-      "seekers": "0x28841DB2541fa7E01822406087767e706c165a20",
-      "vault": "0x13C7A9b669c12B41a64F4b25751EC572EC91Ce59",
-      "seasonOne": "0xbD0859767F2258b4bf4f176be69b0737e47652c0"
+      "seekers": "0x11F8c32564D698cEFdb9ddDD5A775f3b26e094e4",
+      "vault": "0x6E28eB431414D9aBdd6e5b749dc47EfCe20f3fF1",
+      "seasonOne": "0x49a40979B6Fe48fD9ddBfa277Dc5Cd0D59174f75"
     }
   },
-  "CloakLib": "0x3Aa815D613ec69F0Fa02814b2C2c6f901b87e8F4"
+  "CloakLib": "0x952efa06d1eB4Ae68ae25573422346004f64304E"
 }

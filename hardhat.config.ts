@@ -7,6 +7,7 @@ import "hardhat-contract-sizer"
 import "@nomiclabs/hardhat-etherscan"
 import { envConfig } from "./utils/env.config" 
 import emulate from "./scripts/emulate";
+import CLverify from "./scripts/CLverify";
 import {task} from "hardhat/internal/core/config/config-env";
 
 task("emulate", "Play through the game.")
@@ -16,6 +17,14 @@ task("emulate", "Play through the game.")
     const {ethers} = hre
     await emulate(seizes, ethers)
   })
+
+task("CLverify", "Send contract verification to block explorer")
+  .addOptionalParam("instance", "Specify an instance to verify from within addresses.json", "0")
+  .setAction(async (args, hre) => {
+    const  {instance} = args
+    const {ethers} = hre
+    await CLverify(instance, ethers)
+})
 
 const config: HardhatUserConfig = {
   solidity: {

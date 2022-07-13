@@ -1,29 +1,38 @@
-import {ethers, hardhatArguments} from "hardhat"
 import {HardhatEthersHelpers} from "hardhat/types"
 import * as fs from "fs";
 import * as logger from "../utils/logger"
 import "@nomiclabs/hardhat-etherscan";
 
 
-export async function verify() {
+async function CLverify(instance: string, ethers: HardhatEthersHelpers) {
   
-  logger.divider()
-  logger.out('Attaching to contracts to verify', logger.Level.Info)
-  logger.divider()
-
-  const index: string = '2'
   const addressesJson = fs.readFileSync('addresses.json', 'utf8');
   const deployData = JSON.parse(addressesJson);
-  const cloakLib = deployData['CloakLib']
-  const addresses = deployData[index]
+  const cloakLib: string  = deployData['CloakLib']
+
 
   // Get deployer 
   const [deployer, ...accounts] = await ethers.getSigners()
 
+  const hre = require("hardhat")
 
+  // Verify common libs 
+  const CloakLib = await ethers.getContractFactory("Cloak")
+  const cloak = await CloakLib.attach(cloakLib)
+  // Cloak Lib 
+  await hre.run("verify:verify", {
+    address: cloak.address,
+    constructorArguments: []
+  })
+
+  let addresses 
+  addresses = deployData[instance]
+  logger.pad(30, "Starting verification for instance: ", instance)
+
+  
   // Attach to deployed contracts
-  const Seekers = await ethers.getContractFactory("Seekers");
-  const seekers = await Seekers.attach(addresses.contracts.seekers);
+  const Seekers = await ethers.getContractFactory("Seekers")
+  const seekers = await Seekers.attach(addresses.contracts.seekers)
   const Vault = await ethers.getContractFactory("Vault")
   const vault = await Vault.attach(addresses.contracts.vault)
   const SeasonOne = await ethers.getContractFactory("SeasonOne")
@@ -33,21 +42,20 @@ export async function verify() {
   logger.pad(30, 'SeasonOne contract:', seasonOne.address)
   logger.divider()
 
-  const hre = require("hardhat")
-  // // Season One
-  // await hre.run("verify:verify", {
-  //   address: seasonOne.address,
-  //   constructorArguments: [
-  //     seekers.address,
-  //     vault.address
-  //   ],
-  // })
+  // Season One
+  await hre.run("verify:verify", {
+    address: seasonOne.address,
+    constructorArguments: [
+      seekers.address,
+      vault.address
+    ],
+  })
 
   // Seekers
   await hre.run("verify:verify", {
     address: seekers.address,
     constructorArguments: [
-      cloakLib
+      cloak.address
     ]})
   
   // Vault 
@@ -56,12 +64,8 @@ export async function verify() {
     constructorArguments: [
       deployer.address
     ]})
+  
 
 }
 
-verify()
-  .then(() => process.exit(0))
-  .catch((error) => {
-    console.error(error)
-    process.exit(1)
-  })
+export default CLverify
