@@ -44,9 +44,15 @@ const config: HardhatUserConfig = {
       allowUnlimitedContractSize: true,
       chainId: 31337,
     },
+    Arbitrum: {
+      allowUnlimitedContractSize: true, 
+      url: envConfig.ArbitrumRPC,
+      chainId: 42161,
+      accounts: [envConfig.deployer]
+    }, 
     RinkArby: {
       allowUnlimitedContractSize: true,
-      url: envConfig.RinkArbyKey,
+      url: envConfig.RinkArbyRPC,
       chainId: 421611,
       //gas: 900000,
       accounts: [envConfig.owner, envConfig.userA, envConfig.userB]

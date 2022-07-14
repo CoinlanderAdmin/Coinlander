@@ -18,9 +18,19 @@ if (!userB) {
   throw new Error("Please set your USERB_KEY in a .env file");
 }
 
-const RinkArbyKey: string | undefined = process.env.ALCHEMY_RINKARBY_API
-if (!RinkArbyKey) {
-  throw new Error("Please set the alchemy RinkArby API key the .env file")
+const deployer: string | undefined = process.env.DEPLOYER_KEY;
+if (!deployer) {
+  throw new Error("Please set your DEPLOYER_KEY in a .env file");
+}
+
+const ArbitrumRPC: string | undefined = process.env.ARBITRUM_RPC;
+if (!ArbitrumRPC) {
+  throw new Error("Please set your ARBITRUM_RPC in a .env file");
+}
+
+const RinkArbyRPC: string | undefined = process.env.RINKARBY_RPC
+if (!RinkArbyRPC) {
+  throw new Error("Please set the alchemy RinkArby RPC url the .env file")
 }
 
 const RinkebyKey: string | undefined = process.env.ALCHEMY_RINKEBY_API
@@ -52,7 +62,9 @@ export var envConfig = {
     'owner': owner,
     'userA': userA, 
     'userB': userB, 
-    'RinkArbyKey': RinkArbyKey,
+    'deployer': deployer,
+    'ArbitrumRPC': ArbitrumRPC,
+    'RinkArbyRPC': RinkArbyRPC,
     'RinkebyKey': RinkebyKey,
     'ArbiscanAPIKey': ArbiscanAPIKey,
     'RinkebyArbiscanAPIKey': RinkebyArbiscanAPIKey,
