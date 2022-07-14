@@ -19,12 +19,21 @@ async function CLverify(instance: string, ethers: HardhatEthersHelpers) {
   // Verify common libs 
   const CloakLib = await ethers.getContractFactory("Cloak")
   const cloak = await CloakLib.attach(cloakLib)
-  // Cloak Lib 
-  await hre.run("verify:verify", {
-    address: cloak.address,
-    constructorArguments: []
-  })
-
+  
+  // Cloak Lib is shared so try/catch in case this isnt the first time we've run verification on 
+  // this instance set
+  try {
+    await hre.run("verify:verify", {
+      address: cloak.address,
+      constructorArguments: []
+    })
+  }
+  catch(e) {
+    logger.out("Caught an exception while attempting to verify Cloak lib",logger.Level.Warn)
+    logger.out(e,logger.Level.Warn)
+    
+  }
+  
   let addresses 
   addresses = deployData[instance]
   logger.pad(30, "Starting verification for instance: ", instance)
