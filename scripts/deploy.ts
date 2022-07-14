@@ -5,6 +5,7 @@ import * as git from "../utils/gitHelpers"
 import { hrtime } from "process";
 import { Cloak__factory, Cloak} from "../typechain";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
+import { envConfig } from "../utils/env.config";
 
 
 // Shared libraries defined in a global scope 
@@ -33,7 +34,7 @@ export async function deploy() {
   // When deploying to RinkArby testnet, make three copies and store the json blob locally for testing 
   if(network.chainId == 421611) {
 
-    for(let i = 0; i < 3; i ++){
+    for(let i = 0; i < 2; i ++){
       data[i] = await deploySeasonOne()
     }
     logger.out('Deploy complete!', logger.Level.Info)
@@ -95,8 +96,8 @@ async function deploySeasonOne() {
 
   // Deploy the Keepers Vault contract 
   const Vault = await ethers.getContractFactory("Vault")
-  // @TODO we need to set up our Oracle and add the address to the env
-  const vault = await Vault.deploy(deployer.address)
+  let oracleAddr = envConfig.OracleAddr
+  const vault = await Vault.deploy(oracleAddr)
   await vault.deployed()
   logger.pad(30, 'Vault contract:', vault.address)
 

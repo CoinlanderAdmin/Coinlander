@@ -89,7 +89,7 @@ contract Vault is IVault, ERC1155, Ownable, ReentrancyGuard {
             fragments.push(uint16(FRAGMENT8));
         }
 
-        _contractURI = "https://api.coinlander.dev/meta/vault";
+        _contractURI = "https://api.coinlander.one/meta/vault";
         randomnessOracle = _randomnessOracle;
     }
 

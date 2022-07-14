@@ -38,6 +38,16 @@ if (!RinkebyArbiscanAPIKey) {
   throw new Error("Please add the Rinkeby Arbiscan API key to your .env file")
 }
 
+const MultiSigAddr: string | undefined = process.env.MULTISIG_ADDR
+if (!MultiSigAddr) {
+  throw new Error("Please add the Multisig Address to your .env file")
+}
+
+const OracleAddr: string | undefined = process.env.ORACLE_ADDR
+if (!OracleAddr) {
+  throw new Error("Please add the Oracle Address to your .env file")
+}
+
 export var envConfig = {
     'owner': owner,
     'userA': userA, 
@@ -45,5 +55,7 @@ export var envConfig = {
     'RinkArbyKey': RinkArbyKey,
     'RinkebyKey': RinkebyKey,
     'ArbiscanAPIKey': ArbiscanAPIKey,
-    'RinkebyArbiscanAPIKey': RinkebyArbiscanAPIKey
+    'RinkebyArbiscanAPIKey': RinkebyArbiscanAPIKey,
+    'MultiSigAddr': MultiSigAddr,
+    'OracleAddr': OracleAddr
 }

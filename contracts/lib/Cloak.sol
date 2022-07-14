@@ -4,8 +4,6 @@
 
 pragma solidity ^0.8.10;
 
-import "../interfaces/ICloak.sol";
-
 library Cloak {
 
     /// @notice Generate a random 16-bit pattern based on input params 

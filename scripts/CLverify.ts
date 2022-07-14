@@ -2,6 +2,7 @@ import {HardhatEthersHelpers} from "hardhat/types"
 import * as fs from "fs";
 import * as logger from "../utils/logger"
 import "@nomiclabs/hardhat-etherscan";
+import { execPath } from "process";
 
 
 async function CLverify(instance: string, ethers: HardhatEthersHelpers) {
@@ -19,7 +20,7 @@ async function CLverify(instance: string, ethers: HardhatEthersHelpers) {
   // Verify common libs 
   const CloakLib = await ethers.getContractFactory("Cloak")
   const cloak = await CloakLib.attach(cloakLib)
-  
+
   // Cloak Lib is shared so try/catch in case this isnt the first time we've run verification on 
   // this instance set
   try {
@@ -51,30 +52,49 @@ async function CLverify(instance: string, ethers: HardhatEthersHelpers) {
   logger.pad(30, 'SeasonOne contract:', seasonOne.address)
   logger.divider()
 
+
+  // Put all verification steps into try/exceptions in case we failed mid-way thru or 
+  // etherscan already has the bytecode 
   // Season One
-  await hre.run("verify:verify", {
-    address: seasonOne.address,
-    constructorArguments: [
-      seekers.address,
-      vault.address
-    ],
-  })
-
+  try{
+    await hre.run("verify:verify", {
+      address: seasonOne.address,
+      constructorArguments: [
+        seekers.address,
+        vault.address
+      ],
+    })
+  }
+  catch(e) {
+    logger.out("Caught an exception while attempting to verify Season One",logger.Level.Warn)
+    logger.out(e,logger.Level.Warn)
+  }
+  
   // Seekers
-  await hre.run("verify:verify", {
-    address: seekers.address,
-    constructorArguments: [
-      cloak.address
-    ]})
-  
-  // Vault 
-  await hre.run("verify:verify", {
-    address: vault.address,
-    constructorArguments: [
-      deployer.address
-    ]})
-  
+  try {
+    await hre.run("verify:verify", {
+      address: seekers.address,
+      constructorArguments: [
+        cloak.address
+      ]})
+  }
+  catch(e) {
+    logger.out("Caught an exception while attempting to verify Seekers",logger.Level.Warn)
+    logger.out(e,logger.Level.Warn)
+  }
 
+  // Vault
+  try {
+    await hre.run("verify:verify", {
+      address: vault.address,
+      constructorArguments: [
+        deployer.address
+      ]})
+  }
+  catch(e) {
+    logger.out("Caught an exception while attempting to verify Vault",logger.Level.Warn)
+    logger.out(e,logger.Level.Warn)
+  }
 }
 
 export default CLverify

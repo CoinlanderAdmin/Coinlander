@@ -1,19 +1,18 @@
 import {ethers} from "hardhat"
-import {HardhatEthersHelpers} from "hardhat/types"
+import { envConfig } from "../utils/env.config" 
 import * as fs from "fs";
 import * as logger from "../utils/logger"
 import { BigNumber } from "ethers";
 
-export async function checkState() {
+export async function postDeployAdmin() {
   logger.divider()
-  logger.out('Attaching to contracts to check state', logger.Level.Info)
+  logger.out('Attaching to contracts...', logger.Level.Info)
   logger.divider()
 
-  const index: string = '2'
+  const index: string = '1'
   const addressesJson = fs.readFileSync('addresses.json', 'utf8');
   const deployData = JSON.parse(addressesJson);
   const addresses = deployData[index]
-
 
   // Attach to deployed contracts
   const Seekers = await ethers.getContractFactory("Seekers");
@@ -27,31 +26,10 @@ export async function checkState() {
   logger.pad(30, 'SeasonOne contract:', seasonOne.address)
   logger.divider()
 
-  
-  const [owner, ...accounts] = await ethers.getSigners()
-
-  // Claim funds / finance
-
-  logger.out('Pulling funds from Seeker Contract...')
-  let contractBal: BigNumber = await seekers.provider.getBalance(seekers.address)
-  if(!contractBal.isZero()) {
-    let ownerBal: BigNumber = await ethers.provider.getBalance(owner.address) 
-    logger.pad(30, 'Account current balance:', ethers.utils.formatEther(ownerBal))
-    logger.pad(30, 'Claiming contract balance:', ethers.utils.formatEther(contractBal))
-    await seekers.ownerWithdraw()
-    ownerBal = await owner.getBalance(owner.address) 
-    // logger.pad(30, 'Account new balance:', ethers.utils.formatEther(ownerBal))
-  }
-  else {
-    logger.out('Contract has no funds to claim')
-  }
-  logger.divider()
-  
   // Metadata Controls
-
   // Change Seeker metadata URI 
   logger.out('Checking seeker _baseURI...')
-  let newSeekerBaseURI = 'https://api.coinlander.dev/meta/seekers/'
+  let newSeekerBaseURI = 'https://api.coinlander.one/meta/seekers/'
   let seekersCurrentURI = await seekers.tokenURI(1) // there will always be a token id: 1
   logger.pad(30, 'Current URI for token 1:', seekersCurrentURI)
   if(seekersCurrentURI != (newSeekerBaseURI + "1")) {
@@ -66,7 +44,7 @@ export async function checkState() {
 
   // Change SeasonOne contract URI 
   logger.out('Checking Season One contract URI...')
-  let newSOneBaseURI = 'https://api.coinlander.dev/meta/season-one'
+  let newSOneBaseURI = 'https://api.coinlander.one/meta/season-one'
   let sOneCurrentURI = await seasonOne.contractURI() 
   logger.pad(30, 'Current URI for season one contract:', sOneCurrentURI)
   if(sOneCurrentURI != newSOneBaseURI) {
@@ -81,7 +59,7 @@ export async function checkState() {
 
   // Change SeasonOne token URI
   logger.out('Checking Season One token URI...')
-  let newSOneTokenURI = 'https://api.coinlander.dev/meta/season-one/{id}'
+  let newSOneTokenURI = 'https://api.coinlander.one/meta/season-one/{id}'
   let sOneTokenURI = await seasonOne.uri(1)
   logger.pad(30, 'Current URI for season one tokens:', sOneTokenURI)
   if(sOneTokenURI != newSOneTokenURI) {
@@ -97,7 +75,7 @@ export async function checkState() {
 
   // Change Vault contract URI
   logger.out('Checking Vault contract URI...')
-  let newVaultContractURI = 'https://api.coinlander.dev/meta/vault'
+  let newVaultContractURI = 'https://api.coinlander.one/meta/vault'
   let vaultContractURI = await vault.contractURI() 
   logger.pad(30, 'Current URI for vault contract:', vaultContractURI)
   if(vaultContractURI != newVaultContractURI) {
@@ -113,7 +91,7 @@ export async function checkState() {
 
   // Change Vault token URI
   logger.out('Checking Vault token URI...')
-  let newVaultTokenURI = 'https://api.coinlander.dev/meta/vault/{id}'
+  let newVaultTokenURI = 'https://api.coinlander.one/meta/vault/{id}'
   let vaultTokenURI = await vault.uri(1) 
   logger.pad(30, 'Current URI for vault contract:', vaultTokenURI)
   if(vaultTokenURI != newVaultTokenURI) {
@@ -126,110 +104,46 @@ export async function checkState() {
   }
   logger.divider()
 
-  // if(!contractBal.isZero()) {
-  //   let ownerBal: BigNumber = await owner.getBalance(owner.address) 
-  //   logger.pad(30, 'Account current balance:', ownerBal.div(1E18).toString())
-  //   logger.pad(30, 'Claiming contract balance:', contractBal.div(1E18).toString())
-  //   await seekers.ownerWithdraw()
-  //   ownerBal = await owner.getBalance(owner.address) 
-  //   logger.pad(30, 'Account new balance:', ownerBal.div(1E18).toString())
-  //   logger.divider()
-  // }
-  // else {
-  //   logger.out('Contract has no funds to claim')
-  // }
-  // logger.out('')
+
+  // Get addresses
+  logger.out('Setting ownership patterns')
   
+  const [deployer, ...accounts] = await ethers.getSigners()
+  //@todo uncomment below for prod
+  // let multiSig = envConfig.MultiSigAddr
+  let multiSig = accounts[0].address
 
-  // // Check if each event triggered successfully
-  // console.log("Seizure number: ", await (await seasonOne.seizureCount()).toNumber())
-  // console.log("Prize: ", await (await seasonOne.prize()).div(1E12).toNumber())
+  logger.out('Permissions for deployer will be revoked and granted to multisig')
+  logger.pad(30,'Deployer: ',deployer.address)
+  logger.pad(30,'Multisig: ', multiSig)
+  logger.divider()
 
-  // let uncloaking = await seekers.uncloaking()
-  // console.log("Uncloaking: ", uncloaking) 
-  
-  // let shardSpendable = await seasonOne.shardSpendable()
-  // console.log("Shard spendable: ", shardSpendable)
+  // Set ownership patterns
 
-  // let firstMint = await seekers.firstMintActive()
-  // console.log("First mint active: ", firstMint)
+  // SeasonOne 
+  await seasonOne.transferOwnership(multiSig)
+  logger.out('Season One ownership transfer successful')
 
-  // let secondMint = await seekers.secondMintActive()
-  // console.log("Second mint active: ", secondMint)
+  // Seekers
+  let KEEPERS_ROLE = ethers.utils.keccak256(
+    ethers.utils.formatBytes32String("KEEPERS_ROLE")
+  )
+  let DEFAULT_ADMIN_ROLE = await seekers.DEFAULT_ADMIN_ROLE()
+  // set multisig as admin and Keeper
+  await seekers.addKeeper(multiSig)
+  await seekers.grantRole(DEFAULT_ADMIN_ROLE, multiSig)
+  // have deployer remove permissions from self 
+  await seekers.renounceRole(KEEPERS_ROLE, deployer.address)
+  await seekers.renounceRole(DEFAULT_ADMIN_ROLE, deployer.address)
+  logger.out('Seekers admin transfer successful')
 
-  // let thirdMint = await seekers.thirdMintActive()
-  // console.log("Third mint active: ", thirdMint)
-
-  // let released = await seasonOne.released()
-  // console.log("Sweet release status: ", released)
-
-  // if(released) {
-  //   let ownerOfWinnerSeeker = await seekers.ownerOf(1)
-  //   console.log("Owner of winner seeker: ", ownerOfWinnerSeeker)
-
-  //   let winner = await seasonOne.COINLANDER()
-  //   console.log("COINLANDER: ", winner)
-  // }
-
-  // // Check inventory of each user
-  // for(const user of accounts) {
-  //   logger.divider()
-  //   console.log('USER: ', user.address)
-  //   let withdrawal = await seasonOne.getPendingWithdrawal(user.address)
-  //   console.log('Eth available: ', withdrawal[0].div(1E12).toNumber())
-  //   console.log('Shard available: ', withdrawal[1].toNumber())
-  //   console.log('Seekers available: ', withdrawal[2].toNumber())
-  //   console.log('SHARD: ', await (await seasonOne.balanceOf(user.address, 1)).toNumber())
-  //   let numSeekers = await (await seekers.balanceOf(user.address)).toNumber()
-  //   console.log('Seekers: ', numSeekers)
-  //   // //let seekerIds = []
-  //   // for (var i = 0; i < numSeekers; i++){
-  //   //   var id = await (await seekers.tokenOfOwnerByIndex(user.address, i)).toNumber()
-  //   //   console.log(id)
-  //   //   //seekerIds.push(id)
-  //   // }
-  //   //console.log('Seeker Ids: ', seekerIds)
-  //   for (var i = 1; i <= 8; i++){
-  //     var qty = await (await vault.balanceOf(user.address, i)).toNumber()
-  //     console.log('Fragment%d: ', i, qty)
-  //   }
-  // } 
-  // console.log('Claiming for account 0')
-  // try { 
-  //   await seasonOne.connect(accounts[0]).claimAll()
-  // } catch (error) {
-  //   console.log(error)
-  // }
-  
-  // console.log('Claiming for account 1')
-  // try { 
-  //   await seasonOne.connect(accounts[1]).claimAll()
-  // } catch (error) {
-  //   console.log(error)
-  // }
-  
-  // // list deposits
-  // logger.divider()
-  //   try {
-  //     let i = 0
-  //     while (true) { 
-  //       let deposit = await seasonOne.cloinDeposits(i)
-  //       console.log("Deposit %d: ", i)
-  //       console.log(deposit.depositor)
-  //       console.log(deposit.amount)
-  //       console.log(deposit.blockNumber)
-  //       logger.divider()
-  //       i++
-  //     }
-  //   }
-  //   catch (error) {
-  //   }
-   
-  // let vaultBal = await vault.prize()
-  // console.log("Vault balance is: ", vaultBal.div(1E12).toNumber())
+  // Vault
+  await vault.transferOwnership(multiSig)
+  logger.out('Vault ownership transfer successful')
+  logger.divider()
 }
 
-checkState()
+postDeployAdmin()
   .then(() => process.exit(0))
   .catch((error) => {
     console.error(error)
