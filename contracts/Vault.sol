@@ -144,6 +144,10 @@ contract Vault is IVault, ERC1155, Ownable, ReentrancyGuard {
         delete claimables[msg.sender];
     }
 
+    function getClaimablesByAddress(address user) view external returns(uint256) {
+        return claimables[user].length;
+    }
+
     function setSweetRelease() external onlyGameContract {
         sweetRelease = true;
     }

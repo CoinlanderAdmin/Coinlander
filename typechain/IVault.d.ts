@@ -24,6 +24,7 @@ interface IVaultInterface extends ethers.utils.Interface {
   functions: {
     "claimKeepersVault()": FunctionFragment;
     "fundPrizePurse()": FunctionFragment;
+    "getClaimablesByAddress(address)": FunctionFragment;
     "requestFragments(address,uint256)": FunctionFragment;
     "setSweetRelease()": FunctionFragment;
   };
@@ -35,6 +36,10 @@ interface IVaultInterface extends ethers.utils.Interface {
   encodeFunctionData(
     functionFragment: "fundPrizePurse",
     values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getClaimablesByAddress",
+    values: [string]
   ): string;
   encodeFunctionData(
     functionFragment: "requestFragments",
@@ -51,6 +56,10 @@ interface IVaultInterface extends ethers.utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "fundPrizePurse",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getClaimablesByAddress",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -141,6 +150,11 @@ export class IVault extends BaseContract {
       overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
+    getClaimablesByAddress(
+      user: string,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
+
     requestFragments(
       _requester: string,
       amount: BigNumberish,
@@ -160,6 +174,11 @@ export class IVault extends BaseContract {
     overrides?: PayableOverrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
+  getClaimablesByAddress(
+    user: string,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
+
   requestFragments(
     _requester: string,
     amount: BigNumberish,
@@ -174,6 +193,11 @@ export class IVault extends BaseContract {
     claimKeepersVault(overrides?: CallOverrides): Promise<void>;
 
     fundPrizePurse(overrides?: CallOverrides): Promise<void>;
+
+    getClaimablesByAddress(
+      user: string,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
 
     requestFragments(
       _requester: string,
@@ -251,6 +275,11 @@ export class IVault extends BaseContract {
       overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
+    getClaimablesByAddress(
+      user: string,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     requestFragments(
       _requester: string,
       amount: BigNumberish,
@@ -269,6 +298,11 @@ export class IVault extends BaseContract {
 
     fundPrizePurse(
       overrides?: PayableOverrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    getClaimablesByAddress(
+      user: string,
+      overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     requestFragments(

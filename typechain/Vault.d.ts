@@ -43,6 +43,7 @@ interface VaultInterface extends ethers.utils.Interface {
     "fundPrizePurse()": FunctionFragment;
     "gameContract()": FunctionFragment;
     "gameWon()": FunctionFragment;
+    "getClaimablesByAddress(address)": FunctionFragment;
     "isApprovedForAll(address,address)": FunctionFragment;
     "numT1()": FunctionFragment;
     "numT2()": FunctionFragment;
@@ -123,6 +124,10 @@ interface VaultInterface extends ethers.utils.Interface {
     values?: undefined
   ): string;
   encodeFunctionData(functionFragment: "gameWon", values?: undefined): string;
+  encodeFunctionData(
+    functionFragment: "getClaimablesByAddress",
+    values: [string]
+  ): string;
   encodeFunctionData(
     functionFragment: "isApprovedForAll",
     values: [string, string]
@@ -241,6 +246,10 @@ interface VaultInterface extends ethers.utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "gameWon", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "getClaimablesByAddress",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "isApprovedForAll",
     data: BytesLike
@@ -497,6 +506,11 @@ export class Vault extends BaseContract {
 
     gameWon(overrides?: CallOverrides): Promise<[boolean]>;
 
+    getClaimablesByAddress(
+      user: string,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
+
     isApprovedForAll(
       account: string,
       operator: string,
@@ -666,6 +680,11 @@ export class Vault extends BaseContract {
 
   gameWon(overrides?: CallOverrides): Promise<boolean>;
 
+  getClaimablesByAddress(
+    user: string,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
+
   isApprovedForAll(
     account: string,
     operator: string,
@@ -825,6 +844,11 @@ export class Vault extends BaseContract {
     gameContract(overrides?: CallOverrides): Promise<string>;
 
     gameWon(overrides?: CallOverrides): Promise<boolean>;
+
+    getClaimablesByAddress(
+      user: string,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
 
     isApprovedForAll(
       account: string,
@@ -1162,6 +1186,11 @@ export class Vault extends BaseContract {
 
     gameWon(overrides?: CallOverrides): Promise<BigNumber>;
 
+    getClaimablesByAddress(
+      user: string,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     isApprovedForAll(
       account: string,
       operator: string,
@@ -1331,6 +1360,11 @@ export class Vault extends BaseContract {
     gameContract(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     gameWon(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    getClaimablesByAddress(
+      user: string,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
 
     isApprovedForAll(
       account: string,

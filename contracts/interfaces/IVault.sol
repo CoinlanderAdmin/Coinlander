@@ -16,5 +16,5 @@ interface IVault {
     function setSweetRelease() external;
     function claimKeepersVault() external;
     function fundPrizePurse() payable external;
-
+    function getClaimablesByAddress(address user) view external returns(uint256);
 }
