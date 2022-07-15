@@ -42,7 +42,7 @@ export async function deploy() {
 
     writeAddressesJson(data)
 
-    git.commitAndTagRelease(network.chainId)    
+    await git.commitAndTagRelease(network.chainId)    
   }
 
   // When deploying to Arbitrum One, only deploy once
@@ -54,7 +54,7 @@ export async function deploy() {
 
     writeAddressesJson(data)
 
-    git.commitAndTagRelease(network.chainId)  
+    await git.commitAndTagRelease(network.chainId)  
   }
 
   else {
