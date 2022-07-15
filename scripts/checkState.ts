@@ -2,6 +2,7 @@ import {ethers} from "hardhat"
 import {HardhatEthersHelpers} from "hardhat/types"
 import * as fs from "fs";
 import * as logger from "../utils/logger"
+import { envConfig } from "../utils/env.config"
 
 function dec2bin(dec: number) {
   return (dec >>> 0).toString(2);
@@ -12,10 +13,11 @@ export async function checkState() {
   logger.out('Attaching to contracts to check state', logger.Level.Info)
   logger.divider()
 
-  const index: string = '1'
+  const index: string = '0'
   const addressesJson = fs.readFileSync('addresses.json', 'utf8');
   const deployData = JSON.parse(addressesJson);
   const addresses = deployData[index]
+  const multisig = envConfig.MultiSigAddr
 
 
   // Attach to deployed contracts
@@ -30,119 +32,16 @@ export async function checkState() {
   logger.pad(30, 'SeasonOne contract:', seasonOne.address)
   logger.divider()
 
-  
-  const [owner, ...accounts] = await ethers.getSigners()
+  // Check balance of multisig
+  let shardBal = await seasonOne.balanceOf(multisig,1)
+  logger.pad(30, 'Multisig Shard balance: ', shardBal.toNumber())
 
-  // Check if each event triggered successfully
+  // Get seizure status
+  let COINLANDER = await seasonOne.COINLANDER()
+  logger.pad(30, 'Current Coinlander: ', COINLANDER)
+  let seizureCount = await seasonOne.seizureCount()
+  logger.pad(30, 'Seizure count: ', seizureCount.toNumber())
 
-  console.log('Origin: ')
-  console.log(await seekers.getOriginById(216))
-  console.log('Cloak status: ')
-  console.log(await seekers.getCloakStatusById(216)) 
-  // let fullCloakBytes = await seekers.getFullCloak(216)
-  // console.log()
-  // let fullCloakBin = []
-  // for(let i=0; i<fullCloakBytes.length; i++){
-  //   let s = dec2bin(fullCloakBytes[i])
-  //   console.log(s)
-  //   fullCloakBin.push(s)
-  // }
-  // console.log(fullCloakBin)
-
-  
-  console.log("Seizure number: ", await (await seasonOne.seizureCount()).toNumber())
-  console.log("Prize: ", await (await seasonOne.prize()).div(1E12).toNumber())
-
-  let uncloaking = await seekers.cloakingAvailable()
-  console.log("Cloaking Available: ", uncloaking) 
-  
-  let shardSpendable = await seasonOne.shardSpendable()
-  console.log("Shard spendable: ", shardSpendable)
-
-  let firstMint = await seekers.firstMintActive()
-  console.log("First mint active: ", firstMint)
-
-  let secondMint = await seekers.secondMintActive()
-  console.log("Second mint active: ", secondMint)
-
-  let thirdMint = await seekers.thirdMintActive()
-  console.log("Third mint active: ", thirdMint)
-
-  let released = await seasonOne.released()
-  console.log("Sweet release status: ", released)
-
-  if(released) {
-    let ownerOfWinnerSeeker = await seekers.ownerOf(1)
-    console.log("Owner of winner seeker: ", ownerOfWinnerSeeker)
-
-    let winner = await seasonOne.COINLANDER()
-    console.log("COINLANDER: ", winner)
-  }
-
-  // Check inventory of each user
-  for(const user of accounts) {
-    logger.divider()
-    console.log('USER: ', user.address)
-    let withdrawal = await seasonOne.getPendingWithdrawal(user.address)
-    console.log('Eth available: ', withdrawal[0].div(1E12).toNumber())
-    console.log('Shard available: ', withdrawal[1].toNumber())
-    console.log('Seekers available: ', withdrawal[2].toNumber())
-    console.log('SHARD: ', await (await seasonOne.balanceOf(user.address, 1)).toNumber())
-    let numSeekers = await (await seekers.balanceOf(user.address)).toNumber()
-    console.log('Seekers: ', numSeekers)
-    //let seekerIds = []
-    for (var i = 0; i < numSeekers; i++){
-      var id = await (await seekers.tokenOfOwnerByIndex(user.address, i)).toNumber()
-      console.log(id)
-      if(!(await seekers.getCloakStatusById(id))){
-        console.log('cloaking...')
-        await seekers.connect(user).cloakSeeker(id)
-      } else {
-        console.log('already cloaked')
-      }
-      
-      //seekerIds.push(id)
-    }
-  }
-  //   console.log('Seeker Ids: ', seekerIds)
-  //   for (var i = 1; i <= 8; i++){
-  //     var qty = await (await vault.balanceOf(user.address, i)).toNumber()
-  //     console.log('Fragment%d: ', i, qty)
-  //   }
-  // } 
-  // console.log('Claiming for account 0')
-  // try { 
-  //   await seasonOne.connect(accounts[0]).claimAll()
-  // } catch (error) {
-  //   console.log(error)
-  // }
-  
-  // console.log('Claiming for account 1')
-  // try { 
-  //   await seasonOne.connect(accounts[1]).claimAll()
-  // } catch (error) {
-  //   console.log(error)
-  // }
-  
-  // list deposits
-  // logger.divider()
-  //   try {
-  //     let i = 0
-  //     while (true) { 
-  //       let deposit = await seasonOne.cloinDeposits(i)
-  //       console.log("Deposit %d: ", i)
-  //       console.log(deposit.depositor)
-  //       console.log(deposit.amount)
-  //       console.log(deposit.blockNumber)
-  //       logger.divider()
-  //       i++
-  //     }
-  //   }
-  //   catch (error) {
-  //   }
-   
-  let vaultBal = await vault.prize()
-  console.log("Vault balance is: ", vaultBal.div(1E12).toNumber())
 }
 
 checkState()

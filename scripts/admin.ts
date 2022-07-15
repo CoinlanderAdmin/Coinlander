@@ -9,7 +9,7 @@ export async function postDeployAdmin() {
   logger.out('Attaching to contracts...', logger.Level.Info)
   logger.divider()
 
-  const index: string = '1'
+  const index: string = '0'
   const addressesJson = fs.readFileSync('addresses.json', 'utf8');
   const deployData = JSON.parse(addressesJson);
   const addresses = deployData[index]
@@ -120,8 +120,8 @@ export async function postDeployAdmin() {
     const [deployer, ...accounts] = await ethers.getSigners()
     
     //@todo uncomment below for prod
-    // let multiSig = envConfig.MultiSigAddr
-    let multiSig = accounts[0].address
+    let multiSig = envConfig.MultiSigAddr
+    // let multiSig = accounts[0].address
 
     logger.out('Permissions for deployer will be revoked and granted to multisig')
     logger.pad(30,'Deployer: ',deployer.address)
