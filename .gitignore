@@ -5,7 +5,6 @@
 
 # hardhat build
 cache
-artifacts/
 
 # contract deploy
 local/
@@ -31,4 +30,4 @@ local/
 /.*Stash
 
 # local helpers
-*.sh
+*.shg

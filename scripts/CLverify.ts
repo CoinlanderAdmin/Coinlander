@@ -3,6 +3,7 @@ import * as fs from "fs";
 import * as logger from "../utils/logger"
 import "@nomiclabs/hardhat-etherscan";
 import { execPath } from "process";
+import { envConfig } from "../utils/env.config";
 
 
 async function CLverify(instance: string, ethers: HardhatEthersHelpers) {
@@ -83,12 +84,13 @@ async function CLverify(instance: string, ethers: HardhatEthersHelpers) {
     logger.out(e,logger.Level.Warn)
   }
 
+  let oracleAddr = envConfig.OracleAddr
   // Vault
   try {
     await hre.run("verify:verify", {
       address: vault.address,
       constructorArguments: [
-        deployer.address
+        oracleAddr
       ]})
   }
   catch(e) {
