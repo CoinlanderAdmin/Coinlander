@@ -13,18 +13,19 @@ export async function checkState() {
   const deployData = JSON.parse(addressesJson);
   const addresses = deployData[index]
 
-
   // Attach to deployed contracts
   const Vault = await ethers.getContractFactory("Vault")
   const vault = await Vault.attach(addresses.contracts.vault)
   logger.pad(30, 'Vault contract:', vault.address)
   logger.divider()
-
   
   const [owner, ...accounts] = await ethers.getSigners()
 
-  // Check if each event triggered successfully
-  let requestId = 2
+  // Make sure the validation owner is the oracle 
+  await vault.setRandomnessOracle(owner.address)
+
+  // Fulfill specific request  
+  let requestId = 1
   await vault.fulfillRequest(requestId)
 }
 
