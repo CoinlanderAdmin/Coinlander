@@ -37,7 +37,7 @@ contract Seekers is ERC721Enumerable, ISeekers, AccessControl, ReentrancyGuard {
     uint256 constant SECONDMINTPRICE = 0.08 ether;
     uint256 constant THIRDMINT = 220; // bulk release at third mint thresh
     uint256 constant THIRDMINT_INCR = 4; // additional release at each seizure after third mint thresh
-    uint256 constant THIRDMINT_TOTAL = 1603; // total number of seekers released via third mint
+    uint256 constant THIRDMINT_TOTAL = 1556; // total number of seekers released via third mint (220 + 4*334)
     bool public thirdMintActive = false;
     uint256 constant THIRDMINTPRICE = 0.1 ether;
 
