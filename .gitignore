@@ -5,6 +5,7 @@
 
 # hardhat build
 cache
+artfifacts
 
 # contract deploy
 local/
