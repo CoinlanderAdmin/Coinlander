@@ -18,8 +18,8 @@ export async function deployCitizens() {
   const network = await ethers.provider.getNetwork()
 
   const addressesJson = fs.readFileSync('addresses.json', 'utf8');
-  const deployData = JSON.parse(addressesJson);
-  const addresses = deployData[network.chainId]
+  const allData = JSON.parse(addressesJson);
+  const chainData = allData[network.chainId]
 
   logger.divider()
   logger.out("Deploying to: " + network.name, logger.Level.Info)
@@ -28,37 +28,43 @@ export async function deployCitizens() {
   logger.divider()
   logger.out("Attaching to libraries...", logger.Level.Info)
   CloakLib = await ethers.getContractFactory("Cloak")
-  cloak = await CloakLib.attach(addresses.CloakLib) 
-  logger.pad(30, "Cloak library attached at: " + cloak.address)
-
-
+  try {
+    cloak = await CloakLib.attach(chainData.CloakLib) 
+    logger.pad(30, "Cloak library attached at: " + cloak.address)
+  }
+  catch {
+    cloak = await CloakLib.deploy()
+    logger.pad(30, "Cloak library deployed to: " + cloak.address)
+    chainData["CloakLib"] = cloak.address
+  }
   
   logger.divider()
   logger.out('Starting contract deploy...', logger.Level.Info)
   logger.divider()
 
   const deployBlock = await (await ethers.provider.getBlock("latest")).number
-  logger.out(deployBlock)
+  logger.pad(30, 'Deploying at block height: ', deployBlock)
 
   // Deploy the NFT contract
   const Citizens = await ethers.getContractFactory("Citizens")
   logger.out("Got contract factory")
   const citizens = await Citizens.deploy(cloak.address)
   logger.pad(30, "Citizens contract deployed to: ", citizens.address)
-  //writeAddressesJson(data)
+  chainData["0"]["contracts"]["citizens"] = citizens.address
 
+  allData[network.chainId] = chainData
+  writeAddressesJson(allData)
   // await git.commitAndTagRelease(network.chainId)    
 }
 
-function writeAddressesJson(data: object){
-  logger.divider()
+function writeAddressesJson(data: object) {
+  logger.divider() 
   logger.out('Exporting contract address data...')
   logger.divider()
 
   // Build local json file. Used to store address contract data
   const json = JSON.stringify(data, null, 2)
   fs.writeFileSync('addresses.json', json, "utf8")
-
 }
 
 

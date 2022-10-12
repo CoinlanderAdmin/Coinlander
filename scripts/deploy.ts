@@ -14,11 +14,14 @@ let cloak: Cloak
 let deployer: SignerWithAddress
 
 export async function deploy() {
-  let data: any = {}
 
   const hre = require("hardhat")
 
   const network = await ethers.provider.getNetwork()
+
+  const addressesJson = fs.readFileSync('addresses.json', 'utf8');
+  const allData = JSON.parse(addressesJson);
+  const chainData = allData[network.chainId]
 
   logger.divider()
   logger.out("Deploying to: " + network.name, logger.Level.Info)
@@ -28,38 +31,40 @@ export async function deploy() {
   logger.out("Deploying libraries...", logger.Level.Info)
   CloakLib = await ethers.getContractFactory("Cloak")
   cloak = await CloakLib.deploy() 
-  data["CloakLib"] = cloak.address
+  chainData["CloakLib"] = cloak.address
   logger.pad(30, "Cloak library deployed to: " + cloak.address)
 
-  // When deploying to RinkArby testnet, make three copies and store the json blob locally for testing 
-  if(network.chainId == 421611) {
+  // When deploying to GoArby testnet, make three copies and store the json blob locally for testing 
+  if(network.chainId == 421613) {
 
     for(let i = 0; i < 2; i ++){
-      data[i] = await deploySeasonOne()
+      chainData[i] = await deploySeasonOne()
     }
     logger.out('Deploy complete!', logger.Level.Info)
     logger.divider()
 
-    writeAddressesJson(data)
+    allData[network.chainId] = chainData
+    writeAddressesJson(allData)
 
     await git.commitAndTagRelease(network.chainId)    
   }
 
-  // When deploying to Arbitrum One, only deploy once
-  else if(network.chainId == 42161){
+  // When deploying to any other network, only deploy once
+  else {
 
-    data[0] = await deploySeasonOne()
+    chainData[0] = await deploySeasonOne()
     logger.out('Deploy complete!', logger.Level.Info)
     logger.divider()
 
-    writeAddressesJson(data)
+    allData[network.chainId] = chainData
+    writeAddressesJson(allData)
 
-    await git.commitAndTagRelease(network.chainId)  
+    // If the network is ArbiOne, tag the release 
+    if(network.chainId == 42161) {
+      await git.commitAndTagRelease(network.chainId)  
+    }
   }
 
-  else {
-     await deploySeasonOne()
-  }
 }
 
 function writeAddressesJson(data: object){
