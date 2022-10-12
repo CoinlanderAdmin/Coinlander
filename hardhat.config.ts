@@ -61,6 +61,12 @@ const config: HardhatUserConfig = {
       url: envConfig.RinkebyKey,
       chainId: 4,
       accounts: [envConfig.owner, envConfig.userA, envConfig.userB]
+    },
+    GoArby: {
+      allowUnlimitedContractSize: true,
+      url: envConfig.GoArbyRPC,
+      chainId: 421613,
+      accounts: [envConfig.owner, envConfig.userA, envConfig.userB]
     }
   },
   etherscan: {

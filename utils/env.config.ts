@@ -33,6 +33,11 @@ if (!RinkArbyRPC) {
   throw new Error("Please set the alchemy RinkArby RPC url the .env file")
 }
 
+const GoArbyRPC: string | undefined = process.env.GOARBY_RPC
+if (!GoArbyRPC) {
+  throw new Error("Please set the alchemy GoArby RPC url the .env file")
+}
+
 const RinkebyKey: string | undefined = process.env.ALCHEMY_RINKEBY_API
 if (!RinkebyKey) {
   throw new Error("Please set the alchemy Rinkeby API key the .env file")
@@ -65,6 +70,7 @@ export var envConfig = {
     'deployer': deployer,
     'ArbitrumRPC': ArbitrumRPC,
     'RinkArbyRPC': RinkArbyRPC,
+    'GoArbyRPC': GoArbyRPC,
     'RinkebyKey': RinkebyKey,
     'ArbiscanAPIKey': ArbiscanAPIKey,
     'RinkebyArbiscanAPIKey': RinkebyArbiscanAPIKey,
