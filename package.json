@@ -32,6 +32,8 @@
         "ethers": "^5.4.1",
         "hardhat": "^2.6.4",
         "hardhat-gas-reporter": "^1.0.4",
+        "keccak256": "^1.0.6",
+        "merkletreejs": "^0.2.32",
         "node-gyp-build": "^4.4.0",
         "prettier": "^2.3.2",
         "prettier-plugin-solidity": "^1.0.0-beta.17",

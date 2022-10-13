@@ -17,7 +17,7 @@ import {
 import { BytesLike } from "@ethersproject/bytes";
 import { Listener, Provider } from "@ethersproject/providers";
 import { FunctionFragment, EventFragment, Result } from "@ethersproject/abi";
-import type { TypedEventFilter, TypedEvent, TypedListener } from "./common";
+import { TypedEventFilter, TypedEvent, TypedListener } from "./commons";
 
 interface IERC721EnumerableInterface extends ethers.utils.Interface {
   functions: {
@@ -258,7 +258,7 @@ export class IERC721Enumerable extends BaseContract {
       owner: string,
       index: BigNumberish,
       overrides?: CallOverrides
-    ): Promise<[BigNumber]>;
+    ): Promise<[BigNumber] & { tokenId: BigNumber }>;
 
     totalSupply(overrides?: CallOverrides): Promise<[BigNumber]>;
 

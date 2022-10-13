@@ -17,7 +17,7 @@ import {
 import { BytesLike } from "@ethersproject/bytes";
 import { Listener, Provider } from "@ethersproject/providers";
 import { FunctionFragment, EventFragment, Result } from "@ethersproject/abi";
-import type { TypedEventFilter, TypedEvent, TypedListener } from "./common";
+import { TypedEventFilter, TypedEvent, TypedListener } from "./commons";
 
 interface ERC721Interface extends ethers.utils.Interface {
   functions: {
@@ -218,7 +218,7 @@ export class ERC721 extends BaseContract {
       from: string,
       to: string,
       tokenId: BigNumberish,
-      data: BytesLike,
+      _data: BytesLike,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
@@ -282,7 +282,7 @@ export class ERC721 extends BaseContract {
     from: string,
     to: string,
     tokenId: BigNumberish,
-    data: BytesLike,
+    _data: BytesLike,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
@@ -343,7 +343,7 @@ export class ERC721 extends BaseContract {
       from: string,
       to: string,
       tokenId: BigNumberish,
-      data: BytesLike,
+      _data: BytesLike,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -464,7 +464,7 @@ export class ERC721 extends BaseContract {
       from: string,
       to: string,
       tokenId: BigNumberish,
-      data: BytesLike,
+      _data: BytesLike,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
@@ -535,7 +535,7 @@ export class ERC721 extends BaseContract {
       from: string,
       to: string,
       tokenId: BigNumberish,
-      data: BytesLike,
+      _data: BytesLike,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 

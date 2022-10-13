@@ -50,18 +50,6 @@ const config: HardhatUserConfig = {
       chainId: 42161,
       accounts: [envConfig.deployer]
     }, 
-    RinkArby: {
-      allowUnlimitedContractSize: true,
-      url: envConfig.RinkArbyRPC,
-      chainId: 421611,
-      //gas: 900000,
-      accounts: [envConfig.owner, envConfig.userA, envConfig.userB]
-    },
-    Rinkeby: {
-      url: envConfig.RinkebyKey,
-      chainId: 4,
-      accounts: [envConfig.owner, envConfig.userA, envConfig.userB]
-    },
     GoArby: {
       allowUnlimitedContractSize: true,
       url: envConfig.GoArbyRPC,
@@ -71,8 +59,7 @@ const config: HardhatUserConfig = {
   },
   etherscan: {
     apiKey: {
-      arbitrumOne: envConfig.ArbiscanAPIKey,
-      arbitrumTestnet: envConfig.RinkebyArbiscanAPIKey
+      arbitrumOne: envConfig.ArbiscanAPIKey
     }
   },
   mocha: {

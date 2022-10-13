@@ -21,12 +21,14 @@ async function emulate(seizes: number, ethers: HardhatEthersHelpers) {
   const index: string = '1'
   const filename: string = 'E3-meta'
 
+  const network = await ethers.provider.getNetwork()
+
   // We must use the injected hardhat param instead of directly importing because we run this
   // as a hardhat task. https://hardhat.org/advanced/hardhat-runtime-environment.html
   
   const addressesJson = fs.readFileSync('addresses.json', 'utf8');
   const deployData = JSON.parse(addressesJson);
-  const addresses = deployData[index]
+  const addresses = deployData[network.chainId][index]
 
   // Attach to deployed contracts
   const Seekers = await ethers.getContractFactory("Seekers");
