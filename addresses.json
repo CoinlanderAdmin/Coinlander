@@ -22,5 +22,23 @@
     },
     "CloakLib": "0xA5126c106657d9739287149EF2dB9De3f875d8F8"
   },
-  "421613": {}
+  "421613": {
+    "0": {
+      "deployBlock": 653515,
+      "contracts": {
+        "seekers": "0x2D2195975f6B2A4702b161899624565f9721686D",
+        "vault": "0x9338a8FA379A2d3bba55F338F779022C942B67A6",
+        "seasonOne": "0x7A7664BdB78cdAa6ec5AFf33d32FF293Dc810D38"
+      }
+    },
+    "1": {
+      "deployBlock": 653523,
+      "contracts": {
+        "seekers": "0xa4493cd2718eD57466e9e0CCa6ECFA85A9CAed0E",
+        "vault": "0xF44fE79Bd2088D65aBea0b0DaB1E5357bBf386f0",
+        "seasonOne": "0xC054Ac081e2cEfA85326766AA94Bc41b790C36DB"
+      }
+    },
+    "CloakLib": "0xD3957920bBAEB2BE641379084715778F252d6640"
+  }
 }
