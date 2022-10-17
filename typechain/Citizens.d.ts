@@ -333,23 +333,25 @@ interface CitizensInterface extends ethers.utils.Interface {
   decodeFunctionResult(functionFragment: "wlClaim", data: BytesLike): Result;
 
   events: {
+    "AdminChange()": EventFragment;
     "Approval(address,address,uint256)": EventFragment;
     "ApprovalForAll(address,address,bool)": EventFragment;
+    "CauseOfDeathSet(uint256,bytes32)": EventFragment;
     "CitizenDeclaredToClan(uint256,address)": EventFragment;
     "OwnershipTransferred(address,address)": EventFragment;
     "Transfer(address,address,uint256)": EventFragment;
-    "adminChange()": EventFragment;
-    "causeOfDeathSet(uint256,bytes32)": EventFragment;
   };
 
+  getEvent(nameOrSignatureOrTopic: "AdminChange"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Approval"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "ApprovalForAll"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "CauseOfDeathSet"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "CitizenDeclaredToClan"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "OwnershipTransferred"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Transfer"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "adminChange"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "causeOfDeathSet"): EventFragment;
 }
+
+export type AdminChangeEvent = TypedEvent<[] & {}>;
 
 export type ApprovalEvent = TypedEvent<
   [string, string, BigNumber] & {
@@ -367,6 +369,10 @@ export type ApprovalForAllEvent = TypedEvent<
   }
 >;
 
+export type CauseOfDeathSetEvent = TypedEvent<
+  [BigNumber, string] & { id: BigNumber; cod: string }
+>;
+
 export type CitizenDeclaredToClanEvent = TypedEvent<
   [BigNumber, string] & { id: BigNumber; clanAddr: string }
 >;
@@ -377,12 +383,6 @@ export type OwnershipTransferredEvent = TypedEvent<
 
 export type TransferEvent = TypedEvent<
   [string, string, BigNumber] & { from: string; to: string; tokenId: BigNumber }
->;
-
-export type adminChangeEvent = TypedEvent<[] & {}>;
-
-export type causeOfDeathSetEvent = TypedEvent<
-  [BigNumber, string] & { id: BigNumber; cod: string }
 >;
 
 export class Citizens extends BaseContract {
@@ -1038,6 +1038,10 @@ export class Citizens extends BaseContract {
   };
 
   filters: {
+    "AdminChange()"(): TypedEventFilter<[], {}>;
+
+    AdminChange(): TypedEventFilter<[], {}>;
+
     "Approval(address,address,uint256)"(
       owner?: string | null,
       approved?: string | null,
@@ -1073,6 +1077,16 @@ export class Citizens extends BaseContract {
       [string, string, boolean],
       { owner: string; operator: string; approved: boolean }
     >;
+
+    "CauseOfDeathSet(uint256,bytes32)"(
+      id?: null,
+      cod?: null
+    ): TypedEventFilter<[BigNumber, string], { id: BigNumber; cod: string }>;
+
+    CauseOfDeathSet(
+      id?: null,
+      cod?: null
+    ): TypedEventFilter<[BigNumber, string], { id: BigNumber; cod: string }>;
 
     "CitizenDeclaredToClan(uint256,address)"(
       id?: null,
@@ -1123,20 +1137,6 @@ export class Citizens extends BaseContract {
       [string, string, BigNumber],
       { from: string; to: string; tokenId: BigNumber }
     >;
-
-    "adminChange()"(): TypedEventFilter<[], {}>;
-
-    adminChange(): TypedEventFilter<[], {}>;
-
-    "causeOfDeathSet(uint256,bytes32)"(
-      id?: null,
-      cod?: null
-    ): TypedEventFilter<[BigNumber, string], { id: BigNumber; cod: string }>;
-
-    causeOfDeathSet(
-      id?: null,
-      cod?: null
-    ): TypedEventFilter<[BigNumber, string], { id: BigNumber; cod: string }>;
   };
 
   estimateGas: {

@@ -4,7 +4,6 @@ import * as logger from "../utils/logger"
 import * as git from "../utils/gitHelpers"
 import { Cloak__factory, Cloak} from "../typechain";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
-import { envConfig } from "../utils/env.config";
 
 
 // Shared libraries defined in a global scope 
@@ -54,7 +53,10 @@ export async function deployCitizens() {
 
   allData[network.chainId] = chainData
   writeAddressesJson(allData)
-  // await git.commitAndTagRelease(network.chainId)    
+
+  if(network.chainId != 31337) { // dont tag deploys to localhost
+    await git.commitAndTagRelease(network.chainId)  
+  }
 }
 
 function writeAddressesJson(data: object) {

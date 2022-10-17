@@ -59,5 +59,17 @@
         "E-002-018" : "Nothing to claim",
         "E-002-019" : "No pending requests",
         "E-002-020" : "Invalid request id"
+    },
+    "Citizen" : {
+        "E-003-001" : "Invalid proof",
+        "E-003-002" : "Public claim is not open",
+        "E-003-003" : "Community claim is not open",
+        "E-003-004" : "Cause of death can no longer be set",
+        "E-003-005" : "Address has already claimed", 
+        "E-003-006" : "Only EOA Allowed",
+        "E-003-007" : "Must be owner of token",
+        "E-003-008" : "No more tokens available",
+        "E-003-009" : "Cause of death already set",
+        "E-003-010" : "Invalid address provided"
     }
 }

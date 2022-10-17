@@ -12,13 +12,13 @@ async function generateAndUpdateMerkle() {
 
     const network = await ethers.provider.getNetwork()
     
-    const wlFilename = 'whitelist.json'
+    const wlFilename = 'data/dev_whitelist.json'
     const addrFilename = 'addresses.json'
 
     logger.out('Reading whitelist addresses from ' + wlFilename, logger.Level.Info)
     const wlFile = fs.readFileSync(wlFilename , 'utf8');
     const wlJson = JSON.parse(wlFile);
-    const wl = wlJson["wl"]
+    const wl = wlJson["whitelist"]
     logger.out(wl)
     logger.divider()
 
@@ -33,6 +33,7 @@ async function generateAndUpdateMerkle() {
     const leaves = wl.map(keccak256)
     const tree = new MerkleTree(leaves, keccak256)
     const root = tree.getRoot()
+    wlJson.root = "0x" + root.toString('hex')
     logger.out(tree.toString())
     logger.divider()
 
@@ -42,6 +43,16 @@ async function generateAndUpdateMerkle() {
     await citizens.setListMerkleRoot(root)
     let newMerkleRoot = await citizens.WLMerkleRoot()
     logger.pad(20, 'New merkle root set to ', newMerkleRoot) 
+    logger.divider()
+
+    logger.out('Generating proofs for each recipient')
+    for(let i = 0; i < leaves.length; i++) {
+      let proof = tree.getHexProof(leaves[i])
+      wlJson.proofs[wl[i]] = proof
+    }
+    logger.out('Writing data to ' + wlFilename)
+    let data = JSON.stringify(wlJson, null, 2)
+    fs.writeFileSync(wlFilename, data, "utf8")
 }
 
 generateAndUpdateMerkle()

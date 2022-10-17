@@ -31,6 +31,3 @@ local/
 
 # local helpers
 *.shg
-
-# local files
-whitelist.json

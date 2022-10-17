@@ -34,7 +34,7 @@ contract Citizens is ERC721Enumerable, Ownable, ReentrancyGuard {
     bytes32 public WLMerkleRoot;
     bool public isPublicClaimActive;
     bool public isCommunityClaimActive;
-    bool public isCauseOfDeathSetActive;
+    bool public isCauseOfDeathSetActive = true;
 
     // Off-chain metadata
     string private _contractURI = "https://api.coinlander.one/meta/citizens";
@@ -65,8 +65,8 @@ contract Citizens is ERC721Enumerable, Ownable, ReentrancyGuard {
     //                                                                                              //
     //////////////////////////////////////////////////////////////////////////////////////////////////
 
-    event causeOfDeathSet(uint256 id, bytes32 cod);
-    event adminChange();
+    event CauseOfDeathSet(uint256 id, bytes32 cod);
+    event AdminChange();
     event CitizenDeclaredToClan(uint256 id, address clanAddr);
 
     //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -82,40 +82,103 @@ contract Citizens is ERC721Enumerable, Ownable, ReentrancyGuard {
                 root,
                 keccak256(abi.encodePacked(msg.sender))
             ),
-            "Address does not exist in list"
+            "E-003-001"
         );
         _;
     }
 
     modifier publicClaimActive() {
-        require(isPublicClaimActive, "Public claim is not open");
+        require(isPublicClaimActive, "E-003-002");
         _;
     }
 
     modifier communityClaimActive() {
-        require(isCommunityClaimActive, "Community claim is not open");
+        require(isCommunityClaimActive, "E-003-003");
         _;
     }
 
     modifier causeOfDeathSetActive() {
-        require(isCauseOfDeathSetActive, "No longer able to set");
+        require(isCauseOfDeathSetActive, "E-003-004");
         _;
     }
 
     modifier canClaim() {
-        require(!claimedByAddr[msg.sender], "Already claimed");
+        require(!claimedByAddr[msg.sender], "E-003-005");
         _;
     }
 
     modifier EOAOnly() {
-        require(tx.origin == msg.sender, "Only EOA Allowed");
+        require(tx.origin == msg.sender, "E-003-006");
         _;
     }
 
     modifier onlyTokenOwner(uint256 id) {
-        require(msg.sender == ownerOf(id), "Must be owner to set");
+        require(msg.sender == ownerOf(id), "E-003-007");
         _;
     }
+
+    modifier tokensAvailable() {
+        require(tokenCounter.current() < maxSupply, "E-003-008");
+        _;
+    }
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+    //                                                                                              //
+    //                                  EXTERNAL METHODS                                            //
+    //                                                                                              //
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+
+    function wlClaim(bytes32[] calldata merkleProof)
+        external
+        nonReentrant
+        EOAOnly
+        communityClaimActive
+        canClaim
+        isValidMerkleProof(merkleProof, WLMerkleRoot)
+        tokensAvailable
+    {
+        tokenCounter.increment();
+        claimedByAddr[msg.sender] = true;
+        _mint(nextTokenId());
+    }
+
+    function publicClaim()
+        external
+        nonReentrant
+        EOAOnly
+        publicClaimActive
+        canClaim
+        tokensAvailable
+    {
+        tokenCounter.increment();
+        claimedByAddr[msg.sender] = true;
+        _mint(nextTokenId());
+    }
+
+    function setCauseOfDeath(uint256 id, bytes32 _cod)
+        external
+        onlyTokenOwner(id)
+        causeOfDeathSetActive
+    {
+        require(
+            attributesByTokenId[id].cod == bytes32(0),
+            "E-003-009"
+        );
+        attributesByTokenId[id].cod = _cod;
+
+        emit CauseOfDeathSet(id, _cod);
+    }
+
+    function declareForClan(uint256 id, address clanAddress) 
+        external 
+        onlyTokenOwner(id)
+        {
+        require(clanAddress == address(clanAddress), "E-003-010");
+
+        attributesByTokenId[id].clan = clanAddress;
+        emit CitizenDeclaredToClan(id, clanAddress);
+    }
+
 
     //////////////////////////////////////////////////////////////////////////////////////////////////
     //                                                                                              //
@@ -255,63 +318,6 @@ contract Citizens is ERC721Enumerable, Ownable, ReentrancyGuard {
 
     //////////////////////////////////////////////////////////////////////////////////////////////////
     //                                                                                              //
-    //                                  EXTERNAL METHODS                                            //
-    //                                                                                              //
-    //////////////////////////////////////////////////////////////////////////////////////////////////
-
-    function wlClaim(bytes32[] calldata merkleProof)
-        external
-        nonReentrant
-        EOAOnly
-        communityClaimActive
-        canClaim
-        isValidMerkleProof(merkleProof, WLMerkleRoot)
-    {
-        require(tokenCounter.current() < maxSupply, "No mas");
-        tokenCounter.increment();
-        claimedByAddr[msg.sender] = true;
-        _mint(nextTokenId());
-    }
-
-    function publicClaim()
-        external
-        nonReentrant
-        EOAOnly
-        publicClaimActive
-        canClaim
-    {
-        require(tokenCounter.current() < maxSupply, "No mas");
-        tokenCounter.increment();
-        claimedByAddr[msg.sender] = true;
-        _mint(nextTokenId());
-    }
-
-    function setCauseOfDeath(uint256 id, bytes32 _cod)
-        external
-        onlyTokenOwner(id)
-        causeOfDeathSetActive
-    {
-        require(
-            attributesByTokenId[id].cod == bytes32(0),
-            "Cause of death already set"
-        );
-        attributesByTokenId[id].cod = _cod;
-
-        emit causeOfDeathSet(id, _cod);
-    }
-
-    function declareForClan(uint256 id, address clanAddress) 
-        external 
-        onlyTokenOwner(id)
-        {
-        require(clanAddress == address(clanAddress), "E-003-001");
-
-        attributesByTokenId[id].clan = clanAddress;
-        emit CitizenDeclaredToClan(id, clanAddress);
-    }
-
-    //////////////////////////////////////////////////////////////////////////////////////////////////
-    //                                                                                              //
     //                                  VIEW METHODS                                                //
     //                                                                                              //
     //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -387,7 +393,7 @@ contract Citizens is ERC721Enumerable, Ownable, ReentrancyGuard {
         onlyOwner
     {
         isPublicClaimActive = _isPublicClaimActive;
-        emit adminChange();
+        emit AdminChange();
     }
 
     function setIsCommunityClaimActive(bool _isCommunityClaimActive)
@@ -395,7 +401,7 @@ contract Citizens is ERC721Enumerable, Ownable, ReentrancyGuard {
         onlyOwner
     {
         isCommunityClaimActive = _isCommunityClaimActive;
-        emit adminChange();
+        emit AdminChange();
     }
 
     function setCauseOfDeathActive(bool _isCauseOfDeathSetActive)
@@ -403,17 +409,17 @@ contract Citizens is ERC721Enumerable, Ownable, ReentrancyGuard {
         onlyOwner
     {
         isCauseOfDeathSetActive = _isCauseOfDeathSetActive;
-        emit adminChange();
+        emit AdminChange();
     }
 
     function setListMerkleRoot(bytes32 merkleRoot) external onlyOwner {
         WLMerkleRoot = merkleRoot;
-        emit adminChange();
+        emit AdminChange();
     }
 
     function setBaseURI(string memory baseTokenURI) public onlyOwner {
         _baseTokenURI = baseTokenURI;
-        emit adminChange();
+        emit AdminChange();
     }
 
     function setContractURI(string calldata newContractURI)
@@ -421,7 +427,7 @@ contract Citizens is ERC721Enumerable, Ownable, ReentrancyGuard {
         onlyOwner
     {
         _contractURI = newContractURI;
-        emit adminChange();
+        emit AdminChange();
     }
     
     function ownerWithdraw() external payable onlyOwner {
