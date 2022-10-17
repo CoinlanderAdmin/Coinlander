@@ -137,9 +137,8 @@ contract Citizens is ERC721Enumerable, Ownable, ReentrancyGuard {
         isValidMerkleProof(merkleProof, WLMerkleRoot)
         tokensAvailable
     {
-        tokenCounter.increment();
         claimedByAddr[msg.sender] = true;
-        _mint(nextTokenId());
+        _mint(_nextTokenId());
     }
 
     function publicClaim()
@@ -150,9 +149,8 @@ contract Citizens is ERC721Enumerable, Ownable, ReentrancyGuard {
         canClaim
         tokensAvailable
     {
-        tokenCounter.increment();
         claimedByAddr[msg.sender] = true;
-        _mint(nextTokenId());
+        _mint(_nextTokenId());
     }
 
     function setCauseOfDeath(uint256 id, bytes32 _cod)
@@ -185,8 +183,11 @@ contract Citizens is ERC721Enumerable, Ownable, ReentrancyGuard {
     //                                  INTERNAL METHODS                                            //
     //                                                                                              //
     //////////////////////////////////////////////////////////////////////////////////////////////////
+    function _baseURI() internal view override returns (string memory) {
+        return _baseTokenURI;
+    }
 
-    function nextTokenId() private returns (uint256) {
+    function _nextTokenId() private returns (uint256) {
         tokenCounter.increment();
         return tokenCounter.current();
     }
@@ -380,6 +381,10 @@ contract Citizens is ERC721Enumerable, Ownable, ReentrancyGuard {
         }
 
         return cloak.getFullCloak(minNoiseBits, maxNoiseBits, _seed);
+    }
+
+    function getCauseOfDeathById(uint256 id) external view returns(bytes32) {
+        return attributesByTokenId[id].cod;
     }
 
     //////////////////////////////////////////////////////////////////////////////////////////////////

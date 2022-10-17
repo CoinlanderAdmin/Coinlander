@@ -30,6 +30,7 @@ interface CitizensInterface extends ethers.utils.Interface {
     "getAlignmentById(uint256)": FunctionFragment;
     "getApById(uint256)": FunctionFragment;
     "getApproved(uint256)": FunctionFragment;
+    "getCauseOfDeathById(uint256)": FunctionFragment;
     "getClanById(uint256)": FunctionFragment;
     "getFullBytes(uint256)": FunctionFragment;
     "getSeedById(uint256)": FunctionFragment;
@@ -90,6 +91,10 @@ interface CitizensInterface extends ethers.utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "getApproved",
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getCauseOfDeathById",
     values: [BigNumberish]
   ): string;
   encodeFunctionData(
@@ -226,6 +231,10 @@ interface CitizensInterface extends ethers.utils.Interface {
   decodeFunctionResult(functionFragment: "getApById", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "getApproved",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getCauseOfDeathById",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -462,6 +471,11 @@ export class Citizens extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[string]>;
 
+    getCauseOfDeathById(
+      id: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[string]>;
+
     getClanById(id: BigNumberish, overrides?: CallOverrides): Promise<[string]>;
 
     getFullBytes(
@@ -674,6 +688,11 @@ export class Citizens extends BaseContract {
     overrides?: CallOverrides
   ): Promise<string>;
 
+  getCauseOfDeathById(
+    id: BigNumberish,
+    overrides?: CallOverrides
+  ): Promise<string>;
+
   getClanById(id: BigNumberish, overrides?: CallOverrides): Promise<string>;
 
   getFullBytes(
@@ -875,6 +894,11 @@ export class Citizens extends BaseContract {
 
     getApproved(
       tokenId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<string>;
+
+    getCauseOfDeathById(
+      id: BigNumberish,
       overrides?: CallOverrides
     ): Promise<string>;
 
@@ -1170,6 +1194,11 @@ export class Citizens extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
+    getCauseOfDeathById(
+      id: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     getClanById(
       id: BigNumberish,
       overrides?: CallOverrides
@@ -1352,6 +1381,11 @@ export class Citizens extends BaseContract {
 
     getApproved(
       tokenId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    getCauseOfDeathById(
+      id: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
