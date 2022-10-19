@@ -11,7 +11,7 @@ let CloakLib: Cloak__factory
 let cloak: Cloak
 let deployer: SignerWithAddress
 
-export async function deployCitizens() {
+export async function deployFormers() {
   let data: any = {}
 
   const network = await ethers.provider.getNetwork()
@@ -45,11 +45,11 @@ export async function deployCitizens() {
   logger.pad(30, 'Deploying at block height: ', deployBlock)
 
   // Deploy the NFT contract
-  const Citizens = await ethers.getContractFactory("Citizens")
+  const Formers = await ethers.getContractFactory("Formers")
   logger.out("Got contract factory")
-  const citizens = await Citizens.deploy(cloak.address)
-  logger.pad(30, "Citizens contract deployed to: ", citizens.address)
-  chainData["0"]["contracts"]["citizens"] = citizens.address
+  const formers = await Formers.deploy(cloak.address)
+  logger.pad(30, "Formers contract deployed to: ", formers.address)
+  chainData["0"]["contracts"]["formers"] = formers.address
 
   allData[network.chainId] = chainData
   writeAddressesJson(allData)
@@ -70,7 +70,7 @@ function writeAddressesJson(data: object) {
 }
 
 
-deployCitizens()
+deployFormers()
   .then(() => process.exit(0))
   .catch((error) => {
     console.error(error)

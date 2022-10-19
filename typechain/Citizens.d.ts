@@ -30,13 +30,13 @@ interface CitizensInterface extends ethers.utils.Interface {
     "getAlignmentById(uint256)": FunctionFragment;
     "getApById(uint256)": FunctionFragment;
     "getApproved(uint256)": FunctionFragment;
-    "getCauseOfDeathById(uint256)": FunctionFragment;
     "getClanById(uint256)": FunctionFragment;
     "getFullBytes(uint256)": FunctionFragment;
+    "getProvenanceById(uint256)": FunctionFragment;
     "getSeedById(uint256)": FunctionFragment;
     "isApprovedForAll(address,address)": FunctionFragment;
-    "isCauseOfDeathSetActive()": FunctionFragment;
     "isCommunityClaimActive()": FunctionFragment;
+    "isProvenanceSetActive()": FunctionFragment;
     "isPublicClaimActive()": FunctionFragment;
     "name()": FunctionFragment;
     "owner()": FunctionFragment;
@@ -47,12 +47,12 @@ interface CitizensInterface extends ethers.utils.Interface {
     "safeTransferFrom(address,address,uint256)": FunctionFragment;
     "setApprovalForAll(address,bool)": FunctionFragment;
     "setBaseURI(string)": FunctionFragment;
-    "setCauseOfDeath(uint256,bytes32)": FunctionFragment;
-    "setCauseOfDeathActive(bool)": FunctionFragment;
     "setContractURI(string)": FunctionFragment;
     "setIsCommunityClaimActive(bool)": FunctionFragment;
     "setIsPublicClaimActive(bool)": FunctionFragment;
     "setListMerkleRoot(bytes32)": FunctionFragment;
+    "setProvenance(uint256,bytes32)": FunctionFragment;
+    "setProvenanceActive(bool)": FunctionFragment;
     "supportsInterface(bytes4)": FunctionFragment;
     "symbol()": FunctionFragment;
     "tokenByIndex(uint256)": FunctionFragment;
@@ -94,15 +94,15 @@ interface CitizensInterface extends ethers.utils.Interface {
     values: [BigNumberish]
   ): string;
   encodeFunctionData(
-    functionFragment: "getCauseOfDeathById",
-    values: [BigNumberish]
-  ): string;
-  encodeFunctionData(
     functionFragment: "getClanById",
     values: [BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "getFullBytes",
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getProvenanceById",
     values: [BigNumberish]
   ): string;
   encodeFunctionData(
@@ -114,11 +114,11 @@ interface CitizensInterface extends ethers.utils.Interface {
     values: [string, string]
   ): string;
   encodeFunctionData(
-    functionFragment: "isCauseOfDeathSetActive",
+    functionFragment: "isCommunityClaimActive",
     values?: undefined
   ): string;
   encodeFunctionData(
-    functionFragment: "isCommunityClaimActive",
+    functionFragment: "isProvenanceSetActive",
     values?: undefined
   ): string;
   encodeFunctionData(
@@ -153,14 +153,6 @@ interface CitizensInterface extends ethers.utils.Interface {
   ): string;
   encodeFunctionData(functionFragment: "setBaseURI", values: [string]): string;
   encodeFunctionData(
-    functionFragment: "setCauseOfDeath",
-    values: [BigNumberish, BytesLike]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "setCauseOfDeathActive",
-    values: [boolean]
-  ): string;
-  encodeFunctionData(
     functionFragment: "setContractURI",
     values: [string]
   ): string;
@@ -175,6 +167,14 @@ interface CitizensInterface extends ethers.utils.Interface {
   encodeFunctionData(
     functionFragment: "setListMerkleRoot",
     values: [BytesLike]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "setProvenance",
+    values: [BigNumberish, BytesLike]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "setProvenanceActive",
+    values: [boolean]
   ): string;
   encodeFunctionData(
     functionFragment: "supportsInterface",
@@ -234,15 +234,15 @@ interface CitizensInterface extends ethers.utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "getCauseOfDeathById",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
     functionFragment: "getClanById",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
     functionFragment: "getFullBytes",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getProvenanceById",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -254,11 +254,11 @@ interface CitizensInterface extends ethers.utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "isCauseOfDeathSetActive",
+    functionFragment: "isCommunityClaimActive",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "isCommunityClaimActive",
+    functionFragment: "isProvenanceSetActive",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -290,14 +290,6 @@ interface CitizensInterface extends ethers.utils.Interface {
   ): Result;
   decodeFunctionResult(functionFragment: "setBaseURI", data: BytesLike): Result;
   decodeFunctionResult(
-    functionFragment: "setCauseOfDeath",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "setCauseOfDeathActive",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
     functionFragment: "setContractURI",
     data: BytesLike
   ): Result;
@@ -311,6 +303,14 @@ interface CitizensInterface extends ethers.utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "setListMerkleRoot",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "setProvenance",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "setProvenanceActive",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -345,18 +345,18 @@ interface CitizensInterface extends ethers.utils.Interface {
     "AdminChange()": EventFragment;
     "Approval(address,address,uint256)": EventFragment;
     "ApprovalForAll(address,address,bool)": EventFragment;
-    "CauseOfDeathSet(uint256,bytes32)": EventFragment;
     "CitizenDeclaredToClan(uint256,address)": EventFragment;
     "OwnershipTransferred(address,address)": EventFragment;
+    "ProvenanceSet(uint256,bytes32)": EventFragment;
     "Transfer(address,address,uint256)": EventFragment;
   };
 
   getEvent(nameOrSignatureOrTopic: "AdminChange"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Approval"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "ApprovalForAll"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "CauseOfDeathSet"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "CitizenDeclaredToClan"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "OwnershipTransferred"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "ProvenanceSet"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Transfer"): EventFragment;
 }
 
@@ -378,16 +378,16 @@ export type ApprovalForAllEvent = TypedEvent<
   }
 >;
 
-export type CauseOfDeathSetEvent = TypedEvent<
-  [BigNumber, string] & { id: BigNumber; cod: string }
->;
-
 export type CitizenDeclaredToClanEvent = TypedEvent<
   [BigNumber, string] & { id: BigNumber; clanAddr: string }
 >;
 
 export type OwnershipTransferredEvent = TypedEvent<
   [string, string] & { previousOwner: string; newOwner: string }
+>;
+
+export type ProvenanceSetEvent = TypedEvent<
+  [BigNumber, string] & { id: BigNumber; provenance: string }
 >;
 
 export type TransferEvent = TypedEvent<
@@ -471,11 +471,6 @@ export class Citizens extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[string]>;
 
-    getCauseOfDeathById(
-      id: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<[string]>;
-
     getClanById(id: BigNumberish, overrides?: CallOverrides): Promise<[string]>;
 
     getFullBytes(
@@ -520,6 +515,11 @@ export class Citizens extends BaseContract {
       ]
     >;
 
+    getProvenanceById(
+      id: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[string]>;
+
     getSeedById(id: BigNumberish, overrides?: CallOverrides): Promise<[number]>;
 
     isApprovedForAll(
@@ -528,9 +528,9 @@ export class Citizens extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[boolean]>;
 
-    isCauseOfDeathSetActive(overrides?: CallOverrides): Promise<[boolean]>;
-
     isCommunityClaimActive(overrides?: CallOverrides): Promise<[boolean]>;
+
+    isProvenanceSetActive(overrides?: CallOverrides): Promise<[boolean]>;
 
     isPublicClaimActive(overrides?: CallOverrides): Promise<[boolean]>;
 
@@ -581,17 +581,6 @@ export class Citizens extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
-    setCauseOfDeath(
-      id: BigNumberish,
-      _cod: BytesLike,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
-
-    setCauseOfDeathActive(
-      _isCauseOfDeathSetActive: boolean,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
-
     setContractURI(
       newContractURI: string,
       overrides?: Overrides & { from?: string | Promise<string> }
@@ -609,6 +598,17 @@ export class Citizens extends BaseContract {
 
     setListMerkleRoot(
       merkleRoot: BytesLike,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    setProvenance(
+      id: BigNumberish,
+      _provenance: BytesLike,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    setProvenanceActive(
+      _isProvenanceSetActive: boolean,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
@@ -688,11 +688,6 @@ export class Citizens extends BaseContract {
     overrides?: CallOverrides
   ): Promise<string>;
 
-  getCauseOfDeathById(
-    id: BigNumberish,
-    overrides?: CallOverrides
-  ): Promise<string>;
-
   getClanById(id: BigNumberish, overrides?: CallOverrides): Promise<string>;
 
   getFullBytes(
@@ -735,6 +730,11 @@ export class Citizens extends BaseContract {
     ]
   >;
 
+  getProvenanceById(
+    id: BigNumberish,
+    overrides?: CallOverrides
+  ): Promise<string>;
+
   getSeedById(id: BigNumberish, overrides?: CallOverrides): Promise<number>;
 
   isApprovedForAll(
@@ -743,9 +743,9 @@ export class Citizens extends BaseContract {
     overrides?: CallOverrides
   ): Promise<boolean>;
 
-  isCauseOfDeathSetActive(overrides?: CallOverrides): Promise<boolean>;
-
   isCommunityClaimActive(overrides?: CallOverrides): Promise<boolean>;
+
+  isProvenanceSetActive(overrides?: CallOverrides): Promise<boolean>;
 
   isPublicClaimActive(overrides?: CallOverrides): Promise<boolean>;
 
@@ -793,17 +793,6 @@ export class Citizens extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-  setCauseOfDeath(
-    id: BigNumberish,
-    _cod: BytesLike,
-    overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
-
-  setCauseOfDeathActive(
-    _isCauseOfDeathSetActive: boolean,
-    overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
-
   setContractURI(
     newContractURI: string,
     overrides?: Overrides & { from?: string | Promise<string> }
@@ -821,6 +810,17 @@ export class Citizens extends BaseContract {
 
   setListMerkleRoot(
     merkleRoot: BytesLike,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  setProvenance(
+    id: BigNumberish,
+    _provenance: BytesLike,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  setProvenanceActive(
+    _isProvenanceSetActive: boolean,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
@@ -897,11 +897,6 @@ export class Citizens extends BaseContract {
       overrides?: CallOverrides
     ): Promise<string>;
 
-    getCauseOfDeathById(
-      id: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<string>;
-
     getClanById(id: BigNumberish, overrides?: CallOverrides): Promise<string>;
 
     getFullBytes(
@@ -944,6 +939,11 @@ export class Citizens extends BaseContract {
       ]
     >;
 
+    getProvenanceById(
+      id: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<string>;
+
     getSeedById(id: BigNumberish, overrides?: CallOverrides): Promise<number>;
 
     isApprovedForAll(
@@ -952,9 +952,9 @@ export class Citizens extends BaseContract {
       overrides?: CallOverrides
     ): Promise<boolean>;
 
-    isCauseOfDeathSetActive(overrides?: CallOverrides): Promise<boolean>;
-
     isCommunityClaimActive(overrides?: CallOverrides): Promise<boolean>;
+
+    isProvenanceSetActive(overrides?: CallOverrides): Promise<boolean>;
 
     isPublicClaimActive(overrides?: CallOverrides): Promise<boolean>;
 
@@ -993,17 +993,6 @@ export class Citizens extends BaseContract {
 
     setBaseURI(baseTokenURI: string, overrides?: CallOverrides): Promise<void>;
 
-    setCauseOfDeath(
-      id: BigNumberish,
-      _cod: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
-    setCauseOfDeathActive(
-      _isCauseOfDeathSetActive: boolean,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
     setContractURI(
       newContractURI: string,
       overrides?: CallOverrides
@@ -1021,6 +1010,17 @@ export class Citizens extends BaseContract {
 
     setListMerkleRoot(
       merkleRoot: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    setProvenance(
+      id: BigNumberish,
+      _provenance: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    setProvenanceActive(
+      _isProvenanceSetActive: boolean,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -1102,16 +1102,6 @@ export class Citizens extends BaseContract {
       { owner: string; operator: string; approved: boolean }
     >;
 
-    "CauseOfDeathSet(uint256,bytes32)"(
-      id?: null,
-      cod?: null
-    ): TypedEventFilter<[BigNumber, string], { id: BigNumber; cod: string }>;
-
-    CauseOfDeathSet(
-      id?: null,
-      cod?: null
-    ): TypedEventFilter<[BigNumber, string], { id: BigNumber; cod: string }>;
-
     "CitizenDeclaredToClan(uint256,address)"(
       id?: null,
       clanAddr?: null
@@ -1142,6 +1132,22 @@ export class Citizens extends BaseContract {
     ): TypedEventFilter<
       [string, string],
       { previousOwner: string; newOwner: string }
+    >;
+
+    "ProvenanceSet(uint256,bytes32)"(
+      id?: null,
+      provenance?: null
+    ): TypedEventFilter<
+      [BigNumber, string],
+      { id: BigNumber; provenance: string }
+    >;
+
+    ProvenanceSet(
+      id?: null,
+      provenance?: null
+    ): TypedEventFilter<
+      [BigNumber, string],
+      { id: BigNumber; provenance: string }
     >;
 
     "Transfer(address,address,uint256)"(
@@ -1194,17 +1200,17 @@ export class Citizens extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    getCauseOfDeathById(
-      id: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
     getClanById(
       id: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
     getFullBytes(
+      id: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    getProvenanceById(
       id: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
@@ -1220,9 +1226,9 @@ export class Citizens extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    isCauseOfDeathSetActive(overrides?: CallOverrides): Promise<BigNumber>;
-
     isCommunityClaimActive(overrides?: CallOverrides): Promise<BigNumber>;
+
+    isProvenanceSetActive(overrides?: CallOverrides): Promise<BigNumber>;
 
     isPublicClaimActive(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -1273,17 +1279,6 @@ export class Citizens extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
-    setCauseOfDeath(
-      id: BigNumberish,
-      _cod: BytesLike,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
-
-    setCauseOfDeathActive(
-      _isCauseOfDeathSetActive: boolean,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
-
     setContractURI(
       newContractURI: string,
       overrides?: Overrides & { from?: string | Promise<string> }
@@ -1301,6 +1296,17 @@ export class Citizens extends BaseContract {
 
     setListMerkleRoot(
       merkleRoot: BytesLike,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    setProvenance(
+      id: BigNumberish,
+      _provenance: BytesLike,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    setProvenanceActive(
+      _isProvenanceSetActive: boolean,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
@@ -1384,17 +1390,17 @@ export class Citizens extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    getCauseOfDeathById(
-      id: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
     getClanById(
       id: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     getFullBytes(
+      id: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    getProvenanceById(
       id: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
@@ -1410,11 +1416,11 @@ export class Citizens extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    isCauseOfDeathSetActive(
+    isCommunityClaimActive(
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    isCommunityClaimActive(
+    isProvenanceSetActive(
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
@@ -1469,17 +1475,6 @@ export class Citizens extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
-    setCauseOfDeath(
-      id: BigNumberish,
-      _cod: BytesLike,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
-
-    setCauseOfDeathActive(
-      _isCauseOfDeathSetActive: boolean,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
-
     setContractURI(
       newContractURI: string,
       overrides?: Overrides & { from?: string | Promise<string> }
@@ -1497,6 +1492,17 @@ export class Citizens extends BaseContract {
 
     setListMerkleRoot(
       merkleRoot: BytesLike,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    setProvenance(
+      id: BigNumberish,
+      _provenance: BytesLike,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    setProvenanceActive(
+      _isProvenanceSetActive: boolean,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
