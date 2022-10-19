@@ -37,8 +37,8 @@ contract Formers is ERC721Enumerable, Ownable, ReentrancyGuard {
     bool public isProvenanceSetActive = true;
 
     // Off-chain metadata
-    string private _contractURI = "https://api.coinlander.one/meta/citizens";
-    string private _baseTokenURI = "https://api.coinlander.one/meta/citizens/";
+    string private _contractURI = "https://api.coinlander.one/meta/formers";
+    string private _baseTokenURI = "https://api.coinlander.one/meta/formers/";
 
     // Constants
     uint256 constant maxSupply = 10_000;
